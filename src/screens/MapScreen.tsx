@@ -7,7 +7,8 @@ import GeoLocation, {
 import {getDistance, getCenter, getBounds} from 'geolib';
 import {GeolibInputCoordinates} from 'geolib/es/types';
 import Sound from 'react-native-sound';
-import {GlobalStateContext} from './contexts';
+import {GlobalStateContext} from '../contexts';
+import {useNavigation, useRoute} from '@react-navigation/native';
 
 const hitBox = 10;
 const dingSound = new Sound('ding.mp3', Sound.MAIN_BUNDLE);
@@ -39,10 +40,10 @@ MapBoxGL.setAccessToken(
   'pk.eyJ1IjoibXRucHRyc24iLCJhIjoiY2tuN3JkdmNuMGFyYjJ1bXFsZHFvZnZyaiJ9._8xfeiMfcT5cTsfo-QY94w',
 );
 
-const coordinates = [
-  new Coordinate(56.549868380401634, 16.18111817523243),
-  new Coordinate(56.55382860559767, 16.181065643491124),
-];
+//const coordinates = [
+//new Coordinate(56.549868380401634, 16.18111817523243),
+//new Coordinate(56.55382860559767, 16.181065643491124),
+//];
 
 const getMapBoxGLBounds = (coordinates: Coordinate[]) => {
   const minLatitude = coordinates.reduce<any>((acc, coordinate) => {
@@ -85,9 +86,19 @@ const getMapBoxGLBounds = (coordinates: Coordinate[]) => {
   };
 };
 
+const scanDataToPoints = (scanData: string) => {
+  return scanData.split(';').map(coordinateString => {
+    const [long, lat] = coordinateString.split(',');
+    return new Coordinate(Number(lat), Number(long));
+  });
+};
+
 const MapScreen: FC = () => {
+  const route = useRoute();
+
   const state = useContext(GlobalStateContext);
-  const [pointsCollected, setPointsCollected] = useState({});
+  const [pointsCollected, setPointsCollected] = useState([]);
+  const points = scanDataToPoints((route.params as any).scan as string);
 
   const onChangePosition = (response: GeolocationResponse) => {
     state.logs.set([...state.logs.get(), 'onChangePosition']);
@@ -97,7 +108,7 @@ const MapScreen: FC = () => {
       response.coords.longitude,
     );
 
-    const distances = coordinates.map(coordinate => {
+    const distances = points.map(coordinate => {
       return String(
         'Coordinate: ' +
           getDistance(
@@ -109,7 +120,7 @@ const MapScreen: FC = () => {
 
     state.logs.set([...state.logs.get(), ...distances]);
 
-    const newPointsCollected = coordinates.filter(coordinate => {
+    const newPointsCollected = points.filter(coordinate => {
       const distance = getDistance(
         coordinate.toGeoLibInputCoordinate(),
         currentLocation.toGeoLibInputCoordinate(),
@@ -157,12 +168,12 @@ const MapScreen: FC = () => {
         rotateEnabled={false}>
         <MapBoxGL.Camera
           animationDuration={0}
-          bounds={getMapBoxGLBounds(coordinates)}
+          bounds={getMapBoxGLBounds(points)}
         />
 
         {state.showCurrentLocation.get() && <MapBoxGL.UserLocation />}
 
-        {coordinates.map(coordinate => {
+        {points.map(coordinate => {
           return (
             <MapBoxGL.MarkerView
               id={coordinate.toString()}
