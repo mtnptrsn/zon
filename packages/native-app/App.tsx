@@ -5,7 +5,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 import MainScreen from './src/screens/MainScreen';
 import QRScanScreen from './src/screens/QRScanScreen';
 
-const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
 
 const App: FC = () => {
   return (
