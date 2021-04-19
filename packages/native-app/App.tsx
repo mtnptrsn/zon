@@ -1,20 +1,23 @@
-import React, {FC} from 'react';
-
-import {NavigationContainer} from '@react-navigation/native';
-import {createStackNavigator} from '@react-navigation/stack';
-import MainScreen from './src/screens/MainScreen';
-import QRScanScreen from './src/screens/QRScanScreen';
-
-const Stack = createStackNavigator();
+import React, {FC, useEffect, useState} from 'react';
+import {Text} from 'react-native-elements';
+import {io, Socket} from 'socket.io-client';
+import {SocketContext} from './src/socket/context';
 
 const App: FC = () => {
+  const [socket, setSocket] = useState<null | Socket>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  useEffect(() => {
+    // TODO: Use environment variable for this
+    const socket = io('http://192.168.86.20:3000');
+    setSocket(socket);
+    socket.on('connect', () => setIsConnected(true));
+    socket.on('disconnect', () => setIsConnected(false));
+  }, []);
+  if (!socket || !isConnected) return <Text>Connecting...</Text>;
   return (
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{headerShown: false}}>
-        <Stack.Screen name="QR" component={QRScanScreen} />
-        <Stack.Screen name="Main" component={MainScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <SocketContext.Provider value={socket}>
+      <Text>In progress</Text>
+    </SocketContext.Provider>
   );
 };
 

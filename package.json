@@ -4,10 +4,6 @@
     "packages": [
       "packages/socket-server",
       "packages/shared"
-    ],
-    "nohoist": [
-      "**/react-native",
-      "**/react-native/**"
     ]
   }
 }
