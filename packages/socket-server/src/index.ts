@@ -9,10 +9,7 @@ const port = Number(process.env.PORT) || 3000;
 
 const connectToMongoDB = async () => {
   console.log("Connecting to MongoDB...");
-  await connect("mongodb://localhost:27017", {
-    user: "root",
-    pass: "rootpassword",
-    dbName: "orient",
+  await connect(process.env.MONGO_URL as string, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     authSource: "admin",
