@@ -5,6 +5,8 @@ import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import { RoomModel } from "./models/RoomModel";
 import { ticker } from "./ticker";
 
+const port = Number(process.env.PORT) || 3000;
+
 const connectToMongoDB = async () => {
   console.log("Connecting to MongoDB...");
   await connect("mongodb://localhost:27017", {
@@ -23,8 +25,8 @@ const initiateSocketServer = () => {
   io.on("connection", (socket: Socket) => {
     routes(io, socket);
   });
-  io.listen(3000);
-  console.log("Server started on port 3000");
+  io.listen(port);
+  console.log(`Server started on port ${port}`);
 
   return io;
 };
