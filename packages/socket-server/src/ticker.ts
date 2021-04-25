@@ -1,7 +1,7 @@
 import { Server } from "socket.io";
 import { RoomModel } from "./models/RoomModel";
 import { emitRoomUpdate } from "./utils/socket";
-import { differenceInMilliseconds } from "date-fns";
+import { differenceInMilliseconds, differenceInSeconds } from "date-fns";
 
 const onFinish = async (io: Server, room: any) => {
   room.status = "FINISHED";

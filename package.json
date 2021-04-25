@@ -5,9 +5,5 @@
       "packages/socket-server",
       "packages/shared"
     ]
-  },
-  "scripts": {
-    "build": "yarn workspace socket-server build",
-    "start": "yarn workspace socket-server start"
   }
 }

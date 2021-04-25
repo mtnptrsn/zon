@@ -6,19 +6,17 @@ const subscribeToRoom = (roomId: string) => {
   const socket = useContext(SocketContext);
   const [room, setRoom] = useState<null | any>(null);
 
-  const onRoomUpdate = (room: any) => {
-    setRoom(room);
-  };
-
   useEffect(() => {
-    socket!.emit('get:room', {roomId}, (room: any) => setRoom(room));
+    socket!.on('connect', () => socket!.emit('get:room', {roomId}, setRoom));
+    socket!.emit('get:room', {roomId}, setRoom);
     socket!.emit('subscribe:room', {roomId}, () => {});
-    socket!.on('update:room', onRoomUpdate);
+    socket!.on('update:room', setRoom);
 
     return () => {
       socket!.emit('unsubscribe:room', {roomId}, () => {});
       socket!.emit('leave:room', {roomId, userId: getUniqueId()});
-      socket!.off('update:room', onRoomUpdate);
+      socket!.off('update:room', setRoom);
+      socket!.off('connect', setRoom);
     };
   }, []);
 

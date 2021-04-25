@@ -1,12 +1,14 @@
 import {useNavigation} from '@react-navigation/core';
 import React, {FC, useContext, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {Alert, StyleSheet, View} from 'react-native';
 import {getUniqueId} from 'react-native-device-info';
 import {Text, Slider, useTheme} from 'react-native-elements';
 import {Button} from 'react-native-elements';
 import {SocketContext} from '../../../socket/context';
 import {getSpacing} from '../../../theme/utils';
+import {usePosition} from '../../../hooks/usePosition';
 import GeoLocation, {
+  GeolocationError,
   GeolocationResponse,
 } from '@react-native-community/geolocation';
 
@@ -33,7 +35,7 @@ const styles = StyleSheet.create({
     marginTop: 'auto',
   },
   startButton: {
-    marginTop: getSpacing(1),
+    marginTop: getSpacing(0.5),
   },
   playerColor: {
     width: 20,
@@ -56,9 +58,14 @@ const styles = StyleSheet.create({
   sliderValue: {
     color: 'rgba(0,0,0,.6)',
   },
+  createMapButton: {
+    marginRight: getSpacing(1),
+  },
 });
 
 const LobbyScreen: FC<ILobbyScreenProps> = props => {
+  const [customMap, setCustomMap] = useState([]);
+  const hasCustomMap = customMap.length > 0;
   const navigation = useNavigation();
   const socket = useContext(SocketContext);
   const userId = getUniqueId();
@@ -66,6 +73,9 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
   const isHost = userId === roomHost._id;
   const [settings, setSettings] = useState({duration: 30, radius: 1500});
   const theme = useTheme();
+  const position = usePosition({distanceFilter: 5, enableHighAccuracy: true});
+  const hasAccuratePositon =
+    position.coords.latitude !== 0 && position.coords.longitude !== 0;
 
   const onPressInvite = () => {
     navigation.navigate('ShowQR', {data: props.room._id, title: 'Invite'});
@@ -74,9 +84,8 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
   const onPressLeave = () => navigation.goBack();
 
   const onPressStart = async () => {
-    const currentPosition = await new Promise<GeolocationResponse>(resolve => {
-      GeoLocation.getCurrentPosition(data => resolve(data));
-    });
+    if (!hasAccuratePositon)
+      return Alert.alert('Error', `Couldn't get your location.`);
 
     socket!.emit(
       'start:room',
@@ -84,13 +93,21 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
         roomId: props.room._id,
         duration: 1000 * 60 * settings.duration,
         radius: settings.radius,
-        hostLocation: [
-          currentPosition.coords.longitude,
-          currentPosition.coords.latitude,
-        ],
+        hostLocation: [position.coords.longitude, position.coords.latitude],
+        map: customMap,
       },
       () => {},
     );
+  };
+
+  const onPressCreateCustomMap = () => {
+    return navigation.navigate('CreateMap', {
+      state: {set: setCustomMap, get: () => customMap},
+    });
+  };
+
+  const onPressDeleteCustomMap = () => {
+    setCustomMap([]);
   };
 
   const renderPlayers = () => {
@@ -140,19 +157,41 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
           />
           <Text style={styles.sliderValue}>{settings.duration} minutes</Text>
 
-          <Text style={styles.sliderTitle}>Map Size</Text>
-          <Slider
-            thumbStyle={{height: 30, width: 30}}
-            thumbTintColor={theme.theme.colors!.primary}
-            step={100}
-            minimumValue={500}
-            maximumValue={5000}
-            value={settings.radius}
-            onValueChange={(value: any) => {
-              setSettings({...settings, radius: value});
-            }}
-          />
-          <Text style={styles.sliderValue}>{settings.radius} meters</Text>
+          <View
+            pointerEvents={hasCustomMap ? 'none' : 'auto'}
+            style={{opacity: hasCustomMap ? 0.5 : 1}}>
+            <Text style={styles.sliderTitle}>Map Size</Text>
+            <Slider
+              thumbStyle={{height: 30, width: 30}}
+              thumbTintColor={theme.theme.colors!.primary}
+              step={100}
+              minimumValue={200}
+              maximumValue={5000}
+              value={settings.radius}
+              onValueChange={(value: any) => {
+                setSettings({...settings, radius: value});
+              }}
+            />
+            <Text style={styles.sliderValue}>
+              {settings.radius} meters in radius
+            </Text>
+          </View>
+
+          <View style={{flexDirection: 'row', marginTop: getSpacing(1)}}>
+            <Button
+              onPress={onPressCreateCustomMap}
+              containerStyle={styles.createMapButton}
+              type="outline"
+              title={hasCustomMap ? 'Edit Custom Map' : 'Create Custom Map'}
+            />
+            {hasCustomMap && (
+              <Button
+                onPress={onPressDeleteCustomMap}
+                type="outline"
+                title={'Delete'}
+              />
+            )}
+          </View>
         </View>
       )}
 
@@ -160,9 +199,11 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
         <Button onPress={onPressLeave} title="Leave" type="outline" />
         {isHost && (
           <Button
+            disabled={!hasAccuratePositon}
             onPress={onPressStart}
             containerStyle={styles.startButton}
             title="Start"
+            loading={!hasAccuratePositon}
           />
         )}
       </View>

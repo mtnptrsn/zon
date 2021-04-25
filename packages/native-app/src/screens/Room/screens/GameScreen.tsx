@@ -9,8 +9,11 @@ import {getUniqueId} from 'react-native-device-info';
 import subscribeToEvents from '../../../socket/subscribeToEvents';
 import Toast from 'react-native-toast-message';
 import {vibrationDurations} from '../../../utils/vibration';
-import TimeColorIndicator from '../components/TimeColorIndicator';
 import {useTheme} from 'react-native-elements';
+import TimeLeft from '../components/TimeLeft';
+import Score from '../components/Score';
+import HomeIndicator from '../components/HomeIndicator';
+import Marker from '../../../components/Marker';
 
 const coordinateToString = ([lat, long]: Coordinate) => `${lat};${long}`;
 const translateEventMessage = (
@@ -37,14 +40,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  marker: {
-    borderRadius: 99,
-    width: 20,
-    height: 20,
-    borderWidth: 3,
-    borderStyle: 'solid',
-    borderColor: 'white',
-  },
   homeMarker: {
     opacity: 0.5,
     borderRadius: 3,
@@ -54,15 +49,22 @@ const styles = StyleSheet.create({
     borderStyle: 'solid',
     borderColor: 'white',
   },
+  playerColorBar: {
+    height: 6,
+  },
 });
 
 const GameScreen: FC<IGameScreenProps> = props => {
   const theme = useTheme();
   const socket = useContext(SocketContext);
-  const position = usePosition({distanceFilter: 5});
+  const position = usePosition({distanceFilter: 5, enableHighAccuracy: true});
   const player = props.room.players.find(
     (player: any) => player._id === getUniqueId(),
   );
+  const score = props.room.map.points.reduce((acc: number, point: any) => {
+    if (point.collectedBy?._id === player._id) return acc + 1;
+    return acc;
+  }, 0);
   subscribeToEvents(props.room._id, event => {
     const eventBelongsToCurrentPlayer = event.player?._id === getUniqueId();
     const vibrateDuration = eventBelongsToCurrentPlayer
@@ -100,6 +102,7 @@ const GameScreen: FC<IGameScreenProps> = props => {
 
   return (
     <View style={styles.container}>
+      <View style={[styles.playerColorBar, {backgroundColor: player.color}]} />
       <MapBoxGL.MapView
         style={{flex: 1}}
         pitchEnabled={false}
@@ -120,14 +123,7 @@ const GameScreen: FC<IGameScreenProps> = props => {
               id={coordinateToString(point.location.coordinates)}
               key={coordinateToString(point.location.coordinates)}
               coordinate={point.location.coordinates}>
-              <View
-                style={[
-                  styles.marker,
-                  {
-                    backgroundColor: point.collectedBy?.color || '#f44336',
-                  },
-                ]}
-              />
+              <Marker color={point.collectedBy?.color || '#f44336'} />
             </MapBoxGL.MarkerView>
           );
         })}
@@ -145,7 +141,9 @@ const GameScreen: FC<IGameScreenProps> = props => {
         <MapBoxGL.UserLocation />
       </MapBoxGL.MapView>
 
-      <TimeColorIndicator player={player} room={props.room} />
+      <TimeLeft finishedAt={new Date(props.room.finishedAt)} />
+      <Score score={score} />
+      {player.isWithinHome && <HomeIndicator />}
     </View>
   );
 };

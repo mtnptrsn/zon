@@ -8,6 +8,7 @@ import LobbyScreen from './screens/LobbyScreen';
 import FinishedScreen from './screens/FinishedScreen';
 import CountdownScreen from './screens/CountdownScreen';
 import {Alert} from 'react-native';
+import LoadingScreen from './screens/LoadingScreen';
 
 interface IRoomScreenRouteParams {
   roomId: string;
@@ -36,7 +37,7 @@ const RoomScreen: FC = () => {
     });
   }, []);
 
-  if (!room) return <Text>Loading...</Text>;
+  if (!room) return <LoadingScreen />;
   if (room.status === 'COUNTDOWN') return <CountdownScreen room={room} />;
   if (room.status === 'ARRANGING') return <LobbyScreen room={room} />;
   if (room.status === 'FINISHED') return <FinishedScreen room={room} />;

@@ -4,7 +4,6 @@ import { getDistance } from "geolib";
 import { getRandomPlayerColor } from "../utils/color";
 import { add } from "date-fns";
 import { generateMap } from "../utils/map";
-import { PlayerPositionModel } from "../models/PlayerPositionModel";
 export namespace RoomController {
   export interface ICreate {
     player: {
@@ -38,6 +37,7 @@ export namespace RoomController {
     hostLocation: [number, number];
     duration: number;
     radius: number;
+    map: [number, number][];
   }
 
   export interface IPositionUpdate {
@@ -135,8 +135,10 @@ export class RoomController {
     room.status = "COUNTDOWN";
     room.finishedAt = add(new Date(), { seconds: data.duration / 1000 + 10 });
     room.startedAt = add(new Date(), { seconds: 10 });
-    const randomMap = generateMap(data.hostLocation, data.radius, 10);
-    room.map.points = randomMap.map((coordinate) => {
+    const map = (Boolean(data.map.length)
+      ? data.map
+      : generateMap(data.hostLocation, data.radius)
+    ).map((coordinate) => {
       return {
         location: {
           type: "Point",
@@ -144,6 +146,7 @@ export class RoomController {
         },
       };
     });
+    room.map.points = map;
     room.map.start = {
       location: {
         type: "Point",
@@ -161,18 +164,11 @@ export class RoomController {
     socket,
     io
   ) => {
+    let didUpdate = false;
     // TODO: Add support for multiple events
     let event = null;
     // How will this work when there are multiple clients calling this simultaneously?
     // TODO: Figure this out.
-    await PlayerPositionModel.create({
-      playerId: data.playerId,
-      roomId: data.roomId,
-      location: {
-        type: "Point",
-        coordinates: data.coordinate,
-      },
-    });
     const room = await RoomModel.findById(data.roomId);
     const playerIndex = room.players.findIndex(
       (player: any) => player._id === data.playerId
@@ -185,18 +181,22 @@ export class RoomController {
           lng: room.map.start.location.coordinates[0],
           lat: room.map.start.location.coordinates[1],
         }
-      ) < 5;
-    if (playerIsWithinHome !== player.isWithinHome)
+      ) < 30;
+    if (playerIsWithinHome !== player.isWithinHome) {
       room.players[playerIndex].isWithinHome = playerIsWithinHome;
+      didUpdate = true;
+    }
     room.map.points.forEach((point: any, index: number) => {
       const [longitude, latitude] = point.location.coordinates;
       const collectedBy = point.collectedBy;
-      const pointCollected =
-        getDistance(
-          { lng: longitude, lat: latitude },
-          { lng: data.coordinate[0], lat: data.coordinate[1] }
-        ) < 10 && !Boolean(collectedBy);
+      const distance = getDistance(
+        { lng: longitude, lat: latitude },
+        { lng: data.coordinate[0], lat: data.coordinate[1] }
+      );
+      const hitbox = 10;
+      const pointCollected = distance < hitbox && !Boolean(collectedBy);
       if (!pointCollected) return;
+      didUpdate = true;
       event = {
         message: `{player} just collected a point!`,
         player,
@@ -204,7 +204,7 @@ export class RoomController {
       room.map.points[index].collectedBy = player;
     });
     await room.save();
-    io.to(`room:${room._id}`).emit("update:room", room);
+    if (didUpdate) io.to(`room:${room._id}`).emit("update:room", room);
     if (event) io.to(`room:${room._id}:events`).emit("update:events", event);
     callback(room);
   };

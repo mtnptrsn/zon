@@ -4,7 +4,6 @@ const getRandomNumber = (min: number, max: number) => {
 
 export const getRandomPlayerColor = (takenColors: string[]) => {
   const colors = [
-    "#E91E63",
     "#9C27B0",
     "#673AB7",
     "#3F51B5",
