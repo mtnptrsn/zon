@@ -9,12 +9,14 @@ import FinishedScreen from './screens/FinishedScreen';
 import CountdownScreen from './screens/CountdownScreen';
 import {Alert} from 'react-native';
 import LoadingScreen from './screens/LoadingScreen';
+import {useKeepAwake} from 'expo-keep-awake';
 
 interface IRoomScreenRouteParams {
   roomId: string;
 }
 
 const RoomScreen: FC = () => {
+  useKeepAwake();
   const route = useRoute();
   const params = route.params! as IRoomScreenRouteParams;
   const room = subscribeToRoom(params.roomId);
