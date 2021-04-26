@@ -13,6 +13,7 @@ import ConnectionWarning from './src/components/ConnectionWarning';
 import CreateMapScreen from './src/screens/CreateMapScreen/CreateMapScreen';
 import {MAPBOX_ACCESS_TOKEN, SERVER_URL} from 'react-native-dotenv';
 import MapboxGL from '@react-native-mapbox-gl/maps';
+import {requestLocationPermission} from './src/utils/location';
 
 MapboxGL.setAccessToken(MAPBOX_ACCESS_TOKEN);
 const Stack = createStackNavigator();
@@ -21,6 +22,7 @@ const App: FC = () => {
   const [socket, setSocket] = useState<null | Socket>(null);
   const [isConnected, setIsConnected] = useState(false);
   useEffect(() => {
+    requestLocationPermission();
     const socket = io(SERVER_URL);
     setSocket(socket);
     socket.on('connect', () => setIsConnected(true));
