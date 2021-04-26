@@ -3,7 +3,7 @@ import React, {FC, useEffect} from 'react';
 import {Text} from 'react-native-elements';
 import subscribeToRoom from '../../socket/subscribeToRoom';
 import CancelledScreen from './screens/CancelledScreen';
-import GameScreen from './screens/GameScreen';
+import GameScreen from './screens/GameScreen/GameScreen';
 import LobbyScreen from './screens/LobbyScreen';
 import FinishedScreen from './screens/FinishedScreen';
 import CountdownScreen from './screens/CountdownScreen';
