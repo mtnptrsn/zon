@@ -1,4 +1,4 @@
-import {useNavigation} from '@react-navigation/core';
+import {StackActions, useNavigation} from '@react-navigation/core';
 import React, {FC, useContext, useState} from 'react';
 import {Alert, StyleSheet, View} from 'react-native';
 import {getUniqueId} from 'react-native-device-info';
@@ -81,7 +81,13 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
     navigation.navigate('ShowQR', {data: props.room._id, title: 'Invite'});
   };
 
-  const onPressLeave = () => navigation.goBack();
+  const onPressLeave = () => {
+    const leave = () => navigation.dispatch(StackActions.popToTop());
+    Alert.alert('Confirmation', 'Are you sure you want to leave the game?', [
+      {text: 'No', onPress: () => {}},
+      {text: 'Yes', onPress: leave},
+    ]);
+  };
 
   const onPressStart = async () => {
     if (!hasAccuratePositon)

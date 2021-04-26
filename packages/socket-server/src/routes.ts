@@ -19,6 +19,9 @@ export const routes = (
   socket.on("room:update:start", (data, cb) =>
     RoomController.start(data, cb, socket, io)
   );
+  socket.on("room:update:end", (data, cb) =>
+    RoomController.end(data, cb, socket, io)
+  );
   socket.on("user:updatePosition", (data, cb) =>
     RoomController.positionUpdate(data, cb, socket, io)
   );

@@ -1,6 +1,5 @@
 import React, {FC, useContext, useEffect, useState} from 'react';
-import {StyleSheet, Vibration, View} from 'react-native';
-import MapBoxGL from '@react-native-mapbox-gl/maps';
+import {Alert, StyleSheet, Vibration, View} from 'react-native';
 import {Coordinate} from '../../types';
 import {SocketContext} from '../../../../socket/context';
 import {getUniqueId} from 'react-native-device-info';
@@ -98,14 +97,32 @@ const GameScreen: FC<IGameScreenProps> = props => {
   }, [props.position]);
 
   const onPressLeave = () => {
-    navigation.dispatch(StackActions.popToTop());
+    const leave = () => navigation.dispatch(StackActions.popToTop());
+    Alert.alert('Confirmation', 'Are you sure you want to leave the game?', [
+      {text: 'No', onPress: () => {}},
+      {text: 'Yes', onPress: leave},
+    ]);
+  };
+
+  const onPressEndGame = () => {
+    const endGame = () =>
+      socket!.emit('room:update:end', {roomId: props.room._id}, () => {});
+    Alert.alert('Confirmation', 'Are you sure you want to end the game?', [
+      {text: 'No', onPress: () => {}},
+      {text: 'Yes', onPress: endGame},
+    ]);
   };
 
   return (
     <View style={styles.container}>
       <MapScreen room={props.room} player={player} position={props.position} />
       {activeScreen === 1 && (
-        <StatsScreen onPressLeave={onPressLeave} room={props.room} />
+        <StatsScreen
+          player={player}
+          onPressEndGame={onPressEndGame}
+          onPressLeave={onPressLeave}
+          room={props.room}
+        />
       )}
       <ButtonGroup
         containerStyle={styles.navigation}

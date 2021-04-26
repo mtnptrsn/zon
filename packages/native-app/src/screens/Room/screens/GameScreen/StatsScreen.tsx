@@ -8,9 +8,11 @@ import {Button} from 'react-native-elements';
 import {getSpacing} from '../../../../theme/utils';
 import {IPoint} from '../../types';
 
-interface ILobbyScreenProps {
+interface IStatsScreenProps {
   room: any;
+  player: any;
   onPressLeave: () => void;
+  onPressEndGame: () => void;
 }
 
 const styles = StyleSheet.create({
@@ -44,12 +46,23 @@ const styles = StyleSheet.create({
   playersTitle: {
     marginTop: getSpacing(1),
   },
+  buttons: {
+    position: 'absolute',
+    bottom: getSpacing(5) + 4,
+    left: getSpacing(2),
+    right: getSpacing(2),
+    flexDirection: 'column',
+  },
+  endGameButton: {
+    flex: 1,
+  },
   leaveButton: {
-    marginTop: getSpacing(2),
+    flex: 1,
+    marginTop: getSpacing(0.5),
   },
 });
 
-const StatsScreen: FC<ILobbyScreenProps> = props => {
+const StatsScreen: FC<IStatsScreenProps> = props => {
   const renderPlayers = () => {
     return props.room.players
       .map((player: any) => {
@@ -90,14 +103,25 @@ const StatsScreen: FC<ILobbyScreenProps> = props => {
       <Text style={styles.playersTitle} h4>
         Leaderboard
       </Text>
+
       {renderPlayers()}
 
-      <Button
-        onPress={props.onPressLeave}
-        containerStyle={styles.leaveButton}
-        type="outline"
-        title="Leave"
-      />
+      <View style={styles.buttons}>
+        {props.player.isHost && (
+          <Button
+            onPress={props.onPressEndGame}
+            containerStyle={styles.endGameButton}
+            type="outline"
+            title="End Game"
+          />
+        )}
+        <Button
+          onPress={props.onPressLeave}
+          containerStyle={styles.leaveButton}
+          type="outline"
+          title="Leave"
+        />
+      </View>
     </View>
   );
 };

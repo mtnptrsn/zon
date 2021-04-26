@@ -36,6 +36,10 @@ export namespace RoomController {
     map: [number, number][];
   }
 
+  export interface IEnd {
+    roomId: string;
+  }
+
   export interface IPositionUpdate {
     roomId: string;
     playerId: string;
@@ -115,9 +119,11 @@ export class RoomController {
     const room = await RoomModel.findById(data.roomId);
     room.status = "COUNTDOWN";
     room.finishedAt = add(new Date(), {
-      seconds: data.duration / 1000 + gameSettings.countdown,
+      seconds: data.duration / 1000 + gameSettings.durations.countdown,
     });
-    room.startedAt = add(new Date(), { seconds: gameSettings.countdown });
+    room.startedAt = add(new Date(), {
+      seconds: gameSettings.durations.countdown,
+    });
     const map = (Boolean(data.map.length)
       ? data.map
       : generateMap(data.hostLocation, data.radius)
@@ -138,6 +144,24 @@ export class RoomController {
     };
     await room.save();
     io.emit(`room:${room._id}:onUpdate`, room);
+    callback?.(room);
+  };
+
+  static end: IController<RoomController.IEnd> = async (
+    data,
+    callback,
+    socket,
+    io
+  ) => {
+    const room = await RoomModel.findById(data.roomId);
+    room.finishedAt = add(new Date(), {
+      seconds: gameSettings.durations.promptEndGame,
+    });
+    await room.save();
+    io.emit(`room:${room._id}:onUpdate`, room);
+    io.emit(`room:${room._id}:onEvent`, {
+      message: `The host just ended the game. The game will end in ${gameSettings.durations.promptEndGame} seconds.`,
+    });
     callback?.(room);
   };
 
