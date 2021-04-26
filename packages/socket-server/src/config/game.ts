@@ -1,8 +1,8 @@
 export const gameSettings = {
   point: {
-    hitbox: 30,
+    hitbox: 20,
   },
   home: {
-    hitbox: 50,
+    hitbox: 30,
   },
 };
