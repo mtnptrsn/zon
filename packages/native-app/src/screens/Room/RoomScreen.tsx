@@ -10,6 +10,7 @@ import CountdownScreen from './screens/CountdownScreen';
 import {Alert} from 'react-native';
 import LoadingScreen from './screens/LoadingScreen';
 import {useKeepAwake} from 'expo-keep-awake';
+import {usePosition} from '../../hooks/usePosition';
 
 interface IRoomScreenRouteParams {
   roomId: string;
@@ -21,6 +22,7 @@ const RoomScreen: FC = () => {
   const params = route.params! as IRoomScreenRouteParams;
   const room = subscribeToRoom(params.roomId);
   const navigation = useNavigation();
+  const position = usePosition({enableHighAccuracy: true, distanceFilter: 5});
 
   const onClickAndroidArrowBack = () => {
     Alert.alert('Confirmation', 'Are you sure you want to leave the game?', [
@@ -40,11 +42,15 @@ const RoomScreen: FC = () => {
   }, []);
 
   if (!room) return <LoadingScreen />;
-  if (room.status === 'COUNTDOWN') return <CountdownScreen room={room} />;
-  if (room.status === 'ARRANGING') return <LobbyScreen room={room} />;
-  if (room.status === 'FINISHED') return <FinishedScreen room={room} />;
-  if (room.status === 'CANCELLED') return <CancelledScreen room={room} />;
-  return <GameScreen room={room} />;
+  if (room.status === 'COUNTDOWN')
+    return <CountdownScreen position={position} room={room} />;
+  if (room.status === 'ARRANGING')
+    return <LobbyScreen position={position} room={room} />;
+  if (room.status === 'FINISHED')
+    return <FinishedScreen position={position} room={room} />;
+  if (room.status === 'CANCELLED')
+    return <CancelledScreen position={position} room={room} />;
+  return <GameScreen position={position} room={room} />;
 };
 
 export default RoomScreen;

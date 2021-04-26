@@ -3,7 +3,6 @@ import {StyleSheet, Vibration, View} from 'react-native';
 import MapBoxGL from '@react-native-mapbox-gl/maps';
 import {Coordinate, IPoint} from '../types';
 import {getBounds} from '../utils';
-import {usePosition} from '../../../hooks/usePosition';
 import {SocketContext} from '../../../socket/context';
 import {getUniqueId} from 'react-native-device-info';
 import subscribeToEvents from '../../../socket/subscribeToEvents';
@@ -15,6 +14,7 @@ import Score from '../components/Score';
 import HomeIndicator from '../components/HomeIndicator';
 import Marker from '../../../components/Marker';
 import {MAPBOX_ACCESS_TOKEN} from 'react-native-dotenv';
+import {GeolocationResponse} from '@react-native-community/geolocation';
 
 const coordinateToString = ([lat, long]: Coordinate) => `${lat};${long}`;
 const translateEventMessage = (
@@ -33,6 +33,7 @@ MapBoxGL.setAccessToken(MAPBOX_ACCESS_TOKEN);
 
 interface IGameScreenProps {
   room: any;
+  position: GeolocationResponse;
 }
 
 const styles = StyleSheet.create({
@@ -56,7 +57,6 @@ const styles = StyleSheet.create({
 const GameScreen: FC<IGameScreenProps> = props => {
   const theme = useTheme();
   const socket = useContext(SocketContext);
-  const position = usePosition({distanceFilter: 5, enableHighAccuracy: true});
   const player = props.room.players.find(
     (player: any) => player._id === getUniqueId(),
   );
@@ -86,7 +86,7 @@ const GameScreen: FC<IGameScreenProps> = props => {
   useEffect(() => Vibration.vibrate(vibrationDurations.long), []);
 
   useEffect(() => {
-    const {longitude, latitude} = position.coords;
+    const {longitude, latitude} = props.position.coords;
     if (longitude === 0 && latitude === 0) return;
     socket!.emit(
       'user:updatePosition',
@@ -97,7 +97,7 @@ const GameScreen: FC<IGameScreenProps> = props => {
       },
       () => {},
     );
-  }, [position]);
+  }, [props.position]);
 
   return (
     <View style={styles.container}>

@@ -7,6 +7,7 @@ import {usePosition} from '../../hooks/usePosition';
 import LoadingScreen from '../Room/screens/LoadingScreen';
 import Marker from '../../components/Marker';
 import {getSpacing} from '../../theme/utils';
+import {GeolocationResponse} from '@react-native-community/geolocation';
 
 const styles = StyleSheet.create({
   container: {
@@ -27,6 +28,7 @@ const CreateMapScreen: FC = () => {
   const navigation = useNavigation();
   // TODO: Use proper typing
   const state = (route.params! as any).state;
+  const position = (route.params! as any).position as GeolocationResponse;
   const [map, setMap] = useState(state.get());
 
   const onPressMap = (context: any) => {
@@ -54,7 +56,14 @@ const CreateMapScreen: FC = () => {
         style={{flex: 1}}
         pitchEnabled={false}
         rotateEnabled={false}>
-        <MapBoxGL.Camera animationDuration={0} />
+        <MapBoxGL.Camera
+          centerCoordinate={[
+            position.coords.longitude,
+            position.coords.latitude,
+          ]}
+          zoomLevel={11}
+          animationDuration={0}
+        />
         <MapBoxGL.UserLocation />
 
         {map.map((point: any) => {

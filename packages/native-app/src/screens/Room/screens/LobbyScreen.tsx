@@ -6,7 +6,6 @@ import {Text, Slider, useTheme} from 'react-native-elements';
 import {Button} from 'react-native-elements';
 import {SocketContext} from '../../../socket/context';
 import {getSpacing} from '../../../theme/utils';
-import {usePosition} from '../../../hooks/usePosition';
 import GeoLocation, {
   GeolocationError,
   GeolocationResponse,
@@ -14,6 +13,7 @@ import GeoLocation, {
 
 interface ILobbyScreenProps {
   room: any;
+  position: GeolocationResponse;
 }
 
 const styles = StyleSheet.create({
@@ -73,9 +73,9 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
   const isHost = userId === roomHost._id;
   const [settings, setSettings] = useState({duration: 30, radius: 1500});
   const theme = useTheme();
-  const position = usePosition({distanceFilter: 5, enableHighAccuracy: true});
   const hasAccuratePositon =
-    position.coords.latitude !== 0 && position.coords.longitude !== 0;
+    props.position.coords.latitude !== 0 &&
+    props.position.coords.longitude !== 0;
 
   const onPressInvite = () => {
     navigation.navigate('ShowQR', {data: props.room._id, title: 'Invite'});
@@ -93,7 +93,10 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
         roomId: props.room._id,
         duration: 1000 * 60 * settings.duration,
         radius: settings.radius,
-        hostLocation: [position.coords.longitude, position.coords.latitude],
+        hostLocation: [
+          props.position.coords.longitude,
+          props.position.coords.latitude,
+        ],
         map: customMap,
       },
       () => {},
@@ -103,6 +106,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
   const onPressCreateCustomMap = () => {
     return navigation.navigate('CreateMap', {
       state: {set: setCustomMap, get: () => customMap},
+      position: props.position,
     });
   };
 
@@ -183,6 +187,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
               containerStyle={styles.createMapButton}
               type="outline"
               title={hasCustomMap ? 'Edit Custom Map' : 'Create Custom Map'}
+              loading={!hasAccuratePositon}
             />
             {hasCustomMap && (
               <Button

@@ -1,3 +1,4 @@
+import {GeolocationResponse} from '@react-native-community/geolocation';
 import {StackActions, useNavigation} from '@react-navigation/core';
 import React, {FC, useEffect} from 'react';
 import {StyleSheet, Vibration, View} from 'react-native';
@@ -10,6 +11,7 @@ import {IPoint} from '../types';
 
 interface ILobbyScreenProps {
   room: any;
+  position: GeolocationResponse;
 }
 
 const styles = StyleSheet.create({

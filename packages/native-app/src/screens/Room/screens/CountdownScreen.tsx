@@ -3,9 +3,11 @@ import {Text} from 'react-native-elements';
 import {differenceInSeconds} from 'date-fns';
 import {StyleSheet, View} from 'react-native';
 import useInterval from '@use-it/interval';
+import {GeolocationResponse} from '@react-native-community/geolocation';
 
 interface ICountdownScreenProps {
   room: any;
+  position: GeolocationResponse;
 }
 
 const styles = StyleSheet.create({
