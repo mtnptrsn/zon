@@ -10,6 +10,7 @@ import {IPoint} from '../../types';
 
 interface ILobbyScreenProps {
   room: any;
+  onPressLeave: () => void;
 }
 
 const styles = StyleSheet.create({
@@ -42,6 +43,9 @@ const styles = StyleSheet.create({
   },
   playersTitle: {
     marginTop: getSpacing(1),
+  },
+  leaveButton: {
+    marginTop: getSpacing(2),
   },
 });
 
@@ -87,6 +91,13 @@ const StatsScreen: FC<ILobbyScreenProps> = props => {
         Leaderboard
       </Text>
       {renderPlayers()}
+
+      <Button
+        onPress={props.onPressLeave}
+        containerStyle={styles.leaveButton}
+        type="outline"
+        title="Leave"
+      />
     </View>
   );
 };
