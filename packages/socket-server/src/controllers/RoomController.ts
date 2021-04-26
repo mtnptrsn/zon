@@ -4,6 +4,7 @@ import { getDistance } from "geolib";
 import { getRandomPlayerColor } from "../utils/color";
 import { add } from "date-fns";
 import { generateMap } from "../utils/map";
+import { gameSettings } from "../config/game";
 
 export namespace RoomController {
   export interface ICreate {
@@ -160,9 +161,16 @@ export class RoomController {
           lng: room.map.start.location.coordinates[0],
           lat: room.map.start.location.coordinates[1],
         }
-      ) < 30;
+      ) < gameSettings.home.hitbox;
     if (playerIsWithinHome !== player.isWithinHome) {
       room.players[playerIndex].isWithinHome = playerIsWithinHome;
+
+      if (playerIsWithinHome)
+        event = {
+          message: "{player} just arrived back home.",
+          player,
+        };
+
       didUpdate = true;
     }
     room.map.points.forEach((point: any, index: number) => {
@@ -172,8 +180,8 @@ export class RoomController {
         { lng: longitude, lat: latitude },
         { lng: data.coordinate[0], lat: data.coordinate[1] }
       );
-      const hitbox = 10;
-      const pointCollected = distance < hitbox && !Boolean(collectedBy);
+      const pointCollected =
+        distance < gameSettings.point.hitbox && !Boolean(collectedBy);
       if (!pointCollected) return;
       didUpdate = true;
       event = {
