@@ -4,11 +4,11 @@ import MapBoxGL from '@react-native-mapbox-gl/maps';
 import GeoLocation, {
   GeolocationResponse,
 } from '@react-native-community/geolocation';
-import {getDistance, getCenter, getBounds} from 'geolib';
+import {getDistance} from 'geolib';
 import {GeolibInputCoordinates} from 'geolib/es/types';
 import Sound from 'react-native-sound';
 import {GlobalStateContext} from '../contexts';
-import {useNavigation, useRoute} from '@react-navigation/native';
+import {useRoute} from '@react-navigation/native';
 
 const hitBox = 10;
 const dingSound = new Sound('ding.mp3', Sound.MAIN_BUNDLE);

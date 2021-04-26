@@ -57,11 +57,13 @@ const CreateMapScreen: FC = () => {
         pitchEnabled={false}
         rotateEnabled={false}>
         <MapBoxGL.Camera
-          centerCoordinate={[
-            position.coords.longitude,
-            position.coords.latitude,
-          ]}
-          zoomLevel={11}
+          defaultSettings={{
+            centerCoordinate: [
+              position.coords.longitude,
+              position.coords.latitude,
+            ],
+            zoomLevel: 14,
+          }}
           animationDuration={0}
         />
         <MapBoxGL.UserLocation />

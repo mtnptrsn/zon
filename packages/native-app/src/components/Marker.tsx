@@ -21,6 +21,7 @@ const styles = StyleSheet.create({
 const Marker: FC<IMarkerProps> = props => {
   return (
     <View
+      pointerEvents={props.onPress ? 'auto' : 'none'}
       onTouchStart={props.onPress}
       style={[styles.marker, {backgroundColor: props.color}]}
     />

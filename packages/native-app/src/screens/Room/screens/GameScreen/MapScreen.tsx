@@ -2,14 +2,12 @@ import React, {FC} from 'react';
 import {StyleSheet, View} from 'react-native';
 import MapBoxGL from '@react-native-mapbox-gl/maps';
 import {Coordinate, IPoint} from '../../types';
-import {getBounds} from '../../utils';
 import {useTheme} from 'react-native-elements';
 import TimeLeft from '../../components/TimeLeft';
 import Score from '../../components/Score';
 import HomeIndicator from '../../components/HomeIndicator';
 import Marker from '../../../../components/Marker';
 import {GeolocationResponse} from '@react-native-community/geolocation';
-import {MAPBOX_ACCESS_TOKEN} from 'react-native-dotenv';
 
 interface IMapScreenProps {
   room: any;
@@ -55,12 +53,11 @@ const MapScreen: FC<IMapScreenProps> = props => {
         pitchEnabled={false}
         rotateEnabled={false}>
         <MapBoxGL.Camera
-          bounds={getBounds(
-            props.room.map.points.map(
-              (point: IPoint) => point.location.coordinates,
-            ),
-            50,
-          )}
+          defaultSettings={{
+            centerCoordinate: props.room.map.start.location.coordinates,
+            zoomLevel: 14,
+          }}
+          zoomLevel={14}
           animationDuration={0}
         />
 
