@@ -183,6 +183,7 @@ export class RoomController {
       room.map.points[index].collectedBy = player;
     });
     await room.save();
+    if (event) io.emit(`room:${room._id}:onEvent`, event);
     if (didUpdate) io.emit(`room:${room._id}:onUpdate`, room);
     callback(room);
   };
