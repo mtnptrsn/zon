@@ -66,7 +66,8 @@ export class RoomController {
   static join: IController<RoomController.IJoin> = async (
     data,
     callback,
-    socket
+    socket,
+    io
   ) => {
     const room = await RoomModel.findById(data.roomId);
     const takenColors = room.players.map((player: any) => player.color);
@@ -81,7 +82,7 @@ export class RoomController {
       },
     ];
     await room.save();
-    socket.emit(`room:${room._id}:onUpdate`, room);
+    io.emit(`room:${room._id}:onUpdate`, room);
     callback?.(room);
   };
 
