@@ -10,18 +10,17 @@ import ShowQRScreen from './src/screens/ShowQR/ShowQRScreen';
 import Toast from 'react-native-toast-message';
 import LoadingScreen from './src/screens/Room/screens/LoadingScreen';
 import ConnectionWarning from './src/components/ConnectionWarning';
-import GeoLocation from '@react-native-community/geolocation';
 import CreateMapScreen from './src/screens/CreateMapScreen/CreateMapScreen';
+import {SERVER_URL} from 'react-native-dotenv';
 
 const Stack = createStackNavigator();
 
 const App: FC = () => {
+  console.log(SERVER_URL);
   const [socket, setSocket] = useState<null | Socket>(null);
   const [isConnected, setIsConnected] = useState(false);
   useEffect(() => {
-    // GeoLocation.requestAuthorization();
-    // TODO: Use environment variable for this
-    const socket = io('https://4315f00a0bea.ngrok.io');
+    const socket = io(SERVER_URL);
     setSocket(socket);
     socket.on('connect', () => setIsConnected(true));
     socket.on('disconnect', () => setIsConnected(false));

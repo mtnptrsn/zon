@@ -14,6 +14,7 @@ import TimeLeft from '../components/TimeLeft';
 import Score from '../components/Score';
 import HomeIndicator from '../components/HomeIndicator';
 import Marker from '../../../components/Marker';
+import {MAPBOX_ACCESS_TOKEN} from 'react-native-dotenv';
 
 const coordinateToString = ([lat, long]: Coordinate) => `${lat};${long}`;
 const translateEventMessage = (
@@ -28,9 +29,7 @@ const translateEventMessage = (
 };
 
 // TODO: Store this access token in env file
-MapBoxGL.setAccessToken(
-  'pk.eyJ1IjoibXRucHRyc24iLCJhIjoiY2tuN3JkdmNuMGFyYjJ1bXFsZHFvZnZyaiJ9._8xfeiMfcT5cTsfo-QY94w',
-);
+MapBoxGL.setAccessToken(MAPBOX_ACCESS_TOKEN);
 
 interface IGameScreenProps {
   room: any;

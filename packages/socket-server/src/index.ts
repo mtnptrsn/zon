@@ -4,6 +4,7 @@ import { routes } from "./routes";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import { RoomModel } from "./models/RoomModel";
 import { ticker } from "./ticker";
+import dotenv from "dotenv";
 
 const port = Number(process.env.PORT) || 3000;
 
@@ -35,6 +36,7 @@ const initiateTicker = (io: Server<DefaultEventsMap, DefaultEventsMap>) => {
 };
 
 const main = async () => {
+  dotenv.config();
   await connectToMongoDB();
   const io = initiateSocketServer();
   initiateTicker(io);
