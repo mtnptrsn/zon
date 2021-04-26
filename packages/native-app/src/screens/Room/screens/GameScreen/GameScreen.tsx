@@ -101,17 +101,17 @@ const GameScreen: FC<IGameScreenProps> = props => {
     navigation.dispatch(StackActions.popToTop());
   };
 
-  const renderActiveScreen = () => {
-    if (activeScreen === 1)
-      return <StatsScreen onPressLeave={onPressLeave} room={props.room} />;
-    return (
-      <MapScreen room={props.room} player={player} position={props.position} />
-    );
-  };
+  // const renderActiveScreen = () => {
+  //   return (
+  //     <>
+
+  //   );
+  // };
 
   return (
     <View style={styles.container}>
-      {renderActiveScreen()}
+      <MapScreen room={props.room} player={player} position={props.position} />
+      {activeScreen === 1 && <StatsScreen room={props.room} />}
       <ButtonGroup
         containerStyle={styles.navigation}
         onPress={setActiveScreen}
