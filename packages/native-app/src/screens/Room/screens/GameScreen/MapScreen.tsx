@@ -35,7 +35,6 @@ const styles = StyleSheet.create({
   },
 });
 
-MapBoxGL.setAccessToken(MAPBOX_ACCESS_TOKEN);
 const coordinateToString = ([lat, long]: Coordinate) => `${lat};${long}`;
 
 const MapScreen: FC<IMapScreenProps> = props => {

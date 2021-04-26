@@ -11,8 +11,10 @@ import Toast from 'react-native-toast-message';
 import LoadingScreen from './src/screens/Room/screens/LoadingScreen';
 import ConnectionWarning from './src/components/ConnectionWarning';
 import CreateMapScreen from './src/screens/CreateMapScreen/CreateMapScreen';
-import {SERVER_URL} from 'react-native-dotenv';
+import {MAPBOX_ACCESS_TOKEN, SERVER_URL} from 'react-native-dotenv';
+import MapboxGL from '@react-native-mapbox-gl/maps';
 
+MapboxGL.setAccessToken(MAPBOX_ACCESS_TOKEN);
 const Stack = createStackNavigator();
 
 const App: FC = () => {
