@@ -4,6 +4,7 @@ import { getDistance } from "geolib";
 import { getRandomPlayerColor } from "../utils/color";
 import { add } from "date-fns";
 import { generateMap } from "../utils/map";
+
 export namespace RoomController {
   export interface ICreate {
     player: {
@@ -18,14 +19,8 @@ export namespace RoomController {
       name: string;
     };
   }
-  export interface ISubscribe {
-    roomId: string;
-  }
 
   export interface IGet {
-    roomId: string;
-  }
-  export interface IUnSubscribe {
     roomId: string;
   }
   export interface ILeave {
@@ -85,24 +80,8 @@ export class RoomController {
       },
     ];
     await room.save();
-    socket.to(`room:${room._id}`).emit("update:room", room);
+    socket.emit(`room:${room._id}:onUpdate`, room);
     callback?.(room);
-  };
-
-  static subscribe: IController<RoomController.ISubscribe> = async (
-    data,
-    _,
-    socket
-  ) => {
-    socket.join(`room:${data.roomId}`);
-  };
-
-  static unsubscribe: IController<RoomController.IUnSubscribe> = async (
-    data,
-    _,
-    socket
-  ) => {
-    socket.leave(`room:${data.roomId}`);
   };
 
   static leave: IController<RoomController.ILeave> = async (
@@ -154,7 +133,7 @@ export class RoomController {
       },
     };
     await room.save();
-    io.to(`room:${room._id}`).emit("update:room", room);
+    io.emit(`room:${room._id}:onUpdate`, room);
     callback?.(room);
   };
 
@@ -204,24 +183,7 @@ export class RoomController {
       room.map.points[index].collectedBy = player;
     });
     await room.save();
-    if (didUpdate) io.to(`room:${room._id}`).emit("update:room", room);
-    if (event) io.to(`room:${room._id}:events`).emit("update:events", event);
+    if (didUpdate) io.emit(`room:${room._id}:onUpdate`, room);
     callback(room);
-  };
-
-  static subscribeToEvents: IController<RoomController.IPositionUpdate> = async (
-    data,
-    _,
-    socket
-  ) => {
-    socket.join(`room:${data.roomId}:events`);
-  };
-
-  static unsubscribeFromEvents: IController<RoomController.IPositionUpdate> = async (
-    data,
-    _,
-    socket
-  ) => {
-    socket.leave(`room:${data.roomId}:events`);
   };
 }

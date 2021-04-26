@@ -88,7 +88,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
       return Alert.alert('Error', `Couldn't get your location.`);
 
     socket!.emit(
-      'start:room',
+      'room:update:start',
       {
         roomId: props.room._id,
         duration: 1000 * 60 * settings.duration,

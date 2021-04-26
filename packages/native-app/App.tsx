@@ -16,7 +16,6 @@ import {SERVER_URL} from 'react-native-dotenv';
 const Stack = createStackNavigator();
 
 const App: FC = () => {
-  console.log(SERVER_URL);
   const [socket, setSocket] = useState<null | Socket>(null);
   const [isConnected, setIsConnected] = useState(false);
   useEffect(() => {

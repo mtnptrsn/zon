@@ -28,7 +28,7 @@ const IndexScreen: FC = () => {
   const [name, setName] = useState('');
   const onReadQR = (data: string) => {
     socket!.emit(
-      'join:room',
+      'room:join',
       {roomId: data, player: {id: DeviceInfo.getUniqueId(), name: name}},
       () => {
         navigation.navigate('Room', {roomId: data});
@@ -43,7 +43,7 @@ const IndexScreen: FC = () => {
     if (!name) return alert('You must enter a name to continue.');
 
     socket!.emit(
-      'create:room',
+      'room:create',
       {
         player: {id: DeviceInfo.getUniqueId(), name: name},
       } as RoomController.ICreate,

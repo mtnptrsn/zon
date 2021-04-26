@@ -1,18 +1,17 @@
 import { Server } from "socket.io";
 import { RoomModel } from "./models/RoomModel";
-import { emitRoomUpdate, emitEvent } from "./utils/socket";
-import { differenceInMilliseconds, differenceInSeconds } from "date-fns";
+import { differenceInMilliseconds } from "date-fns";
 
 const onFinish = async (io: Server, room: any) => {
   room.status = "FINISHED";
   await room.save();
-  return emitRoomUpdate(io, room);
+  return io.emit(`room:${room._id}:onUpdate`, room);
 };
 
 const onStart = async (io: Server, room: any) => {
   room.status = "PLAYING";
   await room.save();
-  return emitRoomUpdate(io, room);
+  return io.emit(`room:${room._id}:onUpdate`, room);
 };
 
 export const ticker = async (io: Server) => {

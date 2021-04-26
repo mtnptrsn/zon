@@ -9,12 +9,10 @@ const subscribeToEvents = (
   const socket = useContext(SocketContext);
 
   useEffect(() => {
-    socket!.emit('subscribe:events', {roomId}, () => {});
-    socket!.on('update:events', onNewEvent);
+    socket!.on(`room:${roomId}:onEvent`, onNewEvent);
 
     return () => {
-      socket!.emit('unsubscribe:events', {roomId}, () => {});
-      socket!.off('update:events', onNewEvent);
+      socket!.off(`room:${roomId}:onEvent`, onNewEvent);
     };
   }, []);
 

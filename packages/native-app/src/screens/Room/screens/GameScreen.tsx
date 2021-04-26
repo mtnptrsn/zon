@@ -89,7 +89,7 @@ const GameScreen: FC<IGameScreenProps> = props => {
     const {longitude, latitude} = position.coords;
     if (longitude === 0 && latitude === 0) return;
     socket!.emit(
-      'update:position',
+      'user:updatePosition',
       {
         roomId: props.room._id,
         playerId: getUniqueId(),
