@@ -113,8 +113,10 @@ export class RoomController {
   ) => {
     const room = await RoomModel.findById(data.roomId);
     room.status = "COUNTDOWN";
-    room.finishedAt = add(new Date(), { seconds: data.duration / 1000 + 10 });
-    room.startedAt = add(new Date(), { seconds: 10 });
+    room.finishedAt = add(new Date(), {
+      seconds: data.duration / 1000 + gameSettings.countdown,
+    });
+    room.startedAt = add(new Date(), { seconds: gameSettings.countdown });
     const map = (Boolean(data.map.length)
       ? data.map
       : generateMap(data.hostLocation, data.radius)
