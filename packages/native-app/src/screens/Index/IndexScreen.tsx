@@ -7,6 +7,8 @@ import {getSpacing} from '../../theme/utils';
 import {RoomController} from 'socket-server/src/controllers/RoomController';
 import DeviceInfo from 'react-native-device-info';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {Socket} from 'socket.io-client';
+import {DefaultEventsMap} from 'socket.io-client/build/typed-events';
 
 const styles = StyleSheet.create({
   container: {
@@ -23,24 +25,27 @@ const styles = StyleSheet.create({
   },
 });
 
+const findOngoingRoom = async (
+  socket: Socket<DefaultEventsMap, DefaultEventsMap>,
+) => {
+  const roomId = await AsyncStorage.getItem('roomId');
+  if (!roomId) return null;
+  const room: any = await new Promise((resolve, reject) => {
+    socket!.emit('room:get', {roomId}, (room: any) => {
+      resolve(room);
+    });
+  });
+  if (!['PLAYING', 'COUNTDOWN'].includes(room?.status)) return null;
+  return room;
+};
+
 const IndexScreen: FC = () => {
   const navigation = useNavigation();
   const socket = useContext(SocketContext);
   const [name, setName] = useState('');
-  const findOngoingRoom = async () => {
-    const roomId = await AsyncStorage.getItem('roomId');
-    if (!roomId) return null;
-    const room: any = await new Promise((resolve, reject) => {
-      socket!.emit('room:get', {roomId}, (room: any) => {
-        resolve(room);
-      });
-    });
-    if (!['PLAYING', 'COUNTDOWN'].includes(room?.status)) return null;
-    return room;
-  };
   useEffect(() => {
     (async () => {
-      const ongoingRoom = await findOngoingRoom();
+      const ongoingRoom = await findOngoingRoom(socket!);
       if (ongoingRoom)
         Alert.alert(
           'Still playing',
