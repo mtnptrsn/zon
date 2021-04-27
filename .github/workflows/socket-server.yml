@@ -34,4 +34,4 @@ jobs:
           script: |
             docker rm socket-server -f
             docker pull mtnptrsn/orient-socket-server
-            docker run --name socket-server -p 3000:3000 -e MONGO_URL=$MONGO_URL -e PORT=$PORT -d mtnptrsn/orient-socket-server
+            docker run --name socket-server -p 3000:3000 -e MONGO_URL=${{ secrets.MONGO_URL }} -e PORT=${{ secrets.SERVER_PORT }} -d mtnptrsn/orient-socket-server
