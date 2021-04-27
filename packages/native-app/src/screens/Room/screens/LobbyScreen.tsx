@@ -192,7 +192,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
               onPress={onPressCreateCustomMap}
               containerStyle={styles.createMapButton}
               type="outline"
-              title={hasCustomMap ? 'Edit Custom Map' : 'Create Custom Map'}
+              title={hasCustomMap ? 'Edit' : 'Create Custom Map'}
               loading={!hasAccuratePositon}
             />
             {hasCustomMap && (
