@@ -25,8 +25,6 @@ export const ticker = async (io: Server) => {
       finish: differenceInMilliseconds(room.finishedAt, new Date()),
     };
 
-    io.emit(`room:${room._id}:onEvent`, { message: "Test message" });
-
     if (timeUntil.start <= 0 && room.status === "COUNTDOWN")
       return onStart(io, room);
     if (timeUntil.finish <= 0) return onFinish(io, room);
