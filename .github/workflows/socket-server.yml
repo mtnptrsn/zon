@@ -23,3 +23,11 @@ jobs:
           context: packages/socket-server
           push: true
           tags: mtnptrsn/orient-socket-server:latest
+      - name: executing remote ssh commands using password
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          port: ${{ secrets.PORT }}
+          key: ${{ secrets.SSH_KEY }}
+          script: whoami
