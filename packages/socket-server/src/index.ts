@@ -21,6 +21,7 @@ const connectToMongoDB = async () => {
 const initiateSocketServer = () => {
   const io = new Server();
   io.on("connection", (socket: Socket) => {
+    console.log("Client connected!");
     routes(io, socket);
   });
   io.listen(port);
