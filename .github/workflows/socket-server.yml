@@ -11,19 +11,20 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       
-      #- name: Docker Login
-      #  uses: docker/login-action@v1.8.0
-      #  with:
-      #    username: ${{ secrets.DOCKERHUB_USERNAME }}
-      #    password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Docker Login
+        uses: docker/login-action@v1.8.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
           
-      #- name: Build and push
-      #  uses: docker/build-push-action@v2
-      #  with:
-      #    context: packages/socket-server
-      #    push: true
-      #    tags: mtnptrsn/orient-socket-server:latest
-      - name: executing remote ssh commands using password
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: packages/socket-server
+          push: true
+          tags: mtnptrsn/orient-socket-server:latest
+          
+      - name: Pull latest image from Docker Hub on EC2
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
@@ -31,5 +32,6 @@ jobs:
           port: ${{ secrets.PORT }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            touch github-actions-has-been-here.txt
-            touch github-actions-has-been-here-as-well.txt
+            docker stop socket-server
+            docker pull mtnptrsn/orient-socket-server
+            docker run --name socket-server -p 3000:3000 -e MONGO_URL=$MONGO_URL -e PORT=$PORT -d mtnptrsn/orient-socket-server
