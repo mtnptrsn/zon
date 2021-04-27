@@ -60,7 +60,7 @@ const App: FC = () => {
           </Stack.Navigator>
         </NavigationContainer>
       </SocketContext.Provider>
-      <Toast position="bottom" ref={Toast.setRef} />
+      <Toast ref={Toast.setRef} />
     </>
   );
 };
