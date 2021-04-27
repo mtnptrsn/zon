@@ -93,16 +93,15 @@ export class RoomController {
   static leave: IController<RoomController.ILeave> = async (
     data,
     _,
-    socket
+    socket,
+    io
   ) => {
     const room = await RoomModel.findById(data.roomId);
     const host = room.players.find((player: any) => player.isHost);
     const hostIsLeaving = host._id === data.userId;
-    if (hostIsLeaving) room.status = "CANCELLED";
+    if (hostIsLeaving && room.status === "ARRANGING") room.status = "FINISHED";
     await room.save();
-
-    // TODO: Also disconnected everyone else
-    socket.leave(`room:${data.roomId}`);
+    io.emit(`room:${room._id}:onUpdate`, room);
   };
 
   static get: IController<RoomController.IGet> = async (data, callback) => {
