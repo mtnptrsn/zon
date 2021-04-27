@@ -38,8 +38,8 @@ const coordinateToString = ([lat, long]: Coordinate) => `${lat};${long}`;
 const MapScreen: FC<IMapScreenProps> = props => {
   const theme = useTheme();
 
-  const score = props.room.map.points.reduce((acc: number, point: any) => {
-    if (point.collectedBy?._id === props.player._id) return acc + 1;
+  const score = props.room.map.points.reduce((acc: number, point: IPoint) => {
+    if (point.collectedBy?._id === props.player._id) return acc + point.weight;
     return acc;
   }, 0);
 
@@ -67,7 +67,10 @@ const MapScreen: FC<IMapScreenProps> = props => {
               id={coordinateToString(point.location.coordinates)}
               key={coordinateToString(point.location.coordinates)}
               coordinate={point.location.coordinates}>
-              <Marker color={point.collectedBy?.color || '#f44336'} />
+              <Marker
+                weight={point.weight}
+                color={point.collectedBy?.color || '#f44336'}
+              />
             </MapBoxGL.MarkerView>
           );
         })}

@@ -1,6 +1,6 @@
 import React, {FC, useContext, useEffect, useState} from 'react';
 import {Alert, StyleSheet, Vibration, View} from 'react-native';
-import {Coordinate} from '../../types';
+import {Coordinate, IPoint} from '../../types';
 import {SocketContext} from '../../../../socket/context';
 import {getUniqueId} from 'react-native-device-info';
 import subscribeToEvents from '../../../../socket/subscribeToEvents';
@@ -54,10 +54,6 @@ const GameScreen: FC<IGameScreenProps> = props => {
   const player = props.room.players.find(
     (player: any) => player._id === getUniqueId(),
   );
-  const score = props.room.map.points.reduce((acc: number, point: any) => {
-    if (point.collectedBy?._id === player._id) return acc + 1;
-    return acc;
-  }, 0);
 
   const onEvent = (event: any) => {
     const eventBelongsToCurrentPlayer = event.player?._id === getUniqueId();

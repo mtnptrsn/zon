@@ -40,6 +40,10 @@ const PointSchema: Schema = new Schema({
     type: PlayerSchema,
     defalt: null,
   },
+  weight: {
+    type: Number,
+    default: null,
+  },
 });
 
 const RoomSchema: Schema = new Schema(

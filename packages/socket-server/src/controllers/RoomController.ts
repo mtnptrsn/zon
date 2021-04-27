@@ -123,18 +123,44 @@ export class RoomController {
     room.startedAt = add(new Date(), {
       seconds: gameSettings.durations.countdown,
     });
-    const map = (Boolean(data.map.length)
+    const map = Boolean(data.map.length)
       ? data.map
-      : generateMap(data.hostLocation, data.radius)
-    ).map((coordinate) => {
+      : generateMap(data.hostLocation, data.radius);
+
+    const longestDistancePoint = map.reduce(
+      (acc: number, coordinate: [number, number]) => {
+        const distance = getDistance(
+          { longitude: coordinate[0], latitude: coordinate[1] },
+          { longitude: data.hostLocation[0], latitude: data.hostLocation[1] }
+        );
+        if (distance > acc) return distance;
+        return acc;
+      },
+      0
+    );
+
+    const dbMap = map.map((coordinate) => {
+      const distance = getDistance(
+        { longitude: data.hostLocation[0], latitude: data.hostLocation[1] },
+        { longitude: coordinate[0], latitude: coordinate[1] }
+      );
+
+      // TODO: Refactor
+      // TODO: Improve this
+      const max = 3;
+      const dp = distance / longestDistancePoint;
+      const randAdd = Math.pow(Math.random(), 2) * dp * max;
+      const weight = Math.max(1, Math.floor(dp * max + randAdd));
+
       return {
         location: {
           type: "Point",
           coordinates: coordinate,
         },
+        weight,
       };
     });
-    room.map.points = map;
+    room.map.points = dbMap;
     room.map.start = {
       location: {
         type: "Point",
@@ -190,13 +216,11 @@ export class RoomController {
       ) < gameSettings.home.hitbox;
     if (playerIsWithinHome !== player.isWithinHome) {
       room.players[playerIndex].isWithinHome = playerIsWithinHome;
-
       if (playerIsWithinHome)
         event = {
           message: "{player} just arrived back home.",
           player,
         };
-
       didUpdate = true;
     }
     room.map.points.forEach((point: any, index: number) => {

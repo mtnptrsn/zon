@@ -6,7 +6,7 @@ export const gameSettings = {
     hitbox: 50,
   },
   durations: {
-    countdown: 10,
-    promptEndGame: 10,
+    countdown: 5,
+    promptEndGame: 5,
   },
 };
