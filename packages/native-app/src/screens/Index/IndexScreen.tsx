@@ -1,11 +1,12 @@
 import {useNavigation} from '@react-navigation/core';
-import React, {FC, useContext, useState} from 'react';
-import {View, StyleSheet} from 'react-native';
+import React, {FC, useContext, useEffect, useState} from 'react';
+import {View, StyleSheet, Alert} from 'react-native';
 import {Text, Button, Input} from 'react-native-elements';
 import {SocketContext} from '../../socket/context';
 import {getSpacing} from '../../theme/utils';
 import {RoomController} from 'socket-server/src/controllers/RoomController';
 import DeviceInfo from 'react-native-device-info';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const styles = StyleSheet.create({
   container: {
@@ -26,21 +27,52 @@ const IndexScreen: FC = () => {
   const navigation = useNavigation();
   const socket = useContext(SocketContext);
   const [name, setName] = useState('');
+  const findOngoingRoom = async () => {
+    const roomId = await AsyncStorage.getItem('roomId');
+    if (!roomId) return null;
+    const room: any = await new Promise((resolve, reject) => {
+      socket!.emit('room:get', {roomId}, (room: any) => {
+        resolve(room);
+      });
+    });
+    if (!['PLAYING', 'COUNTDOWN'].includes(room?.status)) return null;
+    return room;
+  };
+  useEffect(() => {
+    (async () => {
+      const ongoingRoom = await findOngoingRoom();
+      if (ongoingRoom)
+        Alert.alert(
+          'Still playing',
+          'You are still in a game that is ongoing. Do you want to rejoin?',
+          [
+            {text: 'No', onPress: () => {}},
+            {
+              text: 'Yes',
+              onPress: () => {
+                navigation.navigate('Room', {roomId: ongoingRoom._id});
+              },
+            },
+          ],
+        );
+    })();
+  }, []);
   const onReadQR = (data: string) => {
     socket!.emit(
       'room:join',
       {roomId: data, player: {id: DeviceInfo.getUniqueId(), name: name}},
       () => {
+        AsyncStorage.setItem('roomId', data);
         navigation.navigate('Room', {roomId: data});
       },
     );
   };
   const onPressJoinGame = () => {
-    if (!name) return alert('You must enter a name to continue.');
+    if (!name) return Alert.alert('You must enter a name to continue.');
     navigation.navigate('ScanQR', {onRead: onReadQR});
   };
   const onPressCreateGame = () => {
-    if (!name) return alert('You must enter a name to continue.');
+    if (!name) return Alert.alert('You must enter a name to continue.');
 
     socket!.emit(
       'room:create',
@@ -48,6 +80,7 @@ const IndexScreen: FC = () => {
         player: {id: DeviceInfo.getUniqueId(), name: name},
       } as RoomController.ICreate,
       (room: any) => {
+        AsyncStorage.setItem('roomId', room._id);
         navigation.navigate('Room', {roomId: room._id});
       },
     );
