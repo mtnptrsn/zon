@@ -30,4 +30,4 @@ jobs:
           username: ${{ secrets.USERNAME }}
           port: ${{ secrets.PORT }}
           key: ${{ secrets.SSH_KEY }}
-          script: whoami
+          script: touch github-actions-has-been-here.txt
