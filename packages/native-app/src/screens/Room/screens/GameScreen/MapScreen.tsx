@@ -20,10 +20,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   homeMarker: {
-    opacity: 0.5,
+    opacity: 0.75,
     borderRadius: 3,
-    width: 30,
-    height: 30,
     borderWidth: 3,
     borderStyle: 'solid',
     borderColor: 'white',
@@ -33,21 +31,40 @@ const styles = StyleSheet.create({
   },
 });
 
+const getMarkerSize = (
+  latitude: number,
+  zoom: number,
+  hitbox: number,
+  minSize: number,
+) => {
+  const mpp =
+    (78271.5169648 * Math.cos((latitude * Math.PI) / 180)) / Math.pow(2, zoom);
+  const ppm = Math.pow(mpp, -1);
+  const size = Math.max(minSize, ppm * hitbox * 2);
+  return size;
+};
+
 const coordinateToString = ([lat, long]: Coordinate) => `${lat};${long}`;
 
 const MapScreen: FC<IMapScreenProps> = props => {
   const theme = useTheme();
   const mapRef = useRef(null);
   const [zoom, setZoom] = useState(14);
-
-  const onTouchEndMap = () => {
-    (mapRef.current as any).getZoom().then(setZoom);
-  };
+  const homeMarkerSize = getMarkerSize(
+    props.room.map.start.location.coordinates[1],
+    zoom,
+    60,
+    20,
+  );
 
   const score = props.room.map.points.reduce((acc: number, point: IPoint) => {
     if (point.collectedBy?._id === props.player._id) return acc + point.weight;
     return acc;
   }, 0);
+
+  const onTouchEndMap = () => {
+    (mapRef.current as any).getZoom().then(setZoom);
+  };
 
   return (
     <View style={styles.container}>
@@ -71,23 +88,18 @@ const MapScreen: FC<IMapScreenProps> = props => {
         />
 
         {props.room.map.points.map((point: IPoint) => {
-          const mpp =
-            (78271.5169648 *
-              Math.cos((point.location.coordinates[1] * Math.PI) / 180)) /
-            Math.pow(2, zoom);
-          const ppm = Math.pow(mpp, -1);
-          // TODO: Refactor this
-          const hitbox = 60;
-          const minSize = 20;
-          const size = Math.max(minSize, ppm * hitbox * 2);
-
           return (
             <MapBoxGL.MarkerView
               id={coordinateToString(point.location.coordinates)}
               key={coordinateToString(point.location.coordinates)}
               coordinate={point.location.coordinates}>
               <Marker
-                size={size}
+                size={getMarkerSize(
+                  point.location.coordinates[1],
+                  zoom,
+                  60,
+                  20,
+                )}
                 weight={point.weight}
                 color={point.collectedBy?.color || 'rgba(244, 67, 54, .75)'}
               />
@@ -101,7 +113,11 @@ const MapScreen: FC<IMapScreenProps> = props => {
           <View
             style={[
               styles.homeMarker,
-              {backgroundColor: theme.theme.colors!.primary},
+              {
+                width: homeMarkerSize,
+                height: homeMarkerSize,
+                backgroundColor: theme.theme.colors!.primary,
+              },
             ]}
           />
         </MapBoxGL.MarkerView>
