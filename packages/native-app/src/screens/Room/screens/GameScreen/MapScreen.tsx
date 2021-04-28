@@ -1,4 +1,4 @@
-import React, {FC} from 'react';
+import React, {FC, useRef, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import MapBoxGL from '@react-native-mapbox-gl/maps';
 import {Coordinate, IPoint} from '../../types';
@@ -37,6 +37,12 @@ const coordinateToString = ([lat, long]: Coordinate) => `${lat};${long}`;
 
 const MapScreen: FC<IMapScreenProps> = props => {
   const theme = useTheme();
+  const mapRef = useRef(null);
+  const [zoom, setZoom] = useState(14);
+
+  const onTouchEndMap = () => {
+    (mapRef.current as any).getZoom().then(setZoom);
+  };
 
   const score = props.room.map.points.reduce((acc: number, point: IPoint) => {
     if (point.collectedBy?._id === props.player._id) return acc + point.weight;
@@ -49,6 +55,9 @@ const MapScreen: FC<IMapScreenProps> = props => {
         style={[styles.playerColorBar, {backgroundColor: props.player.color}]}
       />
       <MapBoxGL.MapView
+        onTouchEnd={onTouchEndMap}
+        ref={mapRef}
+        logoEnabled={false}
         style={{flex: 1}}
         pitchEnabled={false}
         rotateEnabled={false}>
@@ -62,14 +71,25 @@ const MapScreen: FC<IMapScreenProps> = props => {
         />
 
         {props.room.map.points.map((point: IPoint) => {
+          const mpp =
+            (78271.5169648 *
+              Math.cos((point.location.coordinates[1] * Math.PI) / 180)) /
+            Math.pow(2, zoom);
+          const ppm = Math.pow(mpp, -1);
+          // TODO: Refactor this
+          const hitboxRadius = 30;
+          const minSize = 20;
+          const size = Math.max(minSize, ppm * hitboxRadius * 2);
+
           return (
             <MapBoxGL.MarkerView
               id={coordinateToString(point.location.coordinates)}
               key={coordinateToString(point.location.coordinates)}
               coordinate={point.location.coordinates}>
               <Marker
+                size={size}
                 weight={point.weight}
-                color={point.collectedBy?.color || '#f44336'}
+                color={point.collectedBy?.color || 'rgba(244, 67, 54, .75)'}
               />
             </MapBoxGL.MarkerView>
           );

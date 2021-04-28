@@ -74,7 +74,11 @@ const CreateMapScreen: FC = () => {
               key={point.join()}
               id={point.join()}
               coordinate={point}>
-              <Marker onPress={() => onPressMarker(point)} color="#f44336" />
+              <Marker
+                size={24}
+                onPress={() => onPressMarker(point)}
+                color="#f44336"
+              />
             </MapBoxGL.MarkerView>
           );
         })}
