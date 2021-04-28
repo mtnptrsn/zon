@@ -1,9 +1,9 @@
 export const gameSettings = {
   point: {
-    hitbox: 30,
+    hitbox: 60,
   },
   home: {
-    hitbox: 50,
+    hitbox: 60,
   },
   durations: {
     countdown: 5,

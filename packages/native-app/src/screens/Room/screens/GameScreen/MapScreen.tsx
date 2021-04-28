@@ -77,9 +77,9 @@ const MapScreen: FC<IMapScreenProps> = props => {
             Math.pow(2, zoom);
           const ppm = Math.pow(mpp, -1);
           // TODO: Refactor this
-          const hitboxRadius = 30;
+          const hitbox = 60;
           const minSize = 20;
-          const size = Math.max(minSize, ppm * hitboxRadius * 2);
+          const size = Math.max(minSize, ppm * hitbox * 2);
 
           return (
             <MapBoxGL.MarkerView
