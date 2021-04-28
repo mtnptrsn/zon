@@ -38,10 +38,12 @@ const NotificationScore: FC<INotificationScoreProps> = props => {
   const [score, setScore] = useState(props.previous);
 
   useEffect(() => {
+    setScore(props.previous);
+
     setTimeout(() => {
       setScore(props.current);
-    }, 200);
-  }, []);
+    }, 50);
+  }, [props.current]);
 
   return (
     <View style={[styles.container]}>

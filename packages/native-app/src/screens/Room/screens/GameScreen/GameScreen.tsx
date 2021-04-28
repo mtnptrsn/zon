@@ -90,8 +90,10 @@ const GameScreen: FC<IGameScreenProps> = props => {
   }, [props.position]);
 
   const renderNotification = () => {
+    if (!event) return null;
+    const eventBelongsToCurrentPlayer = event.player._id == getUniqueId();
+
     if (event.type === 'score') {
-      const eventBelongsToCurrentPlayer = event.player._id == getUniqueId();
       const score = props.room.map.points.reduce(
         (acc: number, point: IPoint) => {
           if (point.collectedBy?._id === event.player._id)
@@ -101,17 +103,26 @@ const GameScreen: FC<IGameScreenProps> = props => {
         0,
       );
 
-      console.log(score);
-
       return (
         <NotificationScore
-          previous={0}
-          current={5}
+          previous={event.previousScore}
+          current={score}
           name={eventBelongsToCurrentPlayer ? 'You' : event.player.name}
           color={event.player.color}
         />
       );
     }
+
+    if (event.type === 'info-player')
+      return (
+        <NotificationInfo
+          message={translateEventMessage(
+            {player: eventBelongsToCurrentPlayer ? 'You' : event.player.name},
+            event.message,
+          )}
+        />
+      );
+
     return <NotificationInfo message={event.message} />;
   };
 

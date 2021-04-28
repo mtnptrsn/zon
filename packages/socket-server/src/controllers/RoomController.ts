@@ -207,6 +207,12 @@ export class RoomController {
       (player: any) => player._id === data.playerId
     );
     const player = room.players[playerIndex];
+
+    const previousScore = room.map.points.reduce((acc: number, point: any) => {
+      if (point.collectedBy?._id === player._id) return acc + point.weight;
+      return acc;
+    }, 0);
+
     const playerIsWithinHome =
       getDistance(
         { lng: data.coordinate[0], lat: data.coordinate[1] },
@@ -219,7 +225,8 @@ export class RoomController {
       room.players[playerIndex].isWithinHome = playerIsWithinHome;
       if (playerIsWithinHome)
         event = {
-          message: "{player} just arrived back home.",
+          message: `{player} just arrived back home.`,
+          type: "info-player",
           player,
         };
       didUpdate = true;
@@ -239,6 +246,7 @@ export class RoomController {
         message: `{player} just collected a point!`,
         player,
         type: "score",
+        previousScore,
       };
       room.map.points[index].collectedBy = player;
     });

@@ -27,7 +27,7 @@ const Notification: FC<INotificationProps> = props => {
   useEffect(() => {
     setTimeout(() => {
       setIsVisible(false);
-    }, 4000);
+    }, 6000);
   }, []);
 
   if (!isVisible) return null;
