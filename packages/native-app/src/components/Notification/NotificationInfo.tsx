@@ -22,11 +22,11 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0,0,0,.8)',
   },
   infoIconContainer: {
-    padding: getSpacing(1.25),
+    padding: getSpacing(0.8),
   },
   text: {
     fontSize: 18,
-    marginLeft: getSpacing(1.75),
+    marginLeft: getSpacing(1.5),
   },
 });
 
@@ -40,7 +40,7 @@ const NotificationInfo: FC<INotificationInfoProps> = props => {
           styles.infoIconContainer,
           {backgroundColor: theme.theme.colors!.primary},
         ]}>
-        <Feather color="white" size={35} name="info" />
+        <Feather color="white" size={30} name="info" />
       </View>
 
       <Text style={styles.text}>{props.message}</Text>

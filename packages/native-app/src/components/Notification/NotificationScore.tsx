@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
   },
   scoreContainer: {
     paddingHorizontal: getSpacing(1.75),
-    paddingVertical: getSpacing(1),
+    paddingVertical: getSpacing(0.75),
   },
   text: {
     fontSize: 20,
@@ -52,14 +52,14 @@ const NotificationScore: FC<INotificationScoreProps> = props => {
           animationDuration={2000}
           animateToNumber={score}
           fontStyle={{
-            fontSize: 30,
+            fontSize: 24,
             fontWeight: 'bold',
             color: 'white',
           }}
         />
       </View>
 
-      <Text style={styles.text}>{props.name} collected a point!</Text>
+      <Text style={styles.text}>{props.name} collected a point</Text>
     </View>
   );
 };

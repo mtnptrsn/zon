@@ -91,7 +91,7 @@ const GameScreen: FC<IGameScreenProps> = props => {
 
   const renderNotification = () => {
     if (!event) return null;
-    const eventBelongsToCurrentPlayer = event.player._id == getUniqueId();
+    const eventBelongsToCurrentPlayer = event?.player?._id == getUniqueId();
 
     if (event.type === 'score') {
       const score = props.room.map.points.reduce(

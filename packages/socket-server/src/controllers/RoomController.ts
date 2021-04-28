@@ -243,7 +243,6 @@ export class RoomController {
       if (!pointCollected) return;
       didUpdate = true;
       event = {
-        message: `{player} just collected a point!`,
         player,
         type: "score",
         previousScore,
