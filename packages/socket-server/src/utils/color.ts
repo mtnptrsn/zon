@@ -4,14 +4,13 @@ const getRandomNumber = (min: number, max: number) => {
 
 export const getRandomPlayerColor = (takenColors: string[]) => {
   const colors = [
-    "#A330C9", // dark magenta,
-    "#FF7C0A", // orange
-    "#AAD372", // green
-    "#F48CBA", // pink
-    "#FFFFFF", //white
-    "#FFF468", // yellow
-    "#8788EE", // purple
-    "#C69B6D", // tan
+    "#8e44ad", // wisteria
+    "#2c3e50", // midnight blue
+    "#f39c12", // orange
+    "#2ecc71", // green
+    "#1abc9c", // turqoise,
+    "#F7A3A2", // pink
+    "#825D27", // brown
   ];
 
   const availableColors = colors.filter(
