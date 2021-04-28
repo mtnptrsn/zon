@@ -7,7 +7,6 @@ import IndexScreen from './src/screens/Index/IndexScreen';
 import ScanQRScreen from './src/screens/ScanQR/ScanQRScreen';
 import RoomScreen from './src/screens/Room/RoomScreen';
 import ShowQRScreen from './src/screens/ShowQR/ShowQRScreen';
-import Toast from 'react-native-toast-message';
 import LoadingScreen from './src/screens/Room/screens/LoadingScreen';
 import ConnectionWarning from './src/components/ConnectionWarning';
 import CreateMapScreen from './src/screens/CreateMapScreen/CreateMapScreen';
@@ -60,7 +59,6 @@ const App: FC = () => {
           </Stack.Navigator>
         </NavigationContainer>
       </SocketContext.Provider>
-      <Toast ref={Toast.setRef} />
     </>
   );
 };

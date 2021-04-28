@@ -17,6 +17,9 @@ import {
   StackActions,
   useNavigation,
 } from '@react-navigation/native';
+import Notification from '../../../../components/Notification/Notification';
+import NotificationScore from '../../../../components/Notification/NotificationScore';
+import NotificationInfo from '../../../../components/Notification/NotificationInfo';
 
 const coordinateToString = ([lat, long]: Coordinate) => `${lat};${long}`;
 const translateEventMessage = (
@@ -48,6 +51,7 @@ const styles = StyleSheet.create({
 });
 
 const GameScreen: FC<IGameScreenProps> = props => {
+  const [event, setEvent] = useState<any>(null);
   const navigation = useNavigation();
   const [activeScreen, setActiveScreen] = useState(0);
   const socket = useContext(SocketContext);
@@ -61,17 +65,10 @@ const GameScreen: FC<IGameScreenProps> = props => {
       ? vibrationDurations.long
       : vibrationDurations.short;
     Vibration.vibrate(vibrateDuration);
-    Toast.show({
-      text2: translateEventMessage(
-        {
-          player: eventBelongsToCurrentPlayer
-            ? 'You'
-            : event.player?.name || '',
-        },
-        event.message,
-      ),
-      type: eventBelongsToCurrentPlayer ? 'success' : 'info',
-    });
+
+    // TODO: Create queue
+    setEvent(null);
+    setEvent(event);
   };
 
   subscribeToEvents(props.room._id, onEvent);
@@ -91,6 +88,32 @@ const GameScreen: FC<IGameScreenProps> = props => {
       () => {},
     );
   }, [props.position]);
+
+  const renderNotification = () => {
+    if (event.type === 'score') {
+      const eventBelongsToCurrentPlayer = event.player._id == getUniqueId();
+      const score = props.room.map.points.reduce(
+        (acc: number, point: IPoint) => {
+          if (point.collectedBy?._id === event.player._id)
+            return acc + point.weight;
+          return acc;
+        },
+        0,
+      );
+
+      console.log(score);
+
+      return (
+        <NotificationScore
+          previous={0}
+          current={5}
+          name={eventBelongsToCurrentPlayer ? 'You' : event.player.name}
+          color={event.player.color}
+        />
+      );
+    }
+    return <NotificationInfo message={event.message} />;
+  };
 
   const onPressLeave = () => {
     const leave = () => navigation.dispatch(StackActions.popToTop());
@@ -120,12 +143,17 @@ const GameScreen: FC<IGameScreenProps> = props => {
           room={props.room}
         />
       )}
+
       <ButtonGroup
         containerStyle={styles.navigation}
         onPress={setActiveScreen}
         selectedIndex={activeScreen}
         buttons={['Map', 'Stats']}
       />
+
+      {Boolean(event) && (
+        <Notification top={getSpacing(6)}>{renderNotification()}</Notification>
+      )}
     </View>
   );
 };

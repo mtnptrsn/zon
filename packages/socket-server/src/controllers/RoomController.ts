@@ -186,6 +186,7 @@ export class RoomController {
     io.emit(`room:${room._id}:onUpdate`, room);
     io.emit(`room:${room._id}:onEvent`, {
       message: `The host just ended the game. The game will end in ${gameSettings.durations.promptEndGame} seconds.`,
+      type: "info",
     });
     callback?.(room);
   };
@@ -237,6 +238,7 @@ export class RoomController {
       event = {
         message: `{player} just collected a point!`,
         player,
+        type: "score",
       };
       room.map.points[index].collectedBy = player;
     });
