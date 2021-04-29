@@ -13,6 +13,12 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import {getSpacing} from '../../theme/utils';
 import TimeLeft from '../Room/components/TimeLeft';
 
+const getPointColor = (point: IPoint, time: Date) => {
+  if (!point.collectedBy || new Date(point.collectedAt) > time)
+    return 'rgba(244, 67, 54, .75';
+  return point.collectedBy.color;
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -129,20 +135,14 @@ const ReplayScreen: FC = props => {
         })}
 
         {room.map.points.map((point: IPoint) => {
+          const color = getPointColor(point, time);
+
           return (
             <MapBoxGL.MarkerView
               id={coordinateToString(point.location.coordinates)}
               key={coordinateToString(point.location.coordinates)}
               coordinate={point.location.coordinates}>
-              <Marker
-                size={20}
-                weight={point.weight}
-                color={
-                  new Date(point.collectedAt) < time
-                    ? point.collectedBy?.color
-                    : 'rgba(244, 67, 54, .75)'
-                }
-              />
+              <Marker size={20} weight={point.weight} color={color} />
             </MapBoxGL.MarkerView>
           );
         })}

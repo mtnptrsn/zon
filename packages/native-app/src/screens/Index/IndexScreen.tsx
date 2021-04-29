@@ -44,6 +44,14 @@ const IndexScreen: FC = () => {
   const navigation = useNavigation();
   const [name, setName] = useState('');
 
+  // useEffect(() => {
+  //   socket!.emit(
+  //     'room:get',
+  //     {roomId: '608a92184abc0a519418c5e7'},
+  //     (room: any) => navigation.navigate('Replay', {room}),
+  //   );
+  // });
+
   useEffect(() => {
     (async () => {
       const ongoingRoom = await findOngoingRoom(socket!);
