@@ -6,6 +6,7 @@ import { add } from "date-fns";
 import { generateMap } from "../utils/map";
 import { gameConfig } from "shared/config/game";
 import { PlayerPositionModel } from "../models/PlayerPositionModel";
+import { Document } from "mongoose";
 
 export namespace RoomController {
   export interface ICreate {
@@ -106,7 +107,8 @@ export class RoomController {
   };
 
   static get: IController<RoomController.IGet> = async (data, callback) => {
-    const room = await RoomModel.findById(data.roomId);
+    const room: Document<any> = await RoomModel.findById(data.roomId);
+    if (!room) return callback?.(null);
     const playerPositions = await PlayerPositionModel.find({
       roomId: data.roomId,
     });

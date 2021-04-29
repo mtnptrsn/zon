@@ -9,7 +9,6 @@ export const getRandomPlayerColor = (takenColors: string[]) => {
     "#f39c12", // orange
     "#2ecc71", // green
     "#1abc9c", // turqoise,
-    "#F7A3A2", // pink
     "#825D27", // brown
   ];
 

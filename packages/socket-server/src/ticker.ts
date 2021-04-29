@@ -11,7 +11,7 @@ const onFinish = async (io: Server, room: any) => {
   await room.save();
 
   io.emit(`room:${room._id}:onEvent`, {
-    message: "The game is finished",
+    message: "The game is over",
     type: "info",
   });
 
