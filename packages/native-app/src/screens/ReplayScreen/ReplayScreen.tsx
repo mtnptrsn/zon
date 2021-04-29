@@ -15,7 +15,7 @@ import TimeLeft from '../Room/components/TimeLeft';
 
 const getPointColor = (point: IPoint, time: Date) => {
   if (!point.collectedBy || new Date(point.collectedAt) > time)
-    return 'rgba(244, 67, 54, .75';
+    return 'rgba(244, 67, 54, 0.75)';
   return point.collectedBy.color;
 };
 
