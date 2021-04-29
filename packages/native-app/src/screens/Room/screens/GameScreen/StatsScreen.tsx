@@ -148,7 +148,9 @@ const StatsScreen: FC<IStatsScreenProps> = props => {
               />
               <Text style={styles.playerText}>
                 {isCurrentPlayer ? 'You' : player.name} - {score} point(s){' '}
-                {!player.isWithinHome ? '(disqualified)' : ''}
+                {!player.isWithinHome && props.room.status === 'FINISHED'
+                  ? '(disqualified)'
+                  : ''}
               </Text>
             </View>
             {props.room.status === 'FINISHED' && (
