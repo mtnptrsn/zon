@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
   },
   buttons: {
     position: 'absolute',
-    bottom: getSpacing(4) + 7,
+    bottom: getSpacing(5),
     left: getSpacing(1),
     right: getSpacing(1),
     flexDirection: 'column',
@@ -154,7 +154,7 @@ const StatsScreen: FC<IStatsScreenProps> = props => {
             {props.room.status === 'FINISHED' && (
               <View style={styles.statsContainer}>
                 <Text style={styles.statsText}>
-                  Distance: {distance / 1000} km
+                  Distance: {Math.round((distance / 1000) * 10) / 10} km
                 </Text>
                 <Text style={styles.statsText}>Pace: {pace} min/km</Text>
               </View>
