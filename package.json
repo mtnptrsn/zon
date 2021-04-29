@@ -2,8 +2,7 @@
   "private": true,
   "workspaces": {
     "packages": [
-      "packages/socket-server",
-      "packages/shared"
+      "packages/*"
     ]
   }
 }
