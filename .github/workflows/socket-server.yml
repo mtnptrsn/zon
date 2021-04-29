@@ -38,4 +38,4 @@ jobs:
           script: |
             docker pull mtnptrsn/orient-socket-server
             docker rm socket-server -f
-            docker run --name socket-server -p 3000:3000 -e MONGO_URL=$MONGO_URL -e PORT=$SERVER_PORT -d mtnptrsn/orient-socket-server
+            docker run --restart=on-failure --name socket-server -p 3000:3000 -e MONGO_URL=$MONGO_URL -e PORT=$SERVER_PORT -d mtnptrsn/orient-socket-server
