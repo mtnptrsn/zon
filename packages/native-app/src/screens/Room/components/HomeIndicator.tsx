@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     borderWidth: 1,
     borderStyle: 'solid',
-    borderColor: 'rgba(0,0,0,.8)',
+    borderColor: 'rgba(0,0,0,.1)',
   },
 });
 
