@@ -167,7 +167,7 @@ const GameScreen: FC<IGameScreenProps> = props => {
       />
 
       {Boolean(event) && (
-        <Notification top={getSpacing(activeScreen === 0 ? 6 : 1)}>
+        <Notification top={getSpacing(activeScreen === 0 ? 5.5 : 1)}>
           {renderNotification()}
         </Notification>
       )}
