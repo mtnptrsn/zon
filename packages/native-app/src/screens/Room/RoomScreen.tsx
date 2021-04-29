@@ -46,8 +46,6 @@ const RoomScreen: FC = () => {
     return <CountdownScreen position={position} room={room} />;
   if (room.status === 'ARRANGING')
     return <LobbyScreen position={position} room={room} />;
-  if (room.status === 'FINISHED')
-    return <FinishedScreen position={position} room={room} />;
   if (room.status === 'CANCELLED')
     return <CancelledScreen position={position} room={room} />;
   return <GameScreen position={position} room={room} />;

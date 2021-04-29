@@ -11,7 +11,7 @@ interface IHomeIndicatorProps {}
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    top: getSpacing(1) + 6,
+    top: getSpacing(1),
     right: getSpacing(1),
     backgroundColor: 'white',
     paddingHorizontal: getSpacing(1),

@@ -9,6 +9,12 @@ const onFinish = async (io: Server, room: any) => {
     roomId: room._id,
   });
   await room.save();
+
+  io.emit(`room:${room._id}:onEvent`, {
+    message: "The game is finished",
+    type: "info",
+  });
+
   return io.emit(`room:${room._id}:onUpdate`, {
     ...room.toObject(),
     playerPositions: playerPositions,

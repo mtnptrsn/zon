@@ -12,7 +12,7 @@ interface IScoreProps {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    top: getSpacing(1) + 6,
+    top: getSpacing(1),
     left: getSpacing(1),
     backgroundColor: 'white',
     paddingHorizontal: getSpacing(1),

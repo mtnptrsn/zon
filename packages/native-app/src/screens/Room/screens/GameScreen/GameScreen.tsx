@@ -76,6 +76,8 @@ const GameScreen: FC<IGameScreenProps> = props => {
   useEffect(() => Vibration.vibrate(vibrationDurations.long), []);
 
   useEffect(() => {
+    if (props.room.status !== 'PLAYING') return;
+
     const {longitude, latitude} = props.position.coords;
     if (longitude === 0 && latitude === 0) return;
     socket!.emit(
@@ -135,6 +137,12 @@ const GameScreen: FC<IGameScreenProps> = props => {
     ]);
   };
 
+  const onPressReplay = () => {
+    navigation.navigate('Replay', {
+      room: props.room,
+    });
+  };
+
   const onPressEndGame = () => {
     const endGame = () =>
       socket!.emit('room:update:end', {roomId: props.room._id}, () => {});
@@ -152,6 +160,7 @@ const GameScreen: FC<IGameScreenProps> = props => {
           player={player}
           onPressEndGame={onPressEndGame}
           onPressLeave={onPressLeave}
+          onPressReplay={onPressReplay}
           room={props.room}
         />
       )}
@@ -164,7 +173,9 @@ const GameScreen: FC<IGameScreenProps> = props => {
       />
 
       {Boolean(event) && (
-        <Notification top={getSpacing(6)}>{renderNotification()}</Notification>
+        <Notification top={getSpacing(activeScreen === 0 ? 6 : 1)}>
+          {renderNotification()}
+        </Notification>
       )}
     </View>
   );

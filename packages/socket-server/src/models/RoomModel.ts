@@ -40,6 +40,10 @@ const PointSchema: Schema = new Schema({
     type: PlayerSchema,
     defalt: null,
   },
+  collectedAt: {
+    type: Date,
+    default: null,
+  },
   weight: {
     type: Number,
     default: null,

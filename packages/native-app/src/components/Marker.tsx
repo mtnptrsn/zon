@@ -1,7 +1,6 @@
 import React, {FC} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {Text} from 'react-native-elements';
-import {TouchableOpacity} from 'react-native-gesture-handler';
 
 interface IMarkerProps {
   color: string;
@@ -26,7 +25,7 @@ const styles = StyleSheet.create({
 
 const Marker: FC<IMarkerProps> = props => {
   const fontMaxSize = 24;
-  const fontSize = Math.min(fontMaxSize, props.size / 1.75);
+  const fontSize = Math.min(fontMaxSize, props.size / 1.9);
 
   return (
     <View
@@ -41,7 +40,7 @@ const Marker: FC<IMarkerProps> = props => {
           borderRadius: props.size,
         },
       ]}>
-      {Boolean(props.weight) && (
+      {Boolean(typeof props.weight === 'number') && (
         <Text style={[styles.text, {fontSize}]}>{String(props.weight)}</Text>
       )}
     </View>

@@ -107,7 +107,13 @@ export class RoomController {
 
   static get: IController<RoomController.IGet> = async (data, callback) => {
     const room = await RoomModel.findById(data.roomId);
-    callback?.(room);
+    const playerPositions = await PlayerPositionModel.find({
+      roomId: data.roomId,
+    });
+    callback?.({
+      ...room.toObject(),
+      playerPositions,
+    });
   };
 
   static start: IController<RoomController.IStart> = async (
@@ -259,6 +265,7 @@ export class RoomController {
         previousScore,
       };
       room.map.points[index].collectedBy = player;
+      room.map.points[index].collectedAt = new Date();
     });
     await room.save();
     if (event) io.emit(`room:${room._id}:onEvent`, event);

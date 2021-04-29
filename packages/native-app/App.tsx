@@ -13,6 +13,7 @@ import CreateMapScreen from './src/screens/CreateMapScreen/CreateMapScreen';
 import {MAPBOX_ACCESS_TOKEN, SERVER_URL} from 'react-native-dotenv';
 import MapboxGL from '@react-native-mapbox-gl/maps';
 import {requestLocationPermission} from './src/utils/location';
+import ReplayScreen from './src/screens/ReplayScreen/ReplayScreen';
 
 MapboxGL.setAccessToken(MAPBOX_ACCESS_TOKEN);
 const Stack = createStackNavigator();
@@ -55,6 +56,11 @@ const App: FC = () => {
               options={{headerTitle: 'Create Custom Map'}}
               name="CreateMap"
               component={CreateMapScreen}
+            />
+            <Stack.Screen
+              options={{headerTitle: 'Replay'}}
+              name="Replay"
+              component={ReplayScreen}
             />
           </Stack.Navigator>
         </NavigationContainer>

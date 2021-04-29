@@ -7,6 +7,7 @@ import {getSpacing} from '../../../theme/utils';
 
 interface ITimeIndicatorProps {
   finishedAt: Date;
+  now?: Date;
 }
 
 const useForceUpdate = () => {
@@ -19,8 +20,11 @@ const addLeadingZero = (number: number) => {
   return number;
 };
 
-const getTimeLeft = (finishedAt: Date) => {
-  const timeLeft = Math.max(differenceInSeconds(finishedAt, new Date()), 0);
+const getTimeLeft = (finishedAt: Date, now?: Date) => {
+  const timeLeft = Math.max(
+    differenceInSeconds(finishedAt, now || new Date()),
+    0,
+  );
   if (timeLeft <= 60) return String(timeLeft);
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
@@ -30,7 +34,7 @@ const getTimeLeft = (finishedAt: Date) => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    top: getSpacing(1) + 6,
+    top: getSpacing(1),
     backgroundColor: 'white',
     paddingHorizontal: getSpacing(1),
     paddingVertical: getSpacing(0.5),
@@ -49,7 +53,7 @@ const TimeLeft: FC<ITimeIndicatorProps> = props => {
     forceUpdate();
   }, 1000);
 
-  const timeLeft = getTimeLeft(props.finishedAt);
+  const timeLeft = getTimeLeft(props.finishedAt, props.now);
 
   return (
     <View style={styles.container}>

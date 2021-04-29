@@ -40,9 +40,10 @@ const findOngoingRoom = async (
 };
 
 const IndexScreen: FC = () => {
-  const navigation = useNavigation();
   const socket = useContext(SocketContext);
+  const navigation = useNavigation();
   const [name, setName] = useState('');
+
   useEffect(() => {
     (async () => {
       const ongoingRoom = await findOngoingRoom(socket!);
@@ -73,11 +74,13 @@ const IndexScreen: FC = () => {
     );
   };
   const onPressJoinGame = () => {
-    if (!name) return Alert.alert('You must enter a name to continue.');
+    if (!name)
+      return Alert.alert('Empty field', 'You must enter a name to continue.');
     navigation.navigate('ScanQR', {onRead: onReadQR});
   };
   const onPressCreateGame = () => {
-    if (!name) return Alert.alert('You must enter a name to continue.');
+    if (!name)
+      return Alert.alert('Empty field', 'You must enter a name to continue.');
 
     socket!.emit(
       'room:create',

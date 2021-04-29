@@ -8,6 +8,8 @@ import Score from '../../components/Score';
 import HomeIndicator from '../../components/HomeIndicator';
 import Marker from '../../../../components/Marker';
 import {GeolocationResponse} from '@react-native-community/geolocation';
+import HomeMarker from '../../../../components/HomeMarker';
+import {getMarkerSize} from '../../../../utils/map';
 
 interface IMapScreenProps {
   room: any;
@@ -19,30 +21,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  homeMarker: {
-    opacity: 0.75,
-    borderRadius: 3,
-    borderWidth: 3,
-    borderStyle: 'solid',
-    borderColor: 'white',
-  },
-  playerColorBar: {
-    height: 6,
-  },
 });
-
-const getMarkerSize = (
-  latitude: number,
-  zoom: number,
-  hitbox: number,
-  minSize: number,
-) => {
-  const mpp =
-    (78271.5169648 * Math.cos((latitude * Math.PI) / 180)) / Math.pow(2, zoom);
-  const ppm = Math.pow(mpp, -1);
-  const size = Math.max(minSize, ppm * hitbox * 2);
-  return size;
-};
 
 const coordinateToString = ([lat, long]: Coordinate) => `${lat};${long}`;
 
@@ -68,9 +47,6 @@ const MapScreen: FC<IMapScreenProps> = props => {
 
   return (
     <View style={styles.container}>
-      <View
-        style={[styles.playerColorBar, {backgroundColor: props.player.color}]}
-      />
       <MapBoxGL.MapView
         onTouchEnd={onTouchEndMap}
         ref={mapRef}
@@ -110,15 +86,9 @@ const MapScreen: FC<IMapScreenProps> = props => {
           id={coordinateToString(props.room.map.start.location.coordinates)}
           key={coordinateToString(props.room.map.start.location.coordinates)}
           coordinate={props.room.map.start.location.coordinates}>
-          <View
-            style={[
-              styles.homeMarker,
-              {
-                width: homeMarkerSize,
-                height: homeMarkerSize,
-                backgroundColor: theme.theme.colors!.primary,
-              },
-            ]}
+          <HomeMarker
+            size={homeMarkerSize}
+            color={theme.theme.colors!.primary!}
           />
         </MapBoxGL.MarkerView>
         <MapBoxGL.UserLocation />

@@ -13,5 +13,6 @@ export interface IPoint {
     coordinates: Coordinate;
   };
   collectedBy: IPlayer;
+  collectedAt: Date;
   weight: number;
 }
