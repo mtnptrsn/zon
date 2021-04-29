@@ -1,11 +1,18 @@
 import { Server } from "socket.io";
 import { RoomModel } from "./models/RoomModel";
 import { differenceInMilliseconds } from "date-fns";
+import { PlayerPositionModel } from "./models/PlayerPositionModel";
 
 const onFinish = async (io: Server, room: any) => {
   room.status = "FINISHED";
+  const playerPositions = await PlayerPositionModel.find({
+    roomId: room._id,
+  });
   await room.save();
-  return io.emit(`room:${room._id}:onUpdate`, room);
+  return io.emit(`room:${room._id}:onUpdate`, {
+    ...room.toObject(),
+    playerPositions: playerPositions,
+  });
 };
 
 const onStart = async (io: Server, room: any) => {

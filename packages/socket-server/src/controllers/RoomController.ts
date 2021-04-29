@@ -5,6 +5,7 @@ import { getRandomPlayerColor } from "../utils/color";
 import { add } from "date-fns";
 import { generateMap } from "../utils/map";
 import { gameSettings } from "../config/game";
+import { PlayerPositionModel } from "../models/PlayerPositionModel";
 
 export namespace RoomController {
   export interface ICreate {
@@ -185,7 +186,7 @@ export class RoomController {
     await room.save();
     io.emit(`room:${room._id}:onUpdate`, room);
     io.emit(`room:${room._id}:onEvent`, {
-      message: `The host just ended the game. The game will end in ${gameSettings.durations.promptEndGame} seconds.`,
+      message: `The host ended the game`,
       type: "info",
     });
     callback?.(room);
@@ -197,6 +198,15 @@ export class RoomController {
     socket,
     io
   ) => {
+    PlayerPositionModel.create({
+      roomId: data.roomId,
+      playerId: data.playerId,
+      location: {
+        type: "Point",
+        coordinates: data.coordinate,
+      },
+    });
+
     let didUpdate = false;
     // TODO: Add support for multiple events
     let event = null;
@@ -225,9 +235,10 @@ export class RoomController {
       room.players[playerIndex].isWithinHome = playerIsWithinHome;
       if (playerIsWithinHome)
         event = {
-          message: `{player} just arrived back home.`,
+          message: `{player} just arrived back home`,
           type: "info-player",
           player,
+          icon: "home",
         };
       didUpdate = true;
     }

@@ -7,6 +7,8 @@ import Feather from 'react-native-vector-icons/Feather';
 
 interface INotificationInfoProps {
   message: string;
+  color?: string;
+  icon?: string;
 }
 
 const styles = StyleSheet.create({
@@ -38,9 +40,9 @@ const NotificationInfo: FC<INotificationInfoProps> = props => {
       <View
         style={[
           styles.infoIconContainer,
-          {backgroundColor: theme.theme.colors!.primary},
+          {backgroundColor: props.color || theme.theme.colors!.primary},
         ]}>
-        <Feather color="white" size={30} name="info" />
+        <Feather color="white" size={30} name={props.icon || 'info'} />
       </View>
 
       <Text style={styles.text}>{props.message}</Text>

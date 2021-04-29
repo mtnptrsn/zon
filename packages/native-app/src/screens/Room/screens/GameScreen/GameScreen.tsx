@@ -116,6 +116,7 @@ const GameScreen: FC<IGameScreenProps> = props => {
     if (event.type === 'info-player')
       return (
         <NotificationInfo
+          icon={event.icon}
           message={translateEventMessage(
             {player: eventBelongsToCurrentPlayer ? 'You' : event.player.name},
             event.message,
