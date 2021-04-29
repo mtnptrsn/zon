@@ -8,7 +8,6 @@ interface IHomeMarkerProps {
 
 const styles = StyleSheet.create({
   marker: {
-    opacity: 0.75,
     borderRadius: 3,
     borderWidth: 3,
     borderStyle: 'solid',

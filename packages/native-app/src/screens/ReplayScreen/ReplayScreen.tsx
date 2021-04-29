@@ -12,11 +12,12 @@ import differenceInMilliseconds from 'date-fns/differenceInMilliseconds';
 import DropDownPicker from 'react-native-dropdown-picker';
 import {getSpacing} from '../../theme/utils';
 import TimeLeft from '../Room/components/TimeLeft';
+import TinyColor from 'tinycolor2';
 
 const getPointColor = (point: IPoint, time: Date) => {
   if (!point.collectedBy || new Date(point.collectedAt) > time)
     return 'rgba(244, 67, 54, 0.75)';
-  return point.collectedBy.color;
+  return new TinyColor(point.collectedBy.color).setAlpha(0.75).toRgbString();
 };
 
 const styles = StyleSheet.create({
@@ -38,7 +39,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   dropdown: {
-    height: 45,
+    height: 46,
     borderWidth: 1,
     borderStyle: 'solid',
     borderColor: 'rgba(0,0,0,.8)',
@@ -129,7 +130,12 @@ const ReplayScreen: FC = props => {
               id={coordinateToString(coordinate)}
               key={coordinateToString(coordinate)}
               coordinate={coordinate}>
-              <Marker weight={score} size={26} color={player.color}></Marker>
+              <Marker
+                weight={score}
+                size={26}
+                color={new TinyColor(player.color)
+                  .setAlpha(0.75)
+                  .toRgbString()}></Marker>
             </MapBoxGL.MarkerView>
           );
         })}
@@ -150,7 +156,12 @@ const ReplayScreen: FC = props => {
           id={coordinateToString(room.map.start.location.coordinates)}
           key={coordinateToString(room.map.start.location.coordinates)}
           coordinate={room.map.start.location.coordinates}>
-          <HomeMarker size={20} color={theme.theme.colors!.primary!} />
+          <HomeMarker
+            size={20}
+            color={new TinyColor(theme.theme.colors!.primary!)
+              .setAlpha(0.75)
+              .toRgbString()}
+          />
         </MapBoxGL.MarkerView>
       </MapBoxGL.MapView>
 

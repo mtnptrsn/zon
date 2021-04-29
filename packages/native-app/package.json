@@ -42,7 +42,8 @@
     "react-native-toast-message": "^1.4.9",
     "react-native-unimodules": "^0.13.3",
     "react-native-vector-icons": "^8.1.0",
-    "socket.io-client": "^4.0.1"
+    "socket.io-client": "^4.0.1",
+    "tinycolor2": "^1.4.2"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
@@ -52,6 +53,7 @@
     "@types/ramda": "^0.27.40",
     "@types/react-native": "^0.64.0",
     "@types/react-test-renderer": "^16.9.2",
+    "@types/tinycolor2": "^1.4.2",
     "babel-jest": "^26.6.3",
     "eslint": "^7.14.0",
     "jest": "^26.6.3",

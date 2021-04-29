@@ -10,6 +10,7 @@ import Marker from '../../../../components/Marker';
 import {GeolocationResponse} from '@react-native-community/geolocation';
 import HomeMarker from '../../../../components/HomeMarker';
 import {getMarkerSize} from '../../../../utils/map';
+import TinyColor from 'tinycolor2';
 
 interface IMapScreenProps {
   room: any;
@@ -77,7 +78,13 @@ const MapScreen: FC<IMapScreenProps> = props => {
                   20,
                 )}
                 weight={point.weight}
-                color={point.collectedBy?.color || 'rgba(244, 67, 54, .75)'}
+                color={
+                  point.collectedBy?.color
+                    ? new TinyColor(point.collectedBy!.color)
+                        .setAlpha(0.75)
+                        .toRgbString()
+                    : 'rgba(244, 67, 54, .75)'
+                }
               />
             </MapBoxGL.MarkerView>
           );
@@ -88,7 +95,9 @@ const MapScreen: FC<IMapScreenProps> = props => {
           coordinate={props.room.map.start.location.coordinates}>
           <HomeMarker
             size={homeMarkerSize}
-            color={theme.theme.colors!.primary!}
+            color={new TinyColor(theme.theme.colors!.primary!)
+              .setAlpha(0.75)
+              .toRgbString()}
           />
         </MapBoxGL.MarkerView>
         <MapBoxGL.UserLocation />
