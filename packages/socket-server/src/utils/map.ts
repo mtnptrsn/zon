@@ -20,7 +20,7 @@ export const generateMap = (
       Math.random
     );
 
-    const distanceFromNearestPoint = points.reduce(
+    const distanceFromNearestPoint = [center, ...points].reduce(
       (acc: number, point: [number, number]) => {
         const distance = getDistance(
           { lng: point[0], lat: point[1] },
