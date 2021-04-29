@@ -17,7 +17,7 @@ import TinyColor from 'tinycolor2';
 const getPointColor = (point: IPoint, time: Date) => {
   if (!point.collectedBy || new Date(point.collectedAt) > time)
     return 'rgba(244, 67, 54, 0.75)';
-  return new TinyColor(point.collectedBy.color).setAlpha(0.75).toRgbString();
+  return point.collectedBy.color;
 };
 
 const styles = StyleSheet.create({
@@ -130,12 +130,7 @@ const ReplayScreen: FC = props => {
               id={coordinateToString(coordinate)}
               key={coordinateToString(coordinate)}
               coordinate={coordinate}>
-              <Marker
-                weight={score}
-                size={26}
-                color={new TinyColor(player.color)
-                  .setAlpha(0.75)
-                  .toRgbString()}></Marker>
+              <Marker weight={score} size={26} color={player.color}></Marker>
             </MapBoxGL.MarkerView>
           );
         })}
