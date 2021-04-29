@@ -2,7 +2,7 @@ import React, {FC, useRef, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import MapBoxGL from '@react-native-mapbox-gl/maps';
 import {Coordinate, IPoint} from '../../types';
-import {useTheme} from 'react-native-elements';
+import {Button, useTheme} from 'react-native-elements';
 import TimeLeft from '../../components/TimeLeft';
 import Score from '../../components/Score';
 import HomeIndicator from '../../components/HomeIndicator';
@@ -11,6 +11,8 @@ import {GeolocationResponse} from '@react-native-community/geolocation';
 import HomeMarker from '../../../../components/HomeMarker';
 import {getMarkerSize} from '../../../../utils/map';
 import TinyColor from 'tinycolor2';
+import {getSpacing} from '../../../../theme/utils';
+import Feather from 'react-native-vector-icons/Feather';
 
 interface IMapScreenProps {
   room: any;
@@ -22,6 +24,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  centerButtonContainer: {
+    position: 'absolute',
+    right: getSpacing(1),
+    bottom: getSpacing(5),
+    backgroundColor: 'white',
+  },
 });
 
 const coordinateToString = ([lat, long]: Coordinate) => `${lat};${long}`;
@@ -29,6 +37,7 @@ const coordinateToString = ([lat, long]: Coordinate) => `${lat};${long}`;
 const MapScreen: FC<IMapScreenProps> = props => {
   const theme = useTheme();
   const mapRef = useRef(null);
+  const cameraRef = useRef(null);
   const [zoom, setZoom] = useState(14);
   const homeMarkerSize = getMarkerSize(
     props.room.map.start.location.coordinates[1],
@@ -46,6 +55,15 @@ const MapScreen: FC<IMapScreenProps> = props => {
     (mapRef.current as any).getZoom().then(setZoom);
   };
 
+  const onPressCenter = () => {
+    (cameraRef.current as any).setCamera({
+      centerCoordinate: [
+        props.position.coords.longitude,
+        props.position.coords.latitude,
+      ],
+    });
+  };
+
   return (
     <View style={styles.container}>
       <MapBoxGL.MapView
@@ -56,6 +74,7 @@ const MapScreen: FC<IMapScreenProps> = props => {
         pitchEnabled={false}
         rotateEnabled={false}>
         <MapBoxGL.Camera
+          ref={cameraRef}
           defaultSettings={{
             centerCoordinate: props.room.map.start.location.coordinates,
             zoomLevel: 14,
@@ -102,6 +121,14 @@ const MapScreen: FC<IMapScreenProps> = props => {
         </MapBoxGL.MarkerView>
         <MapBoxGL.UserLocation />
       </MapBoxGL.MapView>
+
+      <Button
+        onPress={onPressCenter}
+        type="outline"
+        containerStyle={styles.centerButtonContainer}
+        buttonStyle={{padding: 12}}
+        icon={<Feather color="black" size={24} name="map-pin" />}
+      />
 
       <TimeLeft finishedAt={new Date(props.room.finishedAt)} />
       <Score score={score} />

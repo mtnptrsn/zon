@@ -4,19 +4,13 @@ import {Coordinate, IPoint} from '../../types';
 import {SocketContext} from '../../../../socket/context';
 import {getUniqueId} from 'react-native-device-info';
 import subscribeToEvents from '../../../../socket/subscribeToEvents';
-import Toast from 'react-native-toast-message';
 import {vibrationDurations} from '../../../../utils/vibration';
-import {MAPBOX_ACCESS_TOKEN} from 'react-native-dotenv';
 import {GeolocationResponse} from '@react-native-community/geolocation';
 import MapScreen from './MapScreen';
 import StatsScreen from './StatsScreen';
 import {ButtonGroup} from 'react-native-elements';
 import {getSpacing} from '../../../../theme/utils';
-import {
-  NavigationContainer,
-  StackActions,
-  useNavigation,
-} from '@react-navigation/native';
+import {StackActions, useNavigation} from '@react-navigation/native';
 import Notification from '../../../../components/Notification/Notification';
 import NotificationScore from '../../../../components/Notification/NotificationScore';
 import NotificationInfo from '../../../../components/Notification/NotificationInfo';
@@ -44,9 +38,9 @@ const styles = StyleSheet.create({
   },
   navigation: {
     position: 'absolute',
-    bottom: getSpacing(1),
-    left: getSpacing(1),
-    right: getSpacing(1),
+    bottom: getSpacing(0.3),
+    left: getSpacing(0.3),
+    right: getSpacing(0.3),
   },
 });
 
