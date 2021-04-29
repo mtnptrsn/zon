@@ -38,9 +38,9 @@ const styles = StyleSheet.create({
   },
   navigation: {
     position: 'absolute',
-    bottom: getSpacing(0.3),
-    left: getSpacing(0.3),
-    right: getSpacing(0.3),
+    bottom: getSpacing(0.15),
+    left: getSpacing(0.15),
+    right: getSpacing(0.15),
   },
 });
 

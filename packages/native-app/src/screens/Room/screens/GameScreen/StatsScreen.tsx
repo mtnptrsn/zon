@@ -78,9 +78,9 @@ const styles = StyleSheet.create({
   },
   buttons: {
     position: 'absolute',
-    bottom: getSpacing(5) + 4,
-    left: getSpacing(2),
-    right: getSpacing(2),
+    bottom: getSpacing(4) + 7,
+    left: getSpacing(1),
+    right: getSpacing(1),
     flexDirection: 'column',
   },
   endGameButton: {

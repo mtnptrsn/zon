@@ -61,6 +61,8 @@ const MapScreen: FC<IMapScreenProps> = props => {
         props.position.coords.longitude,
         props.position.coords.latitude,
       ],
+      zoomLevel: 14,
+      // animationDuration: 1000,
     });
   };
 
