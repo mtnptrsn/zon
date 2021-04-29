@@ -13,6 +13,7 @@ import {getMarkerSize} from '../../../../utils/map';
 import TinyColor from 'tinycolor2';
 import {getSpacing} from '../../../../theme/utils';
 import Feather from 'react-native-vector-icons/Feather';
+import {gameConfig} from 'shared/config/game';
 
 interface IMapScreenProps {
   room: any;
@@ -42,7 +43,7 @@ const MapScreen: FC<IMapScreenProps> = props => {
   const homeMarkerSize = getMarkerSize(
     props.room.map.start.location.coordinates[1],
     zoom,
-    60,
+    gameConfig.hitbox.home,
     20,
   );
 
@@ -95,7 +96,7 @@ const MapScreen: FC<IMapScreenProps> = props => {
                 size={getMarkerSize(
                   point.location.coordinates[1],
                   zoom,
-                  60,
+                  gameConfig.hitbox.point,
                   20,
                 )}
                 weight={point.weight}

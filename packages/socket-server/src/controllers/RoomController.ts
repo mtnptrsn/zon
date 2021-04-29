@@ -4,7 +4,7 @@ import { getDistance } from "geolib";
 import { getRandomPlayerColor } from "../utils/color";
 import { add } from "date-fns";
 import { generateMap } from "../utils/map";
-import { gameSettings } from "../config/game";
+import { gameConfig } from "shared/config/game";
 import { PlayerPositionModel } from "../models/PlayerPositionModel";
 
 export namespace RoomController {
@@ -125,10 +125,10 @@ export class RoomController {
     const room = await RoomModel.findById(data.roomId);
     room.status = "COUNTDOWN";
     room.finishedAt = add(new Date(), {
-      seconds: data.duration / 1000 + gameSettings.durations.countdown,
+      seconds: data.duration / 1000 + gameConfig.durations.start,
     });
     room.startedAt = add(new Date(), {
-      seconds: gameSettings.durations.countdown,
+      seconds: gameConfig.durations.start,
     });
     const map = Boolean(data.map.length)
       ? data.map
@@ -187,7 +187,7 @@ export class RoomController {
   ) => {
     const room = await RoomModel.findById(data.roomId);
     room.finishedAt = add(new Date(), {
-      seconds: gameSettings.durations.promptEndGame,
+      seconds: gameConfig.durations.promptEnd,
     });
     await room.save();
     io.emit(`room:${room._id}:onUpdate`, room);
@@ -236,7 +236,7 @@ export class RoomController {
           lng: room.map.start.location.coordinates[0],
           lat: room.map.start.location.coordinates[1],
         }
-      ) < gameSettings.home.hitbox;
+      ) < gameConfig.hitbox.home;
     if (playerIsWithinHome !== player.isWithinHome) {
       room.players[playerIndex].isWithinHome = playerIsWithinHome;
       if (playerIsWithinHome)
@@ -256,7 +256,7 @@ export class RoomController {
         { lng: data.coordinate[0], lat: data.coordinate[1] }
       );
       const pointCollected =
-        distance < gameSettings.point.hitbox && !Boolean(collectedBy);
+        distance < gameConfig.hitbox.point && !Boolean(collectedBy);
       if (!pointCollected) return;
       didUpdate = true;
       event = {

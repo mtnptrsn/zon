@@ -180,7 +180,7 @@ const StatsScreen: FC<IStatsScreenProps> = props => {
             onPress={props.onPressReplay}
             containerStyle={styles.replayButton}
             type="outline"
-            title="Show Replay"
+            title="Replay"
           />
         )}
         {props.player.isHost && props.room.status === 'PLAYING' && (
