@@ -1,14 +1,13 @@
-import React, {FC, useState} from 'react';
+import React, {FC, useEffect, useState} from 'react';
 import {Text} from 'react-native-elements';
 import {differenceInSeconds} from 'date-fns';
-import {StyleSheet, View} from 'react-native';
+import {StyleSheet, Vibration, View} from 'react-native';
 import useInterval from '@use-it/interval';
 import {GeolocationResponse} from '@react-native-community/geolocation';
+import {vibrationDurations} from '../../../utils/vibration';
+import {gameConfig} from 'shared/config/game';
 
-interface ICountdownScreenProps {
-  room: any;
-  position: GeolocationResponse;
-}
+interface ICountdownScreenProps {}
 
 const styles = StyleSheet.create({
   container: {
@@ -17,30 +16,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   countdownText: {
-    // TODO: Set a theme like react-native-elements
     color: '#2196F3',
   },
 });
 
-const getTimeLeft = (startedAt: Date) => {
-  return Math.max(differenceInSeconds(startedAt, new Date()), 0);
-};
-
 const useForceUpdate = () => {
-  const [value, setValue] = useState(0); // integer state
+  const [_, setValue] = useState(0); // integer state
   return () => setValue(value => value + 1); // update the state to force render
 };
 
-const CountdownScreen: FC<ICountdownScreenProps> = props => {
+const CountdownScreen: FC<ICountdownScreenProps> = () => {
+  const [timeLeft, setTime] = useState(gameConfig.durations.start);
+  useEffect(() => Vibration.vibrate(vibrationDurations.short), []);
+
   const forceUpdate = useForceUpdate();
   useInterval(() => {
     forceUpdate();
-  }, 500);
+    setTime(Math.max(0, timeLeft - 1));
+  }, 1000);
 
   return (
     <View style={styles.container}>
       <Text h1 style={styles.countdownText}>
-        {getTimeLeft(new Date(props.room.startedAt)) + 1}
+        {timeLeft || 'Starting'}
       </Text>
     </View>
   );

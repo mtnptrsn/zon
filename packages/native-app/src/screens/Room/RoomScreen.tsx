@@ -42,8 +42,7 @@ const RoomScreen: FC = () => {
   }, []);
 
   if (!room) return <LoadingScreen />;
-  if (room.status === 'COUNTDOWN')
-    return <CountdownScreen position={position} room={room} />;
+  if (room.status === 'COUNTDOWN') return <CountdownScreen />;
   if (room.status === 'ARRANGING')
     return <LobbyScreen position={position} room={room} />;
   if (room.status === 'CANCELLED')

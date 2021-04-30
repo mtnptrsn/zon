@@ -1,30 +1,22 @@
 import { getDistance } from "geolib";
-// @ts-ignore
-import randomLocation from "random-location";
+import { gameConfig } from "shared/config/game";
 
 export const generateMap = (
-  center: [number, number],
+  coordinates: [number, number][],
   radius: number
 ): [number, number][] => {
-  const amountOfPoints = Math.ceil((Math.PI * Math.pow(radius, 2)) / 180000);
+  const margin = gameConfig.hitbox.point * 2 + 25;
+  const amountOfPoints = Math.ceil((Math.PI * Math.pow(radius, 2)) / 200000);
 
   let points: [number, number][] = [];
 
-  while (points.length < amountOfPoints) {
-    const randomPoint = randomLocation.randomCirclePoint(
-      {
-        longitude: center[0],
-        latitude: center[1],
-      },
-      radius,
-      Math.random
-    );
-
-    const distanceFromNearestPoint = [center, ...points].reduce(
+  for (let i = 0; i < coordinates.length; i++) {
+    const coordinate = coordinates[i];
+    const distanceFromNearestPoint = points.reduce(
       (acc: number, point: [number, number]) => {
         const distance = getDistance(
           { lng: point[0], lat: point[1] },
-          { lng: randomPoint.longitude, lat: randomPoint.latitude }
+          { lng: coordinate[0], lat: coordinate[1] }
         );
         if (acc === -1 || distance < acc) return distance;
         return acc;
@@ -32,10 +24,11 @@ export const generateMap = (
       -1
     );
 
-    const margin = 200;
+    const isValid = distanceFromNearestPoint > margin;
 
-    if (distanceFromNearestPoint > margin || points.length === 0)
-      points = [...points, [randomPoint.longitude, randomPoint.latitude]];
+    if (isValid || distanceFromNearestPoint === -1)
+      points = [...points, coordinate];
+    if (points.length >= amountOfPoints) break;
   }
 
   return points;

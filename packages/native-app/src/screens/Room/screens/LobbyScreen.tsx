@@ -6,10 +6,7 @@ import {Text, Slider, useTheme} from 'react-native-elements';
 import {Button} from 'react-native-elements';
 import {SocketContext} from '../../../socket/context';
 import {getSpacing} from '../../../theme/utils';
-import GeoLocation, {
-  GeolocationError,
-  GeolocationResponse,
-} from '@react-native-community/geolocation';
+import {GeolocationResponse} from '@react-native-community/geolocation';
 
 interface ILobbyScreenProps {
   room: any;
@@ -64,14 +61,13 @@ const styles = StyleSheet.create({
 });
 
 const LobbyScreen: FC<ILobbyScreenProps> = props => {
-  const [customMap, setCustomMap] = useState([]);
-  const hasCustomMap = customMap.length > 0;
+  const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
   const socket = useContext(SocketContext);
   const userId = getUniqueId();
   const roomHost = props.room.players.find((player: any) => player.isHost);
   const isHost = userId === roomHost._id;
-  const [settings, setSettings] = useState({duration: 30, radius: 1500});
+  const [settings, setSettings] = useState({duration: 40, radius: 2000});
   const theme = useTheme();
   const hasAccuratePositon =
     props.position.coords.latitude !== 0 &&
@@ -90,6 +86,8 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
   };
 
   const onPressStart = async () => {
+    setIsLoading(true);
+
     if (!hasAccuratePositon)
       return Alert.alert('Error', `Couldn't get your location.`);
 
@@ -103,21 +101,9 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
           props.position.coords.longitude,
           props.position.coords.latitude,
         ],
-        map: customMap,
       },
       () => {},
     );
-  };
-
-  const onPressCreateCustomMap = () => {
-    return navigation.navigate('CreateMap', {
-      state: {set: setCustomMap, get: () => customMap},
-      position: props.position,
-    });
-  };
-
-  const onPressDeleteCustomMap = () => {
-    setCustomMap([]);
   };
 
   const renderPlayers = () => {
@@ -161,48 +147,27 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
             onValueChange={(value: any) => {
               setSettings({...settings, duration: value});
             }}
-            maximumValue={60 * 2}
-            minimumValue={1}
+            maximumValue={80}
+            minimumValue={10}
             step={1}
           />
           <Text style={styles.sliderValue}>{settings.duration} minutes</Text>
 
-          <View
-            pointerEvents={hasCustomMap ? 'none' : 'auto'}
-            style={{opacity: hasCustomMap ? 0.5 : 1}}>
-            <Text style={styles.sliderTitle}>Map Size</Text>
-            <Slider
-              thumbStyle={{height: 30, width: 30}}
-              thumbTintColor={theme.theme.colors!.primary}
-              step={100}
-              minimumValue={200}
-              maximumValue={5000}
-              value={settings.radius}
-              onValueChange={(value: any) => {
-                setSettings({...settings, radius: value});
-              }}
-            />
-            <Text style={styles.sliderValue}>
-              {settings.radius} meters in radius
-            </Text>
-          </View>
-
-          <View style={{flexDirection: 'row', marginTop: getSpacing(1)}}>
-            <Button
-              onPress={onPressCreateCustomMap}
-              containerStyle={styles.createMapButton}
-              type="outline"
-              title={hasCustomMap ? 'Edit' : 'Create Custom Map'}
-              loading={!hasAccuratePositon}
-            />
-            {hasCustomMap && (
-              <Button
-                onPress={onPressDeleteCustomMap}
-                type="outline"
-                title={'Delete'}
-              />
-            )}
-          </View>
+          <Text style={styles.sliderTitle}>Map Size</Text>
+          <Slider
+            thumbStyle={{height: 30, width: 30}}
+            thumbTintColor={theme.theme.colors!.primary}
+            step={100}
+            minimumValue={1000}
+            maximumValue={3000}
+            value={settings.radius}
+            onValueChange={(value: any) => {
+              setSettings({...settings, radius: value});
+            }}
+          />
+          <Text style={styles.sliderValue}>
+            {settings.radius} meters in radius
+          </Text>
         </View>
       )}
 
@@ -214,7 +179,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
             onPress={onPressStart}
             containerStyle={styles.startButton}
             title="Start"
-            loading={!hasAccuratePositon}
+            loading={!hasAccuratePositon || isLoading}
           />
         )}
       </View>

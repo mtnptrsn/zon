@@ -7,6 +7,7 @@ import { generateMap } from "../utils/map";
 import { gameConfig } from "shared/config/game";
 import { PlayerPositionModel } from "../models/PlayerPositionModel";
 import { Document } from "mongoose";
+import { getStreetCoordinates } from "../utils/osm";
 
 export namespace RoomController {
   export interface ICreate {
@@ -35,7 +36,7 @@ export namespace RoomController {
     hostLocation: [number, number];
     duration: number;
     radius: number;
-    map: [number, number][];
+    // map: [number, number][];
   }
 
   export interface IEnd {
@@ -47,6 +48,26 @@ export namespace RoomController {
     playerId: string;
     coordinate: [number, number];
   }
+}
+
+function shuffle(array: any[]) {
+  var currentIndex = array.length,
+    temporaryValue,
+    randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
 }
 
 export class RoomController {
@@ -126,17 +147,15 @@ export class RoomController {
   ) => {
     const room = await RoomModel.findById(data.roomId);
     room.status = "COUNTDOWN";
-    room.finishedAt = add(new Date(), {
-      seconds: data.duration / 1000 + gameConfig.durations.start,
-    });
-    room.startedAt = add(new Date(), {
-      seconds: gameConfig.durations.start,
-    });
-    const map = Boolean(data.map.length)
-      ? data.map
-      : generateMap(data.hostLocation, data.radius);
 
-    const longestDistancePoint = map.reduce(
+    const streetCoordinates = await getStreetCoordinates(
+      data.hostLocation,
+      data.radius
+    );
+
+    const points = generateMap(shuffle(streetCoordinates), data.radius);
+
+    const longestDistancePoint = points.reduce(
       (acc: number, coordinate: [number, number]) => {
         const distance = getDistance(
           { longitude: coordinate[0], latitude: coordinate[1] },
@@ -148,7 +167,7 @@ export class RoomController {
       0
     );
 
-    const dbMap = map.map((coordinate) => {
+    const map = points.map((coordinate) => {
       const distance = getDistance(
         { longitude: data.hostLocation[0], latitude: data.hostLocation[1] },
         { longitude: coordinate[0], latitude: coordinate[1] }
@@ -169,13 +188,19 @@ export class RoomController {
         weight,
       };
     });
-    room.map.points = dbMap;
+    room.map.points = map;
     room.map.start = {
       location: {
         type: "Point",
         coordinates: data.hostLocation,
       },
     };
+    room.startedAt = add(new Date(), {
+      seconds: gameConfig.durations.start,
+    });
+    room.finishedAt = add(new Date(), {
+      seconds: data.duration / 1000 + gameConfig.durations.start,
+    });
     await room.save();
     io.emit(`room:${room._id}:onUpdate`, room);
     callback?.(room);

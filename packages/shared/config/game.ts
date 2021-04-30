@@ -1,7 +1,7 @@
 export const gameConfig = {
   hitbox: {
-    home: 60,
-    point: 60,
+    home: 40,
+    point: 30,
   },
   durations: {
     start: 5,
