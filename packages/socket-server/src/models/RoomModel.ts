@@ -21,6 +21,10 @@ const PlayerSchema: Schema = new Schema({
     type: Boolean,
     default: true,
   },
+  hasTakenFirstPoint: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const PointSchema: Schema = new Schema({
@@ -31,7 +35,6 @@ const PointSchema: Schema = new Schema({
       required: true,
     },
     coordinates: {
-      // long, lat
       type: [Number],
       required: true,
     },
@@ -46,6 +49,10 @@ const PointSchema: Schema = new Schema({
   },
   weight: {
     type: Number,
+    default: null,
+  },
+  belongsTo: {
+    type: PlayerSchema,
     default: null,
   },
 });

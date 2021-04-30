@@ -186,7 +186,31 @@ export class RoomController {
           coordinates: coordinate,
         },
         weight,
+        belongsTo: null,
       };
+    });
+
+    const pointsInDistanceOrder = points.sort((a, b) => {
+      const bDistance = getDistance(
+        { lng: b[0], lat: b[1] },
+        { lng: data.hostLocation[0], lat: data.hostLocation[1] }
+      );
+      const aDistance = getDistance(
+        { lng: a[0], lat: a[1] },
+        { lng: data.hostLocation[0], lat: data.hostLocation[1] }
+      );
+      return aDistance - bDistance;
+    });
+
+    const possibleSpawnPoints = pointsInDistanceOrder.slice(3);
+
+    shuffle(room.players).forEach((player: any, index: number) => {
+      const mapIndex = map.findIndex(
+        (point) =>
+          possibleSpawnPoints[index].join("") ===
+          point.location.coordinates.join("")
+      );
+      map[mapIndex].belongsTo = player;
     });
     room.map.points = map;
     room.map.start = {
@@ -277,14 +301,17 @@ export class RoomController {
     }
     room.map.points.forEach((point: any, index: number) => {
       const [longitude, latitude] = point.location.coordinates;
-      const collectedBy = point.collectedBy;
       const distance = getDistance(
         { lng: longitude, lat: latitude },
         { lng: data.coordinate[0], lat: data.coordinate[1] }
       );
       const pointCollected =
-        distance < gameConfig.hitbox.point && !Boolean(collectedBy);
+        distance < gameConfig.hitbox.point &&
+        !Boolean(point.collectedBy) &&
+        (player.hasTakenFirstPoint || point.belongsTo?._id === player._id);
       if (!pointCollected) return;
+      if (!player.hasTakenFirstPoint)
+        room.players[playerIndex].hasTakenFirstPoint = true;
       didUpdate = true;
       event = {
         player,
