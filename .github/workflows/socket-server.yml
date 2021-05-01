@@ -10,20 +10,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      
+
       - name: Docker Login
         uses: docker/login-action@v1.8.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-          
+
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
           context: packages/socket-server
           push: true
           tags: mtnptrsn/orient-socket-server:latest
-          
+
       - name: Pull latest image from Docker Hub on EC2
         uses: appleboy/ssh-action@master
         env:
@@ -36,7 +36,7 @@ jobs:
           port: ${{ secrets.PORT }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            docker system prune -a
+            docker system prune -a -f
             docker pull mtnptrsn/orient-socket-server
             docker rm socket-server -f
             docker run --restart=on-failure --name socket-server -p 3000:3000 -e MONGO_URL=$MONGO_URL -e PORT=$SERVER_PORT -d mtnptrsn/orient-socket-server
