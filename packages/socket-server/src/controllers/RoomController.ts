@@ -2,10 +2,10 @@ import { IController } from "../types/controller";
 import { RoomModel } from "../models/RoomModel";
 import { getDistance } from "geolib";
 import { getRandomPlayerColor } from "../utils/color";
-import { add } from "date-fns";
+import { add, isValid } from "date-fns";
 import { generateMap } from "../utils/map";
 import { PlayerPositionModel } from "../models/PlayerPositionModel";
-import { Document } from "mongoose";
+import { Document, isValidObjectId } from "mongoose";
 import { getStreetCoordinates } from "../utils/osm";
 import { gameConfig } from "../config/game";
 
@@ -96,6 +96,8 @@ export class RoomController {
     socket,
     io
   ) => {
+    if (!isValidObjectId(data.roomId)) return callback?.(null);
+
     const room = await RoomModel.findById(data.roomId);
     const takenColors = room.players.map((player: any) => player.color);
 
@@ -115,19 +117,29 @@ export class RoomController {
 
   static leave: IController<RoomController.ILeave> = async (
     data,
-    _,
+    callback,
     socket,
     io
   ) => {
+    if (!isValidObjectId(data.roomId)) return;
     const room = await RoomModel.findById(data.roomId);
+    if (!room) return;
+    if (room.status !== "ARRANGING") return;
+
     const host = room.players.find((player: any) => player.isHost);
     const hostIsLeaving = host._id === data.userId;
-    if (hostIsLeaving && room.status === "ARRANGING") room.status = "FINISHED";
+    if (hostIsLeaving) room.status = "CANCELLED";
+    else
+      room.players = room.players.filter(
+        (player: any) => player._id !== data.userId
+      );
     await room.save();
     io.emit(`room:${room._id}:onUpdate`, room);
   };
 
   static get: IController<RoomController.IGet> = async (data, callback) => {
+    if (!isValidObjectId(data.roomId)) return callback?.(null);
+
     const room: Document<any> = await RoomModel.findById(data.roomId);
     if (!room) return callback?.(null);
     const playerPositions = await PlayerPositionModel.find({
@@ -202,12 +214,10 @@ export class RoomController {
       return aDistance - bDistance;
     });
 
-    const possibleSpawnPoints = pointsInDistanceOrder.slice(3);
-
     shuffle(room.players).forEach((player: any, index: number) => {
       const mapIndex = map.findIndex(
         (point) =>
-          possibleSpawnPoints[index].join("") ===
+          pointsInDistanceOrder[index].join("") ===
           point.location.coordinates.join("")
       );
       map[mapIndex].belongsTo = player;
@@ -237,11 +247,16 @@ export class RoomController {
     io
   ) => {
     const room = await RoomModel.findById(data.roomId);
-    room.finishedAt = add(new Date(), {
-      seconds: gameConfig.durations.promptEnd,
-    });
+    room.finishedAt = new Date();
+    room.status = "FINISHED";
     await room.save();
-    io.emit(`room:${room._id}:onUpdate`, room);
+    const playerPositions = await PlayerPositionModel.find({
+      roomId: room._id,
+    });
+    io.emit(`room:${room._id}:onUpdate`, {
+      ...room.toObject(),
+      playerPositions,
+    });
     io.emit(`room:${room._id}:onEvent`, {
       message: `The host ended the game`,
       type: "info",

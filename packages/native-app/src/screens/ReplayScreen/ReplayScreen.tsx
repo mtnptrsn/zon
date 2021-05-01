@@ -64,13 +64,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  skipBack: {
-    marginRight: getSpacing(1),
-  },
-  skipForward: {
-    marginLeft: getSpacing(1),
-  },
-  play: {},
+  play: {marginRight: 3},
+  slider: {flex: 1},
 });
 
 const coordinateToString = ([lat, long]: Coordinate) => `${lat};${long}`;
@@ -90,6 +85,12 @@ const ReplayScreen: FC = () => {
     new Date(room.startedAt),
   );
   const progress = timeElapsed / duration;
+  const homeMarkerSize = getMarkerSize(
+    room.map.start.location.coordinates[1],
+    zoom,
+    gameConfig.hitbox.home,
+    20,
+  );
 
   const playersWithCoordinate = room.players.map((player: any) => {
     const playerPositions = room.playerPositions.filter(
@@ -129,11 +130,11 @@ const ReplayScreen: FC = () => {
     (mapRef.current as any).getZoom().then(setZoom);
   };
 
-  const onPressSkip = (direction: 'forward' | 'back') => () => {
-    if (direction === 'forward')
-      return setTimeElapsed(timeElapsed + duration * 0.05);
-    return setTimeElapsed(timeElapsed - duration * 0.05);
-  };
+  // const onPressSkip = (direction: 'forward' | 'back') => () => {
+  //   if (direction === 'forward')
+  //     return setTimeElapsed(timeElapsed + duration * 0.05);
+  //   return setTimeElapsed(timeElapsed - duration * 0.05);
+  // };
 
   const toggleIsPaused = () => {
     setIsPaused(!isPaused);
@@ -163,26 +164,6 @@ const ReplayScreen: FC = () => {
           animationDuration={0}
         />
 
-        {playersWithCoordinate.map(({player, coordinate}: any) => {
-          const score = room.map.points.reduce((acc: number, point: IPoint) => {
-            if (
-              point.collectedBy?._id === player._id &&
-              time > new Date(point.collectedAt)
-            )
-              return acc + point.weight;
-            return acc;
-          }, 0);
-
-          return (
-            <MapBoxGL.MarkerView
-              id={coordinateToString(coordinate)}
-              key={coordinateToString(coordinate)}
-              coordinate={coordinate}>
-              <Marker weight={score} size={26} color={player.color}></Marker>
-            </MapBoxGL.MarkerView>
-          );
-        })}
-
         {room.map.points.map((point: IPoint) => {
           const color = getPointColor(point, time);
 
@@ -208,31 +189,37 @@ const ReplayScreen: FC = () => {
           id={coordinateToString(room.map.start.location.coordinates)}
           key={coordinateToString(room.map.start.location.coordinates)}
           coordinate={room.map.start.location.coordinates}>
-          <HomeMarker
-            size={20}
+          <Marker
+            size={homeMarkerSize}
             color={new TinyColor(theme.theme.colors!.primary!)
               .setAlpha(0.75)
               .toRgbString()}
           />
         </MapBoxGL.MarkerView>
+
+        {playersWithCoordinate.map(({player, coordinate}: any) => {
+          const score = room.map.points.reduce((acc: number, point: IPoint) => {
+            if (
+              point.collectedBy?._id === player._id &&
+              time > new Date(point.collectedAt)
+            )
+              return acc + point.weight;
+            return acc;
+          }, 0);
+
+          return (
+            <MapBoxGL.MarkerView
+              id={coordinateToString(coordinate)}
+              key={coordinateToString(coordinate)}
+              coordinate={coordinate}>
+              <Marker weight={score} size={26} color={player.color}></Marker>
+            </MapBoxGL.MarkerView>
+          );
+        })}
       </MapBoxGL.MapView>
 
       <View style={styles.controlsContainer}>
-        <Slider
-          onSlidingStart={onSlidingStart}
-          onSlidingComplete={onSlidingComplete}
-          onValueChange={onSliderValueChange}
-          minimumTrackTintColor="rgba(0,0,0,0.45)"
-          maximumTrackTintColor="rgba(0,0,0,0.30)"
-          thumbTintColor={theme.theme.colors!.primary}
-          value={progress}
-        />
-        <View style={styles.controlButtons}>
-          <TouchableOpacity
-            containerStyle={styles.skipBack}
-            onPress={onPressSkip('back')}>
-            <Feather color="rgba(0,0,0,.7)" size={30} name="skip-back" />
-          </TouchableOpacity>
+        <View style={{flexDirection: 'row'}}>
           <TouchableOpacity
             containerStyle={styles.play}
             onPress={toggleIsPaused}>
@@ -242,13 +229,19 @@ const ReplayScreen: FC = () => {
               name={isPaused ? 'play' : 'pause'}
             />
           </TouchableOpacity>
-          <TouchableOpacity
-            containerStyle={styles.skipForward}
-            onPress={onPressSkip('forward')}>
-            <Feather color="rgba(0,0,0,.7)" size={30} name="skip-forward" />
-          </TouchableOpacity>
+          <Slider
+            style={styles.slider}
+            onSlidingStart={onSlidingStart}
+            onSlidingComplete={onSlidingComplete}
+            onValueChange={onSliderValueChange}
+            minimumTrackTintColor="rgba(0,0,0,0.45)"
+            maximumTrackTintColor="rgba(0,0,0,0.30)"
+            thumbTintColor={theme.theme.colors!.primary}
+            value={Math.min(1, progress)}
+          />
         </View>
       </View>
+      <TimeLeft now={time} finishedAt={new Date(room.finishedAt)} />
     </View>
   );
 };

@@ -116,7 +116,7 @@ const MapScreen: FC<IMapScreenProps> = props => {
           id={coordinateToString(props.room.map.start.location.coordinates)}
           key={coordinateToString(props.room.map.start.location.coordinates)}
           coordinate={props.room.map.start.location.coordinates}>
-          <HomeMarker
+          <Marker
             size={homeMarkerSize}
             color={new TinyColor(theme.theme.colors!.primary!)
               .setAlpha(0.75)

@@ -75,7 +75,13 @@ const IndexScreen: FC = () => {
     socket!.emit(
       'room:join',
       {roomId: data, player: {id: DeviceInfo.getUniqueId(), name: name}},
-      () => {
+      (room: any) => {
+        if (!room)
+          return Alert.alert(
+            'Invalid QR',
+            'The QR code you scanned is invalid.',
+          );
+
         AsyncStorage.setItem('roomId', data);
         navigation.navigate('Room', {roomId: data});
       },
