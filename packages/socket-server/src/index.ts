@@ -2,11 +2,14 @@ import { Server, Socket } from "socket.io";
 import { connect } from "mongoose";
 import { routes } from "./routes";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
-import { RoomModel } from "./models/RoomModel";
 import { ticker } from "./ticker";
 import dotenv from "dotenv";
 
 const port = Number(process.env.PORT) || 3000;
+
+const getDBName = (mongoUrl: string) =>
+  /mongodb.*\/\/.*:.*@.*\/(?<dbname>[A-z]*).*/g.exec(mongoUrl)?.groups
+    ?.dbname || "";
 
 const connectToMongoDB = async () => {
   console.log("Connecting to MongoDB...");
@@ -15,7 +18,11 @@ const connectToMongoDB = async () => {
     useUnifiedTopology: true,
     authSource: "admin",
   });
-  console.log("Successfully connected to MongoDB");
+  console.log(
+    `Successfull connected to MongoDB: ${getDBName(
+      process.env.MONGO_URL as string
+    )}`
+  );
 };
 
 const initiateSocketServer = () => {
