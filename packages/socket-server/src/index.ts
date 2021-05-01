@@ -19,9 +19,7 @@ const connectToMongoDB = async () => {
     authSource: "admin",
   });
   console.log(
-    `Successfull connected to MongoDB: ${getDBName(
-      process.env.MONGO_URL as string
-    )}`
+    `Successfully connected to MongoDB: ${process.env.MONGO_URL as string}`
   );
 };
 
