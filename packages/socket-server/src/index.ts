@@ -8,7 +8,7 @@ import dotenv from "dotenv";
 const port = Number(process.env.PORT) || 3000;
 
 const getDBName = (mongoUrl: string) =>
-  /mongodb.*\/\/.*:.*@.*\/(?<dbname>[A-z]*).*/g.exec(mongoUrl)?.groups
+  /mongodb.*\/\/.*:.*@.*\/(?<dbname>([A-z]|-|_)*).*/g.exec(mongoUrl)?.groups
     ?.dbname || "";
 
 const connectToMongoDB = async () => {
