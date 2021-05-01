@@ -13,7 +13,7 @@ import {getMarkerSize} from '../../../../utils/map';
 import TinyColor from 'tinycolor2';
 import {getSpacing} from '../../../../theme/utils';
 import Feather from 'react-native-vector-icons/Feather';
-import {gameConfig} from 'shared/config/game';
+import {gameConfig} from '../../../../config/game';
 
 interface IMapScreenProps {
   room: any;

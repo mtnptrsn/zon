@@ -18,7 +18,7 @@ import {TouchableOpacity} from 'react-native-gesture-handler';
 // @ts-ignore
 import Slider from 'react-native-slider';
 import {getMarkerSize} from '../../utils/map';
-import {gameConfig} from 'shared/config/game';
+import {gameConfig} from '../../config/game';
 
 const getPointColor = (point: IPoint, time: Date) => {
   if (!point.collectedBy || new Date(point.collectedAt) > time)

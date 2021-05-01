@@ -5,7 +5,7 @@ import {StyleSheet, Vibration, View} from 'react-native';
 import useInterval from '@use-it/interval';
 import {GeolocationResponse} from '@react-native-community/geolocation';
 import {vibrationDurations} from '../../../utils/vibration';
-import {gameConfig} from 'shared/config/game';
+import {gameConfig} from '../../../config/game';
 
 interface ICountdownScreenProps {}
 

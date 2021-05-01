@@ -4,10 +4,10 @@ import { getDistance } from "geolib";
 import { getRandomPlayerColor } from "../utils/color";
 import { add } from "date-fns";
 import { generateMap } from "../utils/map";
-import { gameConfig } from "shared/config/game";
 import { PlayerPositionModel } from "../models/PlayerPositionModel";
 import { Document } from "mongoose";
 import { getStreetCoordinates } from "../utils/osm";
+import { gameConfig } from "../config/game";
 
 export namespace RoomController {
   export interface ICreate {

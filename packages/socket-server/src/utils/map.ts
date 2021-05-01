@@ -1,5 +1,5 @@
 import { getDistance } from "geolib";
-import { gameConfig } from "shared/config/game";
+import { gameConfig } from "../config/game";
 
 export const generateMap = (
   coordinates: [number, number][],
