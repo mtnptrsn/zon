@@ -157,7 +157,7 @@ export class RoomController {
     socket,
     io
   ) => {
-    console.time("start");
+    if (process.env.LOGS) console.time("RoomController:start");
     const room = await RoomModel.findById(data.roomId);
 
     room.status = "COUNTDOWN";
@@ -242,7 +242,7 @@ export class RoomController {
     await room.save();
     io.emit(`room:${room._id}:onUpdate`, room);
     callback?.(room);
-    console.timeEnd("start");
+    if (process.env.LOGS) console.timeEnd("RoomController:start");
   };
 
   static end: IController<RoomController.IEnd> = async (

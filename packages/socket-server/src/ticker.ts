@@ -4,6 +4,7 @@ import { differenceInMilliseconds } from "date-fns";
 import { PlayerPositionModel } from "./models/PlayerPositionModel";
 
 const onFinish = async (io: Server, room: any) => {
+  if (process.env.LOGS) console.time("ticker:onFinish");
   room.status = "FINISHED";
   const playerPositions = await PlayerPositionModel.find({
     roomId: room._id,
@@ -15,16 +16,20 @@ const onFinish = async (io: Server, room: any) => {
     type: "info",
   });
 
-  return io.emit(`room:${room._id}:onUpdate`, {
+  io.emit(`room:${room._id}:onUpdate`, {
     ...room.toObject(),
     playerPositions: playerPositions,
   });
+
+  if (process.env.LOGS) console.timeEnd("ticker:onFinish");
 };
 
 const onStart = async (io: Server, room: any) => {
+  if (process.env.LOGS) console.time("ticker:onStart");
   room.status = "PLAYING";
   await room.save();
-  return io.emit(`room:${room._id}:onUpdate`, room);
+  io.emit(`room:${room._id}:onUpdate`, room);
+  if (process.env.LOGS) console.timeEnd("ticker:onStart");
 };
 
 export const ticker = async (io: Server) => {
