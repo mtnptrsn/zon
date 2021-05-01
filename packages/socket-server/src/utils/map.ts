@@ -6,7 +6,7 @@ export const generateMap = (
   radius: number
 ): [number, number][] => {
   const margin = gameConfig.hitbox.point * 2 + 80;
-  const amountOfPoints = Math.ceil((Math.PI * Math.pow(radius, 2)) / 150000);
+  const amountOfPoints = Math.ceil((Math.PI * Math.pow(radius, 2)) / 130000);
 
   let points: [number, number][] = [];
 

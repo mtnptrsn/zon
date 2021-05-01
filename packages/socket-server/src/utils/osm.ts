@@ -8,11 +8,7 @@ import {
 import { parseStringPromise } from "xml2js";
 
 const getOverpassQuery = (coordinate: [number, number], radius: number) => {
-  return `<?xml version="1.0" encoding="UTF-8"?><osm-script><query type="way"><around lat="${
-    coordinate[1]
-  }" lon="${coordinate[0]}" radius="${
-    radius * 3
-  }"/><has-kv k="highway" /></query><union><item/><recurse type="down"/></union><print/></osm-script>`;
+  return `<?xml version="1.0" encoding="UTF-8"?><osm-script><query type="way"><around lat="${coordinate[1]}" lon="${coordinate[0]}" radius="${radius}"/><has-kv k="highway" /></query><union><item/><recurse type="down"/></union><print/></osm-script>`;
 };
 
 const populateWay = (way: [number, number][], margin: number) => {
@@ -53,6 +49,7 @@ export const getStreetCoordinates = async (
   center: [number, number],
   radius: number
 ) => {
+  // console.time("gsc:fetch");
   const [err, response] = await to(
     axios.post(
       `https://overpass-api.de/api/interpreter`,
@@ -65,24 +62,26 @@ export const getStreetCoordinates = async (
     )
   );
   if (err) return null;
+  // console.timeEnd("gsc:fetch");
 
   const parsedData = await parseStringPromise(response!.data);
 
   let nodes: [number, number][] = [];
-  const nodeSet = parsedData.osm.node.reduce((acc: any, node: any) => {
-    return {
-      ...acc,
-      [node.$.id]: [node.$.lon, node.$.lat],
-    };
-  }, {});
+  // console.time("gsc:getReferences");
   const ways: [number, number][][] = parsedData.osm.way.map((way: any) => {
-    const nodes = way.nd.map((node: any) => {
-      const nodeId = node.$.ref;
-      return nodeSet[nodeId];
+    const nodes = way.nd.map((nodeRef: any) => {
+      const nodeId = nodeRef.$.ref;
+      const node = parsedData.osm.node.find(
+        (node: any) => node.$.id === nodeId
+      );
+      return [node.$.lon, node.$.lat];
     });
     return nodes;
   });
-  ways.forEach((way) => (nodes = [...nodes, ...populateWay(way, 50)]));
+  // console.timeEnd("gsc:getReferences");
+  // console.time("gsc:populateWay");
+  ways.forEach((way) => (nodes = [...nodes, ...populateWay(way, 30)]));
+  // console.timeEnd("gsc:populateWay");
   return nodes.filter((coordinate: [number, number]) => {
     const distance = getDistance(
       { lon: coordinate[0], lat: coordinate[1] },

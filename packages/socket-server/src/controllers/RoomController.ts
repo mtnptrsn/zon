@@ -157,11 +157,15 @@ export class RoomController {
     socket,
     io
   ) => {
+    console.time("start");
     const room = await RoomModel.findById(data.roomId);
+
     room.status = "COUNTDOWN";
 
     const streetCoordinates = await getStreetCoordinates(
       data.hostLocation,
+      // [-73.99392595404598, 40.72458054965671],
+      // [18.064170017918602, 59.334781722737716],
       data.radius
     );
 
@@ -238,6 +242,7 @@ export class RoomController {
     await room.save();
     io.emit(`room:${room._id}:onUpdate`, room);
     callback?.(room);
+    console.timeEnd("start");
   };
 
   static end: IController<RoomController.IEnd> = async (

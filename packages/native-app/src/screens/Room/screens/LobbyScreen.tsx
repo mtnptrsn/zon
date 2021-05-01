@@ -145,7 +145,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
             thumbTintColor={theme.theme.colors!.primary}
             value={settings.duration}
             onValueChange={(value: any) => {
-              setSettings({...settings, duration: value});
+              setSettings(settings => ({...settings, duration: value}));
             }}
             maximumValue={80}
             minimumValue={10}
@@ -159,10 +159,10 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
             thumbTintColor={theme.theme.colors!.primary}
             step={100}
             minimumValue={1000}
-            maximumValue={3000}
+            maximumValue={2500}
             value={settings.radius}
             onValueChange={(value: any) => {
-              setSettings({...settings, radius: value});
+              setSettings(settings => ({...settings, radius: value}));
             }}
           />
           <Text style={styles.sliderValue}>
