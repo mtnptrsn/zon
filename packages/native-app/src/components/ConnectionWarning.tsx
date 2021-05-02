@@ -1,7 +1,7 @@
 import React, {FC} from 'react';
-import {StyleSheet, View} from 'react-native';
-import {Text, useTheme} from 'react-native-elements';
+import {StyleSheet} from 'react-native';
 import {getSpacing} from '../theme/utils';
+import {Text, View, Colors} from 'react-native-ui-lib';
 
 const styles = StyleSheet.create({
   connectionWarning: {
@@ -15,17 +15,9 @@ const styles = StyleSheet.create({
 });
 
 const ConnectionWarning: FC = () => {
-  const theme = useTheme();
-
   return (
-    <View
-      style={[
-        styles.connectionWarning,
-        {
-          backgroundColor: theme.theme.colors!.error,
-        },
-      ]}>
-      <Text style={styles.connectionWarningText}>
+    <View padding-12 backgroundColor={Colors.red30}>
+      <Text text70 center white>
         You are not connected to the server
       </Text>
     </View>

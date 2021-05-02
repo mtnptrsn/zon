@@ -1,16 +1,14 @@
 import {useNavigation, useRoute} from '@react-navigation/core';
 import React, {FC, useEffect} from 'react';
-import {Text} from 'react-native-elements';
 import subscribeToRoom from '../../socket/subscribeToRoom';
 import CancelledScreen from './screens/CancelledScreen';
 import GameScreen from './screens/GameScreen/GameScreen';
 import LobbyScreen from './screens/LobbyScreen';
-import FinishedScreen from './screens/FinishedScreen';
 import CountdownScreen from './screens/CountdownScreen';
 import {Alert} from 'react-native';
-import LoadingScreen from './screens/LoadingScreen';
 import {useKeepAwake} from 'expo-keep-awake';
 import {usePosition} from '../../hooks/usePosition';
+import {LoaderScreen} from 'react-native-ui-lib';
 
 interface IRoomScreenRouteParams {
   roomId: string;
@@ -41,7 +39,7 @@ const RoomScreen: FC = () => {
     });
   }, []);
 
-  if (!room) return <LoadingScreen />;
+  if (!room) return <LoaderScreen />;
   if (room.status === 'COUNTDOWN') return <CountdownScreen />;
   if (room.status === 'ARRANGING')
     return <LobbyScreen position={position} room={room} />;

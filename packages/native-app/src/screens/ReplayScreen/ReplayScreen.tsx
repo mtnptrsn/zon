@@ -123,18 +123,12 @@ const ReplayScreen: FC = () => {
 
   useInterval(() => {
     if (isPaused || isSliding) return;
-    setTimeElapsed(timeElapsed + (1000 / 3) * 25);
-  }, 1000 / 3);
+    setTimeElapsed(timeElapsed + (1000 / 6) * 25);
+  }, 1000 / 6);
 
   const onTouchEndMap = () => {
     (mapRef.current as any).getZoom().then(setZoom);
   };
-
-  // const onPressSkip = (direction: 'forward' | 'back') => () => {
-  //   if (direction === 'forward')
-  //     return setTimeElapsed(timeElapsed + duration * 0.05);
-  //   return setTimeElapsed(timeElapsed - duration * 0.05);
-  // };
 
   const toggleIsPaused = () => {
     setIsPaused(!isPaused);

@@ -1,9 +1,7 @@
-import React, {FC, useEffect, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
-import {Text, useTheme} from 'react-native-elements';
-import {getSpacing} from '../../theme/utils';
-import AnimatedNumbers from 'react-native-animated-numbers';
+import React, {FC} from 'react';
+import {StyleSheet} from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
+import {View, Text, Colors} from 'react-native-ui-lib';
 
 interface INotificationInfoProps {
   message: string;
@@ -13,39 +11,23 @@ interface INotificationInfoProps {
 
 const styles = StyleSheet.create({
   container: {
-    // padding: getSpacing(2),
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 3,
-    backgroundColor: 'white',
     overflow: 'hidden',
     borderWidth: 1,
     borderStyle: 'solid',
     borderColor: 'rgba(0,0,0,.1)',
   },
-  infoIconContainer: {
-    padding: getSpacing(0.8),
-  },
-  text: {
-    fontSize: 18,
-    marginLeft: getSpacing(1.5),
-  },
 });
 
 const NotificationInfo: FC<INotificationInfoProps> = props => {
-  const theme = useTheme();
-
   return (
-    <View style={[styles.container]}>
-      <View
-        style={[
-          styles.infoIconContainer,
-          {backgroundColor: props.color || theme.theme.colors!.primary},
-        ]}>
+    <View backgroundColor="white" centerV br10 row style={[styles.container]}>
+      <View padding-10 backgroundColor={props.color || Colors.primary}>
         <Feather color="white" size={30} name={props.icon || 'info'} />
       </View>
 
-      <Text style={styles.text}>{props.message}</Text>
+      <Text marginL-16 text65>
+        {props.message}
+      </Text>
     </View>
   );
 };

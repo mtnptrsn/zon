@@ -1,10 +1,8 @@
-import useInterval from '@use-it/interval';
-import differenceInSeconds from 'date-fns/differenceInSeconds';
-import React, {FC, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
-import {Text} from 'react-native-elements';
+import React, {FC} from 'react';
+import {StyleSheet} from 'react-native';
 import {getSpacing} from '../../../theme/utils';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import Feather from 'react-native-vector-icons/Feather';
+import {View} from 'react-native-ui-lib';
 
 interface IHomeIndicatorProps {}
 
@@ -13,10 +11,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: getSpacing(1),
     right: getSpacing(1),
-    backgroundColor: 'white',
-    paddingHorizontal: getSpacing(1),
-    paddingVertical: getSpacing(0.75),
-    borderRadius: 3,
     borderWidth: 1,
     borderStyle: 'solid',
     borderColor: 'rgba(0,0,0,.1)',
@@ -25,8 +19,14 @@ const styles = StyleSheet.create({
 
 const HomeIndicator: FC<IHomeIndicatorProps> = props => {
   return (
-    <View style={styles.container}>
-      <FontAwesome size={24} name="home" />
+    <View
+      backgroundColor="white"
+      height={46}
+      paddingH-12
+      center
+      br10
+      style={styles.container}>
+      <Feather size={24} name="home" />
     </View>
   );
 };

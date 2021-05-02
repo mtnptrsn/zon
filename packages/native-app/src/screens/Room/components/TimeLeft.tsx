@@ -1,9 +1,9 @@
 import useInterval from '@use-it/interval';
 import differenceInSeconds from 'date-fns/differenceInSeconds';
 import React, {FC, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
-import {Text} from 'react-native-elements';
+import {StyleSheet} from 'react-native';
 import {getSpacing} from '../../../theme/utils';
+import {View, Text} from 'react-native-ui-lib';
 
 interface ITimeIndicatorProps {
   finishedAt: Date;
@@ -35,16 +35,11 @@ const styles = StyleSheet.create({
   container: {
     position: 'absolute',
     top: getSpacing(1),
-    backgroundColor: 'white',
-    paddingHorizontal: getSpacing(1),
-    paddingVertical: getSpacing(0.5),
-    borderRadius: 3,
-    alignSelf: 'center',
     borderWidth: 1,
     borderStyle: 'solid',
     borderColor: 'rgba(0,0,0,.1)',
+    alignSelf: 'center',
   },
-  text: {},
 });
 
 const TimeLeft: FC<ITimeIndicatorProps> = props => {
@@ -56,10 +51,14 @@ const TimeLeft: FC<ITimeIndicatorProps> = props => {
   const timeLeft = getTimeLeft(props.finishedAt, props.now);
 
   return (
-    <View style={styles.container}>
-      <Text h4 style={styles.text}>
-        {timeLeft}
-      </Text>
+    <View
+      backgroundColor="white"
+      height={46}
+      paddingH-16
+      center
+      br10
+      style={styles.container}>
+      <Text text50BL>{timeLeft}</Text>
     </View>
   );
 };

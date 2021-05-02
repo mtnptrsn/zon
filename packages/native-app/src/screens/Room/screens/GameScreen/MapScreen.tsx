@@ -1,8 +1,9 @@
 import React, {FC, useRef, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {StyleSheet} from 'react-native';
 import MapBoxGL from '@react-native-mapbox-gl/maps';
 import {Coordinate, IPoint} from '../../types';
-import {Button, useTheme} from 'react-native-elements';
+import {useTheme} from 'react-native-elements';
+import {View, Button} from 'react-native-ui-lib';
 import TimeLeft from '../../components/TimeLeft';
 import Score from '../../components/Score';
 import HomeIndicator from '../../components/HomeIndicator';
@@ -27,9 +28,10 @@ const styles = StyleSheet.create({
   },
   centerButtonContainer: {
     position: 'absolute',
+    bottom: getSpacing(1),
     right: getSpacing(1),
-    bottom: getSpacing(5),
-    backgroundColor: 'white',
+    paddingTop: getSpacing(1),
+    paddingBottom: getSpacing(1),
   },
 });
 
@@ -71,7 +73,6 @@ const MapScreen: FC<IMapScreenProps> = props => {
         props.position.coords.latitude,
       ],
       zoomLevel: 14,
-      // animationDuration: 1000,
     });
   };
 
@@ -128,12 +129,12 @@ const MapScreen: FC<IMapScreenProps> = props => {
       </MapBoxGL.MapView>
 
       <Button
+        size={Button.sizes.xSmall}
+        style={styles.centerButtonContainer}
         onPress={onPressCenter}
-        type="outline"
-        containerStyle={styles.centerButtonContainer}
-        buttonStyle={{padding: 12}}
-        icon={<Feather color="black" size={24} name="map-pin" />}
-      />
+        backgroundColor="white">
+        <Feather color="black" size={24} name="map-pin" />
+      </Button>
 
       <TimeLeft finishedAt={new Date(props.room.finishedAt)} />
       <Score score={score} />

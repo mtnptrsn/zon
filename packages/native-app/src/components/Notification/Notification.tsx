@@ -1,6 +1,5 @@
 import React, {FC, useEffect, useState} from 'react';
-import {Alert, StyleSheet, View} from 'react-native';
-import {Text} from 'react-native-elements';
+import {StyleSheet} from 'react-native';
 import {getSpacing} from '../../theme/utils';
 
 import Animated, {
@@ -23,19 +22,34 @@ const styles = StyleSheet.create({
 
 const Notification: FC<INotificationProps> = props => {
   const [isVisible, setIsVisible] = useState(true);
-
+  const offset = useSharedValue(-10);
+  const opacity = useSharedValue(0);
   useEffect(() => {
+    offset.value = withSpring(0);
+    opacity.value = withSpring(1);
     setTimeout(() => {
-      setIsVisible(false);
+      offset.value = withSpring(-10);
+      opacity.value = withSpring(0);
+      setTimeout(() => setIsVisible(false), 1000);
     }, 6000);
   }, []);
 
+  const animatedStyles = useAnimatedStyle(() => {
+    return {
+      transform: [{translateY: offset.value}],
+      opacity: opacity.value,
+    };
+  });
   if (!isVisible) return null;
-
   return (
-    <View style={[styles.container, {top: props.top || getSpacing(2)}]}>
+    <Animated.View
+      style={[
+        styles.container,
+        {top: props.top || getSpacing(2)},
+        animatedStyles,
+      ]}>
       {props.children}
-    </View>
+    </Animated.View>
   );
 };
 

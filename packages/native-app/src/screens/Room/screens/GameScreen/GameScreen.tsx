@@ -1,6 +1,6 @@
 import React, {FC, useContext, useEffect, useState} from 'react';
-import {Alert, StyleSheet, Vibration, View} from 'react-native';
-import {Coordinate, IPoint} from '../../types';
+import {Alert, Vibration} from 'react-native';
+import {IPoint} from '../../types';
 import {SocketContext} from '../../../../socket/context';
 import {getUniqueId} from 'react-native-device-info';
 import subscribeToEvents from '../../../../socket/subscribeToEvents';
@@ -8,14 +8,13 @@ import {vibrationDurations} from '../../../../utils/vibration';
 import {GeolocationResponse} from '@react-native-community/geolocation';
 import MapScreen from './MapScreen';
 import StatsScreen from './StatsScreen';
-import {ButtonGroup} from 'react-native-elements';
+import {TabBar, View} from 'react-native-ui-lib';
 import {getSpacing} from '../../../../theme/utils';
 import {StackActions, useNavigation} from '@react-navigation/native';
 import Notification from '../../../../components/Notification/Notification';
 import NotificationScore from '../../../../components/Notification/NotificationScore';
 import NotificationInfo from '../../../../components/Notification/NotificationInfo';
 
-const coordinateToString = ([lat, long]: Coordinate) => `${lat};${long}`;
 const translateEventMessage = (
   translateMap: {[key: string]: string},
   message: string,
@@ -31,18 +30,6 @@ interface IGameScreenProps {
   room: any;
   position: GeolocationResponse;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  navigation: {
-    position: 'absolute',
-    bottom: getSpacing(0.8),
-    left: getSpacing(0.15),
-    right: getSpacing(0.15),
-  },
-});
 
 const GameScreen: FC<IGameScreenProps> = props => {
   const [event, setEvent] = useState<any>(null);
@@ -71,7 +58,6 @@ const GameScreen: FC<IGameScreenProps> = props => {
 
   useEffect(() => {
     if (props.room.status !== 'PLAYING') return;
-
     const {longitude, latitude} = props.position.coords;
     if (longitude === 0 && latitude === 0) return;
     socket!.emit(
@@ -147,7 +133,7 @@ const GameScreen: FC<IGameScreenProps> = props => {
   };
 
   return (
-    <View style={styles.container}>
+    <View flex>
       <MapScreen room={props.room} player={player} position={props.position} />
       {activeScreen === 1 && (
         <StatsScreen
@@ -159,12 +145,16 @@ const GameScreen: FC<IGameScreenProps> = props => {
         />
       )}
 
-      <ButtonGroup
-        containerStyle={styles.navigation}
-        onPress={setActiveScreen}
-        selectedIndex={activeScreen}
-        buttons={['Map', 'Stats']}
-      />
+      <TabBar enableShadow selectedIndex={activeScreen}>
+        <TabBar.Item
+          key={0}
+          onPress={() => setActiveScreen(0)}
+          label="Map"></TabBar.Item>
+        <TabBar.Item
+          key={1}
+          onPress={() => setActiveScreen(1)}
+          label="Stats"></TabBar.Item>
+      </TabBar>
 
       {Boolean(event) && (
         <Notification top={getSpacing(activeScreen === 0 ? 5.5 : 1)}>

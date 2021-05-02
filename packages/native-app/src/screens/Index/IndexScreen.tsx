@@ -1,29 +1,13 @@
 import {useNavigation} from '@react-navigation/core';
 import React, {FC, useContext, useEffect, useState} from 'react';
-import {View, StyleSheet, Alert} from 'react-native';
-import {Text, Button, Input} from 'react-native-elements';
+import {Alert} from 'react-native';
+import {View, Text, Button, TextField} from 'react-native-ui-lib';
 import {SocketContext} from '../../socket/context';
-import {getSpacing} from '../../theme/utils';
 import {RoomController} from 'socket-server/src/controllers/RoomController';
 import DeviceInfo from 'react-native-device-info';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Socket} from 'socket.io-client';
 import {DefaultEventsMap} from 'socket.io-client/build/typed-events';
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: getSpacing(1),
-    justifyContent: 'space-between',
-  },
-  logoText: {
-    alignSelf: 'center',
-    marginTop: getSpacing(3),
-  },
-  createGameButton: {
-    marginBottom: getSpacing(0.5),
-  },
-});
 
 const findOngoingRoom = async (
   socket: Socket<DefaultEventsMap, DefaultEventsMap>,
@@ -47,7 +31,7 @@ const IndexScreen: FC = () => {
   // useEffect(() => {
   //   socket!.emit(
   //     'room:get',
-  //     {roomId: '608ada5d2d77b5001e4a19bf'},
+  //     {roomId: '608db1751290cf7dd8725dfd'},
   //     (room: any) => navigation.navigate('Replay', {room}),
   //   );
   // }, []);
@@ -109,23 +93,16 @@ const IndexScreen: FC = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.logoText} h1>
+    <View flex spread>
+      <Text text20 center marginT-100>
         Orient
       </Text>
-      <View>
-        <Input
-          onChangeText={setName}
-          value={name}
-          label="Name"
-          placeholder="Your Name"
-        />
-        <Button
-          onPress={onPressCreateGame}
-          containerStyle={styles.createGameButton}
-          title="Create game"
-        />
-        <Button onPress={onPressJoinGame} title="Join game" />
+      <View padding-12>
+        <View marginH-12>
+          <TextField value={name} onChangeText={setName} title="Your Name" />
+        </View>
+        <Button label="Create Game" marginB-6 onPress={onPressCreateGame} />
+        <Button label="Join Game" onPress={onPressJoinGame} />
       </View>
     </View>
   );

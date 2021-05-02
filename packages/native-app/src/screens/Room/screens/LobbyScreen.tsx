@@ -1,64 +1,17 @@
 import {StackActions, useNavigation} from '@react-navigation/core';
 import React, {FC, useContext, useState} from 'react';
-import {Alert, StyleSheet, View} from 'react-native';
+import {Alert, StyleSheet} from 'react-native';
 import {getUniqueId} from 'react-native-device-info';
-import {Text, Slider, useTheme} from 'react-native-elements';
-import {Button} from 'react-native-elements';
+import {useTheme} from 'react-native-elements';
+import {Text, Slider, View, Button, LoaderScreen} from 'react-native-ui-lib';
+// import {Button} from 'react-native-elements';
 import {SocketContext} from '../../../socket/context';
 import {getSpacing} from '../../../theme/utils';
 import {GeolocationResponse} from '@react-native-community/geolocation';
-
 interface ILobbyScreenProps {
   room: any;
   position: GeolocationResponse;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: getSpacing(1),
-  },
-  playerHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  inviteButton: {
-    marginLeft: getSpacing(1),
-  },
-  playerText: {
-    fontSize: 16,
-  },
-  buttons: {
-    marginTop: 'auto',
-  },
-  startButton: {
-    marginTop: getSpacing(0.5),
-  },
-  playerColor: {
-    width: 20,
-    height: 20,
-    borderRadius: 99,
-    marginRight: getSpacing(0.5),
-  },
-  playerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: getSpacing(1),
-  },
-  settingsContainer: {
-    marginTop: getSpacing(2),
-  },
-  sliderTitle: {
-    fontSize: 16,
-    marginTop: getSpacing(1),
-  },
-  sliderValue: {
-    color: 'rgba(0,0,0,.6)',
-  },
-  createMapButton: {
-    marginRight: getSpacing(1),
-  },
-});
 
 const LobbyScreen: FC<ILobbyScreenProps> = props => {
   const [isLoading, setIsLoading] = useState(false);
@@ -68,7 +21,6 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
   const roomHost = props.room.players.find((player: any) => player.isHost);
   const isHost = userId === roomHost._id;
   const [settings, setSettings] = useState({duration: 40, radius: 2000});
-  const theme = useTheme();
   const hasAccuratePositon =
     props.position.coords.latitude !== 0 &&
     props.position.coords.longitude !== 0;
@@ -109,78 +61,69 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
   const renderPlayers = () => {
     return props.room.players.map((player: any) => {
       return (
-        <View key={player._id} style={styles.playerContainer}>
-          <View
-            style={[
-              styles.playerColor,
-              {
-                backgroundColor: player.color,
-              },
-            ]}
-          />
-          <Text style={styles.playerText}>{player.name}</Text>
+        <View key={player._id} row centerV>
+          <View backgroundColor={player.color} height={25} width={25} br100 />
+          <Text text70 marginL-8>
+            {player.name}
+          </Text>
         </View>
       );
     });
   };
 
+  if (!hasAccuratePositon) return <LoaderScreen message="Finding position" />;
+  if (isLoading) return <LoaderScreen message="Creating map" />;
+
   return (
-    <View style={styles.container}>
-      <View style={styles.playerHeader}>
-        <Text h4>Players</Text>
-        <Button
-          onPress={onPressInvite}
-          containerStyle={styles.inviteButton}
-          title="Invite"
-        />
+    <View padding-12 flex>
+      <View flex>
+        <Text text50>Players</Text>
+        <View marginT-12>{renderPlayers()}</View>
+
+        {isHost && (
+          <View marginT-24>
+            <Text text50>Settings</Text>
+            <Text text70 marginT-12>
+              Duration
+            </Text>
+            <Slider
+              value={settings.duration}
+              onValueChange={(value: any) => {
+                setSettings(settings => ({...settings, duration: value}));
+              }}
+              maximumValue={80}
+              minimumValue={10}
+              step={1}
+            />
+            <Text grey30>{settings.duration} minutes</Text>
+
+            <Text text70 marginT-12>
+              Map Size
+            </Text>
+            <Slider
+              step={100}
+              minimumValue={1000}
+              maximumValue={2500}
+              value={settings.radius}
+              onValueChange={(value: any) => {
+                setSettings(settings => ({...settings, radius: value}));
+              }}
+            />
+            <Text grey30>{settings.radius} meters in radius</Text>
+          </View>
+        )}
       </View>
-      {renderPlayers()}
 
-      {isHost && (
-        <View style={styles.settingsContainer}>
-          <Text h4>Settings</Text>
-          <Text style={styles.sliderTitle}>Duration</Text>
-          <Slider
-            thumbStyle={{height: 30, width: 30}}
-            thumbTintColor={theme.theme.colors!.primary}
-            value={settings.duration}
-            onValueChange={(value: any) => {
-              setSettings(settings => ({...settings, duration: value}));
-            }}
-            maximumValue={80}
-            minimumValue={10}
-            step={1}
-          />
-          <Text style={styles.sliderValue}>{settings.duration} minutes</Text>
-
-          <Text style={styles.sliderTitle}>Map Size</Text>
-          <Slider
-            thumbStyle={{height: 30, width: 30}}
-            thumbTintColor={theme.theme.colors!.primary}
-            step={100}
-            minimumValue={1000}
-            maximumValue={2500}
-            value={settings.radius}
-            onValueChange={(value: any) => {
-              setSettings(settings => ({...settings, radius: value}));
-            }}
-          />
-          <Text style={styles.sliderValue}>
-            {settings.radius} meters in radius
-          </Text>
-        </View>
-      )}
-
-      <View style={styles.buttons}>
-        <Button onPress={onPressLeave} title="Leave" type="outline" />
+      <View>
+        <Button outline label="Invite" onPress={onPressInvite} />
+        <Button marginT-6 outline onPress={onPressLeave} label="Leave" />
         {isHost && (
           <Button
+            marginT-6
             disabled={!hasAccuratePositon}
             onPress={onPressStart}
-            containerStyle={styles.startButton}
-            title="Start"
-            loading={!hasAccuratePositon || isLoading}
-          />
+            label="Start"
+            loading={!hasAccuratePositon || isLoading}></Button>
         )}
       </View>
     </View>
