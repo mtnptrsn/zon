@@ -4,7 +4,6 @@ import {Text} from 'react-native-elements';
 
 interface IMarkerProps {
   color: string;
-  weight?: number;
   onPress?: () => void;
   size: number;
 }
@@ -24,9 +23,6 @@ const styles = StyleSheet.create({
 });
 
 const Marker: FC<IMarkerProps> = props => {
-  const fontMaxSize = 24;
-  const fontSize = Math.min(fontMaxSize, props.size / 1.9);
-
   return (
     <View
       pointerEvents={props.onPress ? 'auto' : 'none'}
@@ -40,9 +36,7 @@ const Marker: FC<IMarkerProps> = props => {
           borderRadius: props.size,
         },
       ]}>
-      {Boolean(typeof props.weight === 'number') && (
-        <Text style={[styles.text, {fontSize}]}>{String(props.weight)}</Text>
-      )}
+      {props.children}
     </View>
   );
 };

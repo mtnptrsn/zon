@@ -88,6 +88,7 @@ const checkPointCollected = (
     return false;
   if (Boolean(point.belongsTo) && point.belongsTo?.id !== player._id)
     return false;
+  if (Boolean(point.collectedBy)) return false;
 
   return true;
 };

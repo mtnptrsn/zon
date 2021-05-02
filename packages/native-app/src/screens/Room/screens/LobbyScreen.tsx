@@ -101,7 +101,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
               Map Size
             </Text>
             <Slider
-              step={100}
+              step={1}
               minimumValue={1000}
               maximumValue={2500}
               value={settings.radius}

@@ -31,7 +31,7 @@ const IndexScreen: FC = () => {
   // useEffect(() => {
   //   socket!.emit(
   //     'room:get',
-  //     {roomId: '608db1751290cf7dd8725dfd'},
+  //     {roomId: '608ec270005a19c2a893779c'},
   //     (room: any) => navigation.navigate('Replay', {room}),
   //   );
   // }, []);

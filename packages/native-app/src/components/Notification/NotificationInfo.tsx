@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
 
 const NotificationInfo: FC<INotificationInfoProps> = props => {
   return (
-    <View backgroundColor="white" centerV br10 row style={[styles.container]}>
+    <View backgroundColor="white" centerV br10 row style={styles.container}>
       <View padding-10 backgroundColor={props.color || Colors.primary}>
         <Feather color="white" size={30} name={props.icon || 'info'} />
       </View>

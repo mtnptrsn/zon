@@ -1,9 +1,10 @@
 import React, {FC, useRef, useState} from 'react';
 import {StyleSheet} from 'react-native';
+import {Text} from 'react-native-ui-lib';
 import MapBoxGL from '@react-native-mapbox-gl/maps';
 import {Coordinate, IPoint} from '../../types';
 import {useTheme} from 'react-native-elements';
-import {View, Button} from 'react-native-ui-lib';
+import {View, Button, Colors} from 'react-native-ui-lib';
 import TimeLeft from '../../components/TimeLeft';
 import Score from '../../components/Score';
 import HomeIndicator from '../../components/HomeIndicator';
@@ -33,18 +34,26 @@ const styles = StyleSheet.create({
     paddingTop: getSpacing(1),
     paddingBottom: getSpacing(1),
   },
+  markerText: {
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: {width: 0, height: 0},
+    textShadowRadius: 3,
+  },
 });
 
 const coordinateToString = ([lat, long]: Coordinate) => `${lat};${long}`;
 
 const getPointColor = (player: any, point: IPoint) => {
+  const disabledColor = new TinyColor(Colors.grey30)
+    .setAlpha(0.3)
+    .toRgbString();
   if (point.collectedBy?.color)
-    return new TinyColor(point.collectedBy.color).setAlpha(0.75).toRgbString();
+    return new TinyColor(point.collectedBy.color).setAlpha(0.8).toRgbString();
   if (!player.hasTakenFirstPoint && point.belongsTo?._id !== player._id)
-    return 'rgba(0,0,0,.2)';
+    return disabledColor;
   if (Boolean(point.belongsTo) && point.belongsTo?._id !== player._id)
-    return 'rgba(0,0,0,.2)';
-  return 'rgba(244, 67, 54, .75)';
+    return disabledColor;
+  return new TinyColor(Colors.green30).setAlpha(0.8).toRgbString();
 };
 
 const MapScreen: FC<IMapScreenProps> = props => {
@@ -98,21 +107,34 @@ const MapScreen: FC<IMapScreenProps> = props => {
         />
 
         {props.room.map.points.map((point: IPoint) => {
+          const markerSize = getMarkerSize(
+            point.location.coordinates[1],
+            zoom,
+            gameConfig.hitbox.point,
+            22,
+          );
+          const fontSize = Math.min(40, markerSize / 1.75);
           return (
             <MapBoxGL.MarkerView
               id={coordinateToString(point.location.coordinates)}
               key={coordinateToString(point.location.coordinates)}
               coordinate={point.location.coordinates}>
               <Marker
-                size={getMarkerSize(
-                  point.location.coordinates[1],
-                  zoom,
-                  gameConfig.hitbox.point,
-                  20,
-                )}
-                weight={point.weight}
-                color={getPointColor(props.player, point)}
-              />
+                size={markerSize}
+                color={getPointColor(props.player, point)}>
+                <Text
+                  style={[
+                    {
+                      fontSize: fontSize,
+                    },
+                    styles.markerText,
+                  ]}
+                  center
+                  white>
+                  {point.collectedBy?.name?.substring(0, 1)?.toUpperCase?.() ||
+                    point.weight}
+                </Text>
+              </Marker>
             </MapBoxGL.MarkerView>
           );
         })}
@@ -122,9 +144,7 @@ const MapScreen: FC<IMapScreenProps> = props => {
           coordinate={props.room.map.start.location.coordinates}>
           <Marker
             size={homeMarkerSize}
-            color={new TinyColor(theme.theme.colors!.primary!)
-              .setAlpha(0.75)
-              .toRgbString()}
+            color={new TinyColor(Colors.blue30).setAlpha(0.25).toRgbString()}
           />
         </MapBoxGL.MarkerView>
         <MapBoxGL.UserLocation />

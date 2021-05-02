@@ -19,11 +19,21 @@ import {TouchableOpacity} from 'react-native-gesture-handler';
 import Slider from 'react-native-slider';
 import {getMarkerSize} from '../../utils/map';
 import {gameConfig} from '../../config/game';
+import {Colors, Text} from 'react-native-ui-lib';
 
 const getPointColor = (point: IPoint, time: Date) => {
-  if (!point.collectedBy || new Date(point.collectedAt) > time)
-    return 'rgba(244, 67, 54, 0.75)';
-  return point.collectedBy.color;
+  const hasBeenCollected =
+    Boolean(point.collectedAt) && new Date(point.collectedAt) < time;
+  if (hasBeenCollected) return point.collectedBy.color;
+  return new TinyColor(Colors.green30).setAlpha(0.8).toRgbString();
+};
+
+const getPointText = (point: IPoint, time: Date) => {
+  const hasBeenCollected =
+    Boolean(point.collectedAt) && new Date(point.collectedAt) < time;
+  if (hasBeenCollected)
+    return point.collectedBy.name.substring(0, 1).toUpperCase();
+  return point.weight;
 };
 
 const styles = StyleSheet.create({
@@ -66,6 +76,11 @@ const styles = StyleSheet.create({
   },
   play: {marginRight: 3},
   slider: {flex: 1},
+  markerText: {
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: {width: 0, height: 0},
+    textShadowRadius: 3,
+  },
 });
 
 const coordinateToString = ([lat, long]: Coordinate) => `${lat};${long}`;
@@ -160,6 +175,14 @@ const ReplayScreen: FC = () => {
 
         {room.map.points.map((point: IPoint) => {
           const color = getPointColor(point, time);
+          const text = getPointText(point, time);
+          const markerSize = getMarkerSize(
+            point.location.coordinates[1],
+            zoom,
+            gameConfig.hitbox.point,
+            22,
+          );
+          const fontSize = Math.min(40, markerSize / 1.75);
 
           return (
             <MapBoxGL.MarkerView
@@ -173,9 +196,19 @@ const ReplayScreen: FC = () => {
                   gameConfig.hitbox.point,
                   20,
                 )}
-                weight={point.weight}
-                color={color}
-              />
+                color={color}>
+                <Text
+                  style={[
+                    {
+                      fontSize: fontSize,
+                    },
+                    styles.markerText,
+                  ]}
+                  center
+                  white>
+                  {text}
+                </Text>
+              </Marker>
             </MapBoxGL.MarkerView>
           );
         })}
@@ -185,9 +218,7 @@ const ReplayScreen: FC = () => {
           coordinate={room.map.start.location.coordinates}>
           <Marker
             size={homeMarkerSize}
-            color={new TinyColor(theme.theme.colors!.primary!)
-              .setAlpha(0.75)
-              .toRgbString()}
+            color={new TinyColor(Colors.blue30).setAlpha(0.25).toRgbString()}
           />
         </MapBoxGL.MarkerView>
 
@@ -206,7 +237,11 @@ const ReplayScreen: FC = () => {
               id={coordinateToString(coordinate)}
               key={coordinateToString(coordinate)}
               coordinate={coordinate}>
-              <Marker weight={score} size={26} color={player.color}></Marker>
+              <Marker size={28} color={player.color}>
+                <Text style={styles.markerText} text70 center white>
+                  {score}
+                </Text>
+              </Marker>
             </MapBoxGL.MarkerView>
           );
         })}
