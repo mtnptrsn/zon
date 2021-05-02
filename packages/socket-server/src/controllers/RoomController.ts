@@ -70,6 +70,28 @@ function shuffle(array: any[]) {
   return array;
 }
 
+const checkPointCollected = (
+  point: any,
+  player: any,
+  playerCoordinate: [number, number],
+  hitbox: number
+) => {
+  const [longitude, latitude] = point.location.coordinates;
+  const distance = getDistance(
+    { lng: longitude, lat: latitude },
+    { lng: playerCoordinate[0], lat: playerCoordinate[1] }
+  );
+  const isWithinHitbox = distance < hitbox;
+
+  if (!isWithinHitbox) return false;
+  if (!player.hasTakenFirstPoint && point.belongsTo?.id !== player._id)
+    return false;
+  if (Boolean(point.belongsTo) && point.belongsTo?.id !== player._id)
+    return false;
+
+  return true;
+};
+
 export class RoomController {
   static create: IController<RoomController.ICreate> = async (
     data,
@@ -308,6 +330,7 @@ export class RoomController {
           lat: room.map.start.location.coordinates[1],
         }
       ) < gameConfig.hitbox.home;
+
     if (playerIsWithinHome !== player.isWithinHome) {
       room.players[playerIndex].isWithinHome = playerIsWithinHome;
       if (playerIsWithinHome)
@@ -319,16 +342,14 @@ export class RoomController {
         };
       didUpdate = true;
     }
+
     room.map.points.forEach((point: any, index: number) => {
-      const [longitude, latitude] = point.location.coordinates;
-      const distance = getDistance(
-        { lng: longitude, lat: latitude },
-        { lng: data.coordinate[0], lat: data.coordinate[1] }
+      const pointCollected = checkPointCollected(
+        point,
+        player,
+        data.coordinate,
+        gameConfig.hitbox.point
       );
-      const pointCollected =
-        distance < gameConfig.hitbox.point &&
-        !Boolean(point.collectedBy) &&
-        (player.hasTakenFirstPoint || point.belongsTo?._id === player._id);
       if (!pointCollected) return;
       if (!player.hasTakenFirstPoint)
         room.players[playerIndex].hasTakenFirstPoint = true;
@@ -344,6 +365,6 @@ export class RoomController {
     await room.save();
     if (event) io.emit(`room:${room._id}:onEvent`, event);
     if (didUpdate) io.emit(`room:${room._id}:onUpdate`, room);
-    callback(room);
+    callback?.(room);
   };
 }

@@ -42,6 +42,8 @@ const getPointColor = (player: any, point: IPoint) => {
     return new TinyColor(point.collectedBy.color).setAlpha(0.75).toRgbString();
   if (!player.hasTakenFirstPoint && point.belongsTo?._id !== player._id)
     return 'rgba(0,0,0,.2)';
+  if (Boolean(point.belongsTo) && point.belongsTo?._id !== player._id)
+    return 'rgba(0,0,0,.2)';
   return 'rgba(244, 67, 54, .75)';
 };
 
