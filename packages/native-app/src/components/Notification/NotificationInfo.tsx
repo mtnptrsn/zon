@@ -25,7 +25,7 @@ const NotificationInfo: FC<INotificationInfoProps> = props => {
         <Feather color="white" size={30} name={props.icon || 'info'} />
       </View>
 
-      <Text marginL-16 text65>
+      <Text marginL-16 text65L>
         {props.message}
       </Text>
     </View>

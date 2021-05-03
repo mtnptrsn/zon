@@ -22,12 +22,12 @@ const NotificationScore: FC<INotificationScoreProps> = props => {
   return (
     <View br10 row centerV backgroundColor="white" style={[styles.container]}>
       <View backgroundColor={props.color} padding-14>
-        <Text center white text60>
+        <Text center white text60L>
           {props.current}
         </Text>
       </View>
 
-      <Text text65 marginL-16>
+      <Text text65L marginL-16>
         {props.name} collected a point
       </Text>
     </View>

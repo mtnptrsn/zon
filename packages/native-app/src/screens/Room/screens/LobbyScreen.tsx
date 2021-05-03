@@ -77,12 +77,12 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
   return (
     <View padding-12 flex>
       <View flex>
-        <Text text50>Players</Text>
+        <Text text50L>Players</Text>
         <View marginT-12>{renderPlayers()}</View>
 
         {isHost && (
           <View marginT-24>
-            <Text text50>Settings</Text>
+            <Text text50L>Settings</Text>
             <Text text70 marginT-12>
               Duration
             </Text>
