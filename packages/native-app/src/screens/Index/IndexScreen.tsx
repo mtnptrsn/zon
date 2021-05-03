@@ -94,8 +94,8 @@ const IndexScreen: FC = () => {
 
   return (
     <View flex spread>
-      <Text text20 center marginT-100>
-        Orient
+      <Text text20 center marginT-140>
+        Zon
       </Text>
       <View padding-12>
         <View marginH-12>
