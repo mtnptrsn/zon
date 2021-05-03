@@ -115,8 +115,8 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
       </View>
 
       <View>
-        <Button outline label="Invite" onPress={onPressInvite} />
-        <Button marginT-6 outline onPress={onPressLeave} label="Leave" />
+        <Button outline onPress={onPressLeave} label="Leave" />
+        <Button marginT-6 outline label="Invite" onPress={onPressInvite} />
         {isHost && (
           <Button
             marginT-6
