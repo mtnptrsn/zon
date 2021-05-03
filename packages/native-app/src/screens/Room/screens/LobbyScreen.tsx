@@ -61,7 +61,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
   const renderPlayers = () => {
     return props.room.players.map((player: any) => {
       return (
-        <View key={player._id} row centerV>
+        <View key={player._id} row centerV marginB-6>
           <View backgroundColor={player.color} height={25} width={25} br100 />
           <Text text70 marginL-8>
             {player.name}

@@ -10,7 +10,7 @@ import {GeolocationResponse} from '@react-native-community/geolocation';
 import TinyColor from 'tinycolor2';
 import {getSpacing} from '../../../../theme/utils';
 import Feather from 'react-native-vector-icons/Feather';
-import {getMarkerSize} from '../../../../utils/map';
+import {getPointRadius} from '../../../../utils/map';
 import {gameConfig} from '../../../../config/game';
 
 const minZoomLevel = 11;
@@ -118,17 +118,15 @@ const MapScreen: FC<IMapScreenProps> = props => {
               ? ''
               : point.collectedBy?.name?.substring(0, 1)?.toUpperCase?.() ||
                 point.weight,
-            minSize: getMarkerSize(
+            minSize: getPointRadius(
               props.position.coords.latitude,
               minZoomLevel,
               isHome ? gameConfig.hitbox.home : gameConfig.hitbox.point,
-              0,
             ),
-            maxSize: getMarkerSize(
+            maxSize: getPointRadius(
               props.position.coords.latitude,
               maxZoomLevel,
               isHome ? gameConfig.hitbox.home : gameConfig.hitbox.point,
-              0,
             ),
           },
           geometry: {
@@ -138,20 +136,6 @@ const MapScreen: FC<IMapScreenProps> = props => {
         };
       },
     ),
-  };
-
-  const home = {
-    type: 'FeatureCollection',
-    features: [
-      {
-        type: 'Feature',
-        id: 'home',
-        geometry: {
-          type: 'Point',
-          coordinates: props.room.map.start.location.coordinates,
-        },
-      },
-    ],
   };
 
   return (

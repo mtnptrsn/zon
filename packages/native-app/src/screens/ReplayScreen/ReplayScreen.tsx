@@ -17,7 +17,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 // @ts-ignore
 import Slider from 'react-native-slider';
-import {getMarkerSize} from '../../utils/map';
+import {getPointRadius} from '../../utils/map';
 import {gameConfig} from '../../config/game';
 import {Colors, Text} from 'react-native-ui-lib';
 
@@ -189,17 +189,15 @@ const ReplayScreen: FC = () => {
             ? new TinyColor(Colors.blue30).setAlpha(0.4).toRgbString()
             : getPointColor(point, time),
           text: isHome ? '' : getPointText(point, time),
-          minSize: getMarkerSize(
+          minSize: getPointRadius(
             room.map.start.location.coordinates[1],
             minZoomLevel,
             isHome ? gameConfig.hitbox.home : gameConfig.hitbox.point,
-            0,
           ),
-          maxSize: getMarkerSize(
+          maxSize: getPointRadius(
             room.map.start.location.coordinates[1],
             maxZoomLevel,
             isHome ? gameConfig.hitbox.home : gameConfig.hitbox.point,
-            0,
           ),
         },
         geometry: {

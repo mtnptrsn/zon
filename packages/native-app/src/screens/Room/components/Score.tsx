@@ -29,7 +29,7 @@ const Score: FC<IScoreProps> = props => {
       center
       br10
       style={styles.container}>
-      <Text text50BL>{props.score}</Text>
+      <Text text50L>{props.score}</Text>
     </View>
   );
 };

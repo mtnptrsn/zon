@@ -58,7 +58,7 @@ const TimeLeft: FC<ITimeIndicatorProps> = props => {
       center
       br10
       style={styles.container}>
-      <Text text50BL>{timeLeft}</Text>
+      <Text text50L>{timeLeft}</Text>
     </View>
   );
 };

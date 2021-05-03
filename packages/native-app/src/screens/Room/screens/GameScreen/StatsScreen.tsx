@@ -106,7 +106,7 @@ const StatsScreen: FC<IStatsScreenProps> = props => {
 
   return (
     <View paddingB-56 flex absF backgroundColor="white" padding-12>
-      <Text text50>Leaderboard</Text>
+      <Text text50L>Leaderboard</Text>
       <View flex marginT-12>
         {renderPlayers()}
       </View>
