@@ -1,9 +1,11 @@
 require_relative '../node_modules/react-native/scripts/react_native_pods'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
+require_relative '../node_modules/react-native-unimodules/cocoapods.rb'
 
-platform :ios, '10.0'
+platform :ios, '11.0'
 
 target 'orient' do
+  use_unimodules!
   config = use_native_modules!
 
   use_react_native!(
@@ -11,6 +13,15 @@ target 'orient' do
     # to enable hermes on iOS, change `false` to `true` and then install pods
     :hermes_enabled => false
   )
+
+  permissions_path = '../node_modules/react-native-permissions/ios'
+
+  pod 'Permission-Camera', :path => "#{permissions_path}/Camera"
+  pod 'Permission-LocationAccuracy', :path => "#{permissions_path}/LocationAccuracy"
+  pod 'Permission-LocationAlways', :path => "#{permissions_path}/LocationAlways"
+  pod 'Permission-LocationWhenInUse', :path => "#{permissions_path}/LocationWhenInUse"
+
+  pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
 
   target 'orientTests' do
     inherit! :complete
@@ -21,9 +32,15 @@ target 'orient' do
   #
   # Note that if you have use_frameworks! enabled, Flipper will not work and
   # you should disable the next line.
-  use_flipper!()
+  # use_flipper!()
+
+  pre_install do |installer|
+    $RNMBGL.pre_install(installer)
+  end
 
   post_install do |installer|
     react_native_post_install(installer)
+    $RNMBGL.post_install(installer)
   end
+  
 end

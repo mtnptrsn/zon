@@ -14,6 +14,7 @@ import {MAPBOX_ACCESS_TOKEN, SERVER_URL} from 'react-native-dotenv';
 import MapboxGL from '@react-native-mapbox-gl/maps';
 import {requestLocationPermission} from './src/utils/location';
 import ReplayScreen from './src/screens/ReplayScreen/ReplayScreen';
+import {SafeAreaView} from 'react-native';
 
 MapboxGL.setAccessToken(MAPBOX_ACCESS_TOKEN);
 const Stack = createStackNavigator();
@@ -23,7 +24,7 @@ const App: FC = () => {
   const [isConnected, setIsConnected] = useState(false);
   useEffect(() => {
     requestLocationPermission();
-    const socket = io(SERVER_URL);
+    const socket = io(SERVER_URL, {transports: ['websocket']});
     setSocket(socket);
     socket.on('connect', () => setIsConnected(true));
     socket.on('disconnect', () => setIsConnected(false));
@@ -34,36 +35,38 @@ const App: FC = () => {
     <>
       {!isConnected && <ConnectionWarning />}
       <SocketContext.Provider value={socket}>
-        <NavigationContainer>
-          <Stack.Navigator>
-            <Stack.Screen
-              options={{headerShown: false}}
-              name="Index"
-              component={IndexScreen}
-            />
-            <Stack.Screen
-              options={{headerTitle: 'Scan QR'}}
-              name="ScanQR"
-              component={ScanQRScreen}
-            />
-            <Stack.Screen
-              options={{headerShown: false}}
-              name="Room"
-              component={RoomScreen}
-            />
-            <Stack.Screen name="ShowQR" component={ShowQRScreen} />
-            <Stack.Screen
-              options={{headerTitle: 'Create Custom Map'}}
-              name="CreateMap"
-              component={CreateMapScreen}
-            />
-            <Stack.Screen
-              options={{headerTitle: 'Replay'}}
-              name="Replay"
-              component={ReplayScreen}
-            />
-          </Stack.Navigator>
-        </NavigationContainer>
+        <SafeAreaView style={{flex: 1}}>
+          <NavigationContainer>
+            <Stack.Navigator>
+              <Stack.Screen
+                options={{headerShown: false}}
+                name="Index"
+                component={IndexScreen}
+              />
+              <Stack.Screen
+                options={{headerTitle: 'Scan QR'}}
+                name="ScanQR"
+                component={ScanQRScreen}
+              />
+              <Stack.Screen
+                options={{headerShown: false}}
+                name="Room"
+                component={RoomScreen}
+              />
+              <Stack.Screen name="ShowQR" component={ShowQRScreen} />
+              <Stack.Screen
+                options={{headerTitle: 'Create Custom Map'}}
+                name="CreateMap"
+                component={CreateMapScreen}
+              />
+              <Stack.Screen
+                options={{headerTitle: 'Replay'}}
+                name="Replay"
+                component={ReplayScreen}
+              />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </SafeAreaView>
       </SocketContext.Provider>
     </>
   );
