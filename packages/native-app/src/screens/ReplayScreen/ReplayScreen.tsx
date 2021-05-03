@@ -21,6 +21,9 @@ import {getMarkerSize} from '../../utils/map';
 import {gameConfig} from '../../config/game';
 import {Colors, Text} from 'react-native-ui-lib';
 
+const minZoomLevel = 11;
+const maxZoomLevel = 19;
+
 const getPointColor = (point: IPoint, time: Date) => {
   const hasBeenCollected =
     Boolean(point.collectedAt) && new Date(point.collectedAt) < time;
@@ -90,8 +93,6 @@ const ReplayScreen: FC = () => {
   const route = useRoute();
   const room = (route.params! as any).room;
   const theme = useTheme();
-  const mapRef = useRef(null);
-  const [zoom, setZoom] = useState(14);
   const time = add(new Date(room.startedAt), {seconds: timeElapsed / 1000});
   const [isPaused, setIsPaused] = useState(false);
   const [isSliding, setIsSliding] = useState(false);
@@ -100,12 +101,6 @@ const ReplayScreen: FC = () => {
     new Date(room.startedAt),
   );
   const progress = timeElapsed / duration;
-  const homeMarkerSize = getMarkerSize(
-    room.map.start.location.coordinates[1],
-    zoom,
-    gameConfig.hitbox.home,
-    20,
-  );
 
   const playersWithCoordinate = room.players.map((player: any) => {
     const playerPositions = room.playerPositions.filter(
@@ -141,10 +136,6 @@ const ReplayScreen: FC = () => {
     setTimeElapsed(timeElapsed + (1000 / 6) * 25);
   }, 1000 / 6);
 
-  const onTouchEndMap = () => {
-    (mapRef.current as any).getZoom().then(setZoom);
-  };
-
   const toggleIsPaused = () => {
     setIsPaused(!isPaused);
   };
@@ -155,16 +146,80 @@ const ReplayScreen: FC = () => {
   const onSlidingStart = () => setIsSliding(true);
   const onSlidingComplete = () => setIsSliding(false);
 
+  const mapStyles = {
+    pointCircle: {
+      circleRadius: [
+        'interpolate',
+        ['exponential', 2],
+        ['zoom'],
+        minZoomLevel,
+        ['get', 'minSize'],
+        maxZoomLevel,
+        ['get', 'maxSize'],
+      ],
+      circleColor: ['get', 'color'],
+      circleStrokeWidth: 2,
+      circleStrokeColor: 'white',
+    },
+    pointText: {
+      textField: ['get', 'text'],
+      textColor: 'white',
+      textSize: [
+        'interpolate',
+        ['exponential', 1.5],
+        ['zoom'],
+        minZoomLevel,
+        12,
+        maxZoomLevel,
+        80,
+      ],
+    },
+  };
+
+  const points = {
+    type: 'FeatureCollection',
+    features: [room.map.start, ...room.map.points].map((point: any) => {
+      const isHome = !point.weight;
+
+      return {
+        type: 'Feature',
+        id: point.location.coordinates.join(','),
+        properties: {
+          color: isHome
+            ? new TinyColor(Colors.blue30).setAlpha(0.4).toRgbString()
+            : getPointColor(point, time),
+          text: isHome ? '' : getPointText(point, time),
+          minSize: getMarkerSize(
+            room.map.start.location.coordinates[1],
+            minZoomLevel,
+            isHome ? gameConfig.hitbox.home : gameConfig.hitbox.point,
+            0,
+          ),
+          maxSize: getMarkerSize(
+            room.map.start.location.coordinates[1],
+            maxZoomLevel,
+            isHome ? gameConfig.hitbox.home : gameConfig.hitbox.point,
+            0,
+          ),
+        },
+        geometry: {
+          type: 'Point',
+          coordinates: point.location.coordinates,
+        },
+      };
+    }),
+  };
+
   return (
     <View style={styles.container}>
       <MapBoxGL.MapView
-        onTouchEnd={onTouchEndMap}
-        ref={mapRef}
         logoEnabled={false}
         style={{flex: 1}}
         pitchEnabled={false}
         rotateEnabled={false}>
         <MapBoxGL.Camera
+          maxZoomLevel={maxZoomLevel}
+          minZoomLevel={minZoomLevel}
           defaultSettings={{
             centerCoordinate: room.map.start.location.coordinates,
             zoomLevel: 14,
@@ -172,55 +227,18 @@ const ReplayScreen: FC = () => {
           zoomLevel={14}
           animationDuration={0}
         />
-
-        {room.map.points.map((point: IPoint) => {
-          const color = getPointColor(point, time);
-          const text = getPointText(point, time);
-          const markerSize = getMarkerSize(
-            point.location.coordinates[1],
-            zoom,
-            gameConfig.hitbox.point,
-            22,
-          );
-          const fontSize = Math.min(40, markerSize / 1.75);
-
-          return (
-            <MapBoxGL.MarkerView
-              id={coordinateToString(point.location.coordinates)}
-              key={coordinateToString(point.location.coordinates)}
-              coordinate={point.location.coordinates}>
-              <Marker
-                size={getMarkerSize(
-                  point.location.coordinates[1],
-                  zoom,
-                  gameConfig.hitbox.point,
-                  20,
-                )}
-                color={color}>
-                <Text
-                  style={[
-                    {
-                      fontSize: fontSize,
-                    },
-                    styles.markerText,
-                  ]}
-                  center
-                  white>
-                  {text}
-                </Text>
-              </Marker>
-            </MapBoxGL.MarkerView>
-          );
-        })}
-        <MapBoxGL.MarkerView
-          id={coordinateToString(room.map.start.location.coordinates)}
-          key={coordinateToString(room.map.start.location.coordinates)}
-          coordinate={room.map.start.location.coordinates}>
-          <Marker
-            size={homeMarkerSize}
-            color={new TinyColor(Colors.blue30).setAlpha(0.25).toRgbString()}
+        <MapBoxGL.ShapeSource shape={points} id="points">
+          <MapBoxGL.CircleLayer
+            id="circleRadius"
+            sourceLayerID="circleRadius"
+            style={mapStyles.pointCircle as any}
           />
-        </MapBoxGL.MarkerView>
+          <MapBoxGL.SymbolLayer
+            id="pointText"
+            sourceLayerID="pointText"
+            style={mapStyles.pointText as any}
+          />
+        </MapBoxGL.ShapeSource>
 
         {playersWithCoordinate.map(({player, coordinate}: any) => {
           const score = room.map.points.reduce((acc: number, point: IPoint) => {

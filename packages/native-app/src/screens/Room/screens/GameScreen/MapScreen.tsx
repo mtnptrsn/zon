@@ -1,21 +1,20 @@
-import React, {FC, useRef, useState} from 'react';
+import React, {FC, useRef} from 'react';
 import {StyleSheet} from 'react-native';
-import {Text} from 'react-native-ui-lib';
 import MapBoxGL from '@react-native-mapbox-gl/maps';
-import {Coordinate, IPoint} from '../../types';
-import {useTheme} from 'react-native-elements';
+import {IPoint} from '../../types';
 import {View, Button, Colors} from 'react-native-ui-lib';
 import TimeLeft from '../../components/TimeLeft';
 import Score from '../../components/Score';
 import HomeIndicator from '../../components/HomeIndicator';
-import Marker from '../../../../components/Marker';
 import {GeolocationResponse} from '@react-native-community/geolocation';
-import HomeMarker from '../../../../components/HomeMarker';
-import {getMarkerSize} from '../../../../utils/map';
 import TinyColor from 'tinycolor2';
 import {getSpacing} from '../../../../theme/utils';
 import Feather from 'react-native-vector-icons/Feather';
+import {getMarkerSize} from '../../../../utils/map';
 import {gameConfig} from '../../../../config/game';
+
+const minZoomLevel = 11;
+const maxZoomLevel = 19;
 
 interface IMapScreenProps {
   room: any;
@@ -41,8 +40,6 @@ const styles = StyleSheet.create({
   },
 });
 
-const coordinateToString = ([lat, long]: Coordinate) => `${lat};${long}`;
-
 const getPointColor = (player: any, point: IPoint) => {
   const disabledColor = new TinyColor(Colors.grey30)
     .setAlpha(0.3)
@@ -57,25 +54,12 @@ const getPointColor = (player: any, point: IPoint) => {
 };
 
 const MapScreen: FC<IMapScreenProps> = props => {
-  const theme = useTheme();
-  const mapRef = useRef(null);
   const cameraRef = useRef(null);
-  const [zoom, setZoom] = useState(14);
-  const homeMarkerSize = getMarkerSize(
-    props.room.map.start.location.coordinates[1],
-    zoom,
-    gameConfig.hitbox.home,
-    20,
-  );
 
   const score = props.room.map.points.reduce((acc: number, point: IPoint) => {
     if (point.collectedBy?._id === props.player._id) return acc + point.weight;
     return acc;
   }, 0);
-
-  const onTouchEndMap = () => {
-    (mapRef.current as any).getZoom().then(setZoom);
-  };
 
   const onPressCenter = () => {
     (cameraRef.current as any).setCamera({
@@ -87,16 +71,99 @@ const MapScreen: FC<IMapScreenProps> = props => {
     });
   };
 
+  const mapStyles = {
+    pointCircle: {
+      circleRadius: [
+        'interpolate',
+        ['exponential', 2],
+        ['zoom'],
+        minZoomLevel,
+        ['get', 'minSize'],
+        maxZoomLevel,
+        ['get', 'maxSize'],
+      ],
+      circleColor: ['get', 'color'],
+      circleStrokeWidth: 2,
+      circleStrokeColor: 'white',
+    },
+    pointText: {
+      textField: ['get', 'text'],
+      textColor: 'white',
+      textSize: [
+        'interpolate',
+        ['exponential', 1.5],
+        ['zoom'],
+        minZoomLevel,
+        12,
+        maxZoomLevel,
+        80,
+      ],
+    },
+  };
+
+  const points = {
+    type: 'FeatureCollection',
+    features: [props.room.map.start, ...props.room.map.points].map(
+      (point: any) => {
+        const isHome = !point.weight;
+
+        return {
+          type: 'Feature',
+          id: point.location.coordinates.join(','),
+          properties: {
+            color: isHome
+              ? new TinyColor(Colors.blue30).setAlpha(0.4).toRgbString()
+              : getPointColor(props.player, point),
+            text: isHome
+              ? ''
+              : point.collectedBy?.name?.substring(0, 1)?.toUpperCase?.() ||
+                point.weight,
+            minSize: getMarkerSize(
+              props.position.coords.latitude,
+              minZoomLevel,
+              isHome ? gameConfig.hitbox.home : gameConfig.hitbox.point,
+              0,
+            ),
+            maxSize: getMarkerSize(
+              props.position.coords.latitude,
+              maxZoomLevel,
+              isHome ? gameConfig.hitbox.home : gameConfig.hitbox.point,
+              0,
+            ),
+          },
+          geometry: {
+            type: 'Point',
+            coordinates: point.location.coordinates,
+          },
+        };
+      },
+    ),
+  };
+
+  const home = {
+    type: 'FeatureCollection',
+    features: [
+      {
+        type: 'Feature',
+        id: 'home',
+        geometry: {
+          type: 'Point',
+          coordinates: props.room.map.start.location.coordinates,
+        },
+      },
+    ],
+  };
+
   return (
     <View style={styles.container}>
       <MapBoxGL.MapView
-        onTouchEnd={onTouchEndMap}
-        ref={mapRef}
         logoEnabled={false}
         style={{flex: 1}}
         pitchEnabled={false}
         rotateEnabled={false}>
         <MapBoxGL.Camera
+          minZoomLevel={minZoomLevel}
+          maxZoomLevel={maxZoomLevel}
           ref={cameraRef}
           defaultSettings={{
             centerCoordinate: props.room.map.start.location.coordinates,
@@ -106,47 +173,18 @@ const MapScreen: FC<IMapScreenProps> = props => {
           animationDuration={0}
         />
 
-        {props.room.map.points.map((point: IPoint) => {
-          const markerSize = getMarkerSize(
-            point.location.coordinates[1],
-            zoom,
-            gameConfig.hitbox.point,
-            22,
-          );
-          const fontSize = Math.min(40, markerSize / 1.75);
-          return (
-            <MapBoxGL.MarkerView
-              id={coordinateToString(point.location.coordinates)}
-              key={coordinateToString(point.location.coordinates)}
-              coordinate={point.location.coordinates}>
-              <Marker
-                size={markerSize}
-                color={getPointColor(props.player, point)}>
-                <Text
-                  style={[
-                    {
-                      fontSize: fontSize,
-                    },
-                    styles.markerText,
-                  ]}
-                  center
-                  white>
-                  {point.collectedBy?.name?.substring(0, 1)?.toUpperCase?.() ||
-                    point.weight}
-                </Text>
-              </Marker>
-            </MapBoxGL.MarkerView>
-          );
-        })}
-        <MapBoxGL.MarkerView
-          id={coordinateToString(props.room.map.start.location.coordinates)}
-          key={coordinateToString(props.room.map.start.location.coordinates)}
-          coordinate={props.room.map.start.location.coordinates}>
-          <Marker
-            size={homeMarkerSize}
-            color={new TinyColor(Colors.blue30).setAlpha(0.25).toRgbString()}
+        <MapBoxGL.ShapeSource shape={points} id="points">
+          <MapBoxGL.CircleLayer
+            id="circleRadius"
+            sourceLayerID="circleRadius"
+            style={mapStyles.pointCircle as any}
           />
-        </MapBoxGL.MarkerView>
+          <MapBoxGL.SymbolLayer
+            id="pointText"
+            sourceLayerID="pointText"
+            style={mapStyles.pointText as any}
+          />
+        </MapBoxGL.ShapeSource>
         <MapBoxGL.UserLocation />
       </MapBoxGL.MapView>
 
