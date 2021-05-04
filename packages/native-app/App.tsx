@@ -7,7 +7,6 @@ import IndexScreen from './src/screens/Index/IndexScreen';
 import ScanQRScreen from './src/screens/ScanQR/ScanQRScreen';
 import RoomScreen from './src/screens/Room/RoomScreen';
 import ShowQRScreen from './src/screens/ShowQR/ShowQRScreen';
-import LoadingScreen from './src/screens/Room/screens/LoadingScreen';
 import ConnectionWarning from './src/components/ConnectionWarning';
 import CreateMapScreen from './src/screens/CreateMapScreen/CreateMapScreen';
 import {MAPBOX_ACCESS_TOKEN, SERVER_URL} from 'react-native-dotenv';
@@ -16,9 +15,10 @@ import {requestLocationPermission} from './src/utils/location';
 import ReplayScreen from './src/screens/ReplayScreen/ReplayScreen';
 import {SafeAreaView} from 'react-native';
 import {LoaderScreen} from 'react-native-ui-lib';
+import HelpScreen from './src/screens/HelpScreen/HelpScren';
+import UpdateScreen from './src/screens/UpdateScreen';
 //@ts-ignore
 import packageJson from './package.json';
-import UpdateScreen from './src/screens/UpdateScreen';
 const clientVersion = packageJson.version;
 import {satisfies} from 'semver';
 
@@ -79,6 +79,11 @@ const App: FC = () => {
                 options={{headerTitle: 'Replay'}}
                 name="Replay"
                 component={ReplayScreen}
+              />
+              <Stack.Screen
+                options={{headerTitle: 'Game Modes'}}
+                name="Help"
+                component={HelpScreen}
               />
             </Stack.Navigator>
           </NavigationContainer>

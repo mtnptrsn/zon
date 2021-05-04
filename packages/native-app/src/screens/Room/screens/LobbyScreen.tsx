@@ -1,19 +1,17 @@
 import {StackActions, useNavigation} from '@react-navigation/core';
 import React, {FC, useContext, useState} from 'react';
-import {Alert, StyleSheet} from 'react-native';
+import {Alert} from 'react-native';
 import {getUniqueId} from 'react-native-device-info';
-import {useTheme} from 'react-native-elements';
 import {
-  Switch,
   Text,
   Slider,
   View,
   Button,
   LoaderScreen,
+  Picker,
+  Colors,
 } from 'react-native-ui-lib';
-// import {Button} from 'react-native-elements';
 import {SocketContext} from '../../../socket/context';
-import {getSpacing} from '../../../theme/utils';
 import {GeolocationResponse} from '@react-native-community/geolocation';
 interface ILobbyScreenProps {
   room: any;
@@ -22,6 +20,7 @@ interface ILobbyScreenProps {
 
 const LobbyScreen: FC<ILobbyScreenProps> = props => {
   const [isLoading, setIsLoading] = useState(false);
+  const [gameMode, setGameMode] = useState('normal');
   const navigation = useNavigation();
   const socket = useContext(SocketContext);
   const userId = getUniqueId();
@@ -30,7 +29,6 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
   const [settings, setSettings] = useState({
     duration: 40,
     radius: 2000,
-    domination: false,
   });
   const hasAccuratePositon =
     props.position.coords.latitude !== 0 &&
@@ -60,7 +58,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
         roomId: props.room._id,
         duration: 1000 * 60 * settings.duration,
         radius: settings.radius,
-        domination: settings.domination,
+        domination: gameMode === 'domination',
         hostLocation: [
           props.position.coords.longitude,
           props.position.coords.latitude,
@@ -68,6 +66,10 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
       },
       () => {},
     );
+  };
+
+  const onPressHelp = () => {
+    navigation.navigate('Help');
   };
 
   const renderPlayers = () => {
@@ -123,17 +125,40 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
             />
             <Text grey30>{settings.radius} meters in radius</Text>
 
-            <Text marginT-12 marginB-6 text70>
-              Domination
+            <Picker
+              marginT-12
+              placeholder="Game Mode"
+              floatingPlaceholder
+              value={gameMode}
+              enableModalBlur={false}
+              onChange={(item: any) => setGameMode(item.value)}
+              topBarProps={{title: 'Game Modes'}}
+              style={{color: Colors.primary}}>
+              {[
+                {label: 'Normal', value: 'normal'},
+                {label: 'Domination', value: 'domination'},
+              ].map(gameMode => {
+                return (
+                  <Picker.Item
+                    label={gameMode.label}
+                    key={gameMode.value}
+                    value={gameMode.value}
+                  />
+                );
+              })}
+            </Picker>
+            <Text
+              onPress={onPressHelp}
+              text70L
+              primary
+              style={{
+                marginTop: -12,
+                textDecorationStyle: 'solid',
+                textDecorationColor: Colors.primary,
+                textDecorationLine: 'underline',
+              }}>
+              How does it work?
             </Text>
-            <Switch
-              height={30}
-              width={50}
-              value={settings.domination}
-              onValueChange={(value: any) => {
-                setSettings(settings => ({...settings, domination: value}));
-              }}
-            />
           </View>
         )}
       </View>
