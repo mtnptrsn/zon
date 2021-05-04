@@ -1,11 +1,13 @@
 import React, {FC} from 'react';
 import {StyleSheet} from 'react-native';
 import {Text, View} from 'react-native-ui-lib';
+import Score from '../../screens/Room/components/Score';
 
 interface INotificationScoreProps {
-  current: number;
-  name: string;
+  score: number;
+  scoreGrowth?: number;
   color: string;
+  message: string;
 }
 
 const styles = StyleSheet.create({
@@ -20,14 +22,22 @@ const styles = StyleSheet.create({
 const NotificationScore: FC<INotificationScoreProps> = props => {
   return (
     <View br10 row centerV backgroundColor="white" style={[styles.container]}>
-      <View backgroundColor={props.color} padding-14>
+      <View
+        backgroundColor={props.color}
+        padding-10={Boolean(props.scoreGrowth)}
+        padding-14={!props.scoreGrowth}>
         <Text center white text60L>
-          {props.current}
+          {props.score}
         </Text>
+        {typeof props.scoreGrowth === 'number' && (
+          <Text white text90L style={{marginTop: -2}}>
+            {props.scoreGrowth}/min
+          </Text>
+        )}
       </View>
 
       <Text text65L marginL-16>
-        {props.name} collected a point
+        {props.message}
       </Text>
     </View>
   );

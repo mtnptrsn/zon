@@ -62,6 +62,16 @@ const getPointColor = (player: any, point: IPoint, flags: string[]) => {
 
 const MapScreen: FC<IMapScreenProps> = props => {
   const cameraRef = useRef(null);
+  const isControl = props.room.flags.includes('CONTROL');
+
+  const scoreGrowth = props.room.map.points.reduce(
+    (acc: number, point: any) => {
+      return point.collectedBy?._id === props.player._id
+        ? acc + point.weight
+        : acc;
+    },
+    0,
+  );
 
   const onPressCenter = () => {
     (cameraRef.current as any).setCamera({
@@ -180,7 +190,10 @@ const MapScreen: FC<IMapScreenProps> = props => {
       </Button>
 
       <TimeLeft finishedAt={new Date(props.room.finishedAt)} />
-      <Score score={props.player.score} />
+      <Score
+        scoreGrowth={isControl ? scoreGrowth : null}
+        score={props.player.score}
+      />
       {props.player.isWithinHome && <HomeIndicator />}
     </View>
   );

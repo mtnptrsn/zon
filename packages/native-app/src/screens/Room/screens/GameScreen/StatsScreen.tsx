@@ -94,7 +94,7 @@ const StatsScreen: FC<IStatsScreenProps> = props => {
               <Text text65L marginL-8>
                 {isCurrentPlayer ? 'You' : player.name}
                 {!player.isWithinHome && props.room.status === 'FINISHED'
-                  ? '(disqualified)'
+                  ? ' (disqualified)'
                   : ''}
               </Text>
             </View>
@@ -102,7 +102,7 @@ const StatsScreen: FC<IStatsScreenProps> = props => {
               {Boolean(
                 props.room.flags.includes('CONTROL') &&
                   props.room.status === 'PLAYING',
-              ) && <Text grey30>Score growth: {scorePerMinute} / min</Text>}
+              ) && <Text grey30>Score growth: {scorePerMinute}/min</Text>}
               {props.room.status === 'FINISHED' && (
                 <>
                   <Text grey30>

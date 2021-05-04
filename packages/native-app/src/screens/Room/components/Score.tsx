@@ -6,6 +6,7 @@ import {getSpacing} from '../../../theme/utils';
 
 interface IScoreProps {
   score: number;
+  scoreGrowth?: number;
 }
 
 const styles = StyleSheet.create({
@@ -30,6 +31,12 @@ const Score: FC<IScoreProps> = props => {
       br10
       style={styles.container}>
       <Text text50L>{props.score}</Text>
+
+      {typeof props.scoreGrowth === 'number' && (
+        <Text grey30 text90L style={{marginTop: -4}}>
+          {props.scoreGrowth}/min
+        </Text>
+      )}
     </View>
   );
 };

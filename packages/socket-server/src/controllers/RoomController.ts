@@ -205,7 +205,9 @@ export class RoomController {
       data.radius
     );
 
-    const points = generateMap(shuffle(streetCoordinates!), data.radius);
+    const points = generateMap(shuffle(streetCoordinates!), data.radius, [
+      data.hostLocation,
+    ]);
 
     const longestDistancePoint = points.reduce(
       (acc: number, coordinate: [number, number]) => {

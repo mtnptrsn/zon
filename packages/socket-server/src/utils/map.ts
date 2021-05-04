@@ -3,7 +3,8 @@ import { gameConfig } from "../config/game";
 
 export const generateMap = (
   coordinates: [number, number][],
-  radius: number
+  radius: number,
+  exlusionCoordinates: [number, number][]
 ): [number, number][] => {
   const margin = gameConfig.hitbox.point * 2 + 80;
   const amountOfPoints = Math.ceil((Math.PI * Math.pow(radius, 2)) / 130000);
@@ -12,7 +13,7 @@ export const generateMap = (
 
   for (let i = 0; i < coordinates.length; i++) {
     const coordinate = coordinates[i];
-    const distanceFromNearestPoint = points.reduce(
+    const distanceFromNearestPoint = [...points, ...exlusionCoordinates].reduce(
       (acc: number, point: [number, number]) => {
         const distance = getDistance(
           { lng: point[0], lat: point[1] },

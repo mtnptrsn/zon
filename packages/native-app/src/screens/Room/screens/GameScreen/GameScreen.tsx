@@ -78,19 +78,36 @@ const GameScreen: FC<IGameScreenProps> = props => {
     if (event.type === 'capture' && event.mode === 'NORMAL') {
       return (
         <NotificationScore
-          current={event.player.score}
-          name={currentIsPlayer ? 'You' : event.player.name}
-          color={event.captor.color}
+          score={event.player.score}
+          message={`${
+            currentIsPlayer ? 'You' : event.player.name
+          } captured a zone`}
+          color={event.player.color}
         />
       );
     }
     if (event.type === 'capture' && event.mode === 'CONTROL') {
+      const scoreGrowth = props.room.map.points.reduce(
+        (acc: number, point: any) => {
+          return point.collectedBy?._id === event.player._id
+            ? acc + point.weight
+            : acc;
+        },
+        0,
+      );
       const message = Boolean(event.victim)
         ? `${currentIsPlayer ? 'You' : event.player.name} stole a zone from ${
             currentIsVictim ? 'you' : event.victim.name
           }`
         : `${currentIsPlayer ? 'You' : event.player.name} captured a zone`;
-      return <NotificationInfo message={message} />;
+      return (
+        <NotificationScore
+          scoreGrowth={scoreGrowth}
+          score={event.player.score}
+          message={message}
+          color={event.player.color}
+        />
+      );
     }
     if (event.type === 'info-player')
       return (
