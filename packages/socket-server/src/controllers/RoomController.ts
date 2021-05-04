@@ -36,8 +36,7 @@ export namespace RoomController {
     hostLocation: [number, number];
     duration: number;
     radius: number;
-    domination: boolean;
-    // map: [number, number][];
+    control: boolean;
   }
 
   export interface IEnd {
@@ -78,7 +77,7 @@ const checkPointCollected = (
   hitbox: number,
   flags: string[]
 ) => {
-  const isDomination = flags.includes("DOMINATION");
+  const isControl = flags.includes("CONTROL");
   const [longitude, latitude] = point.location.coordinates;
   const distance = getDistance(
     { lng: longitude, lat: latitude },
@@ -93,14 +92,14 @@ const checkPointCollected = (
   if (!isWithinHitbox) return false;
   if (point.collectedBy?._id === player._id) return false;
 
-  if (!isDomination) {
+  if (!isControl) {
     if (!player.hasTakenFirstPoint && point.belongsTo?.id !== player._id)
       return false;
     if (Boolean(point.belongsTo) && point.belongsTo?.id !== player._id)
       return false;
     if (Boolean(point.collectedAt)) return false;
   }
-  if (isDomination) {
+  if (isControl) {
     if (Boolean(point.collectedAt) && timeSinceCollected < 1000 * 10)
       return false;
   }
@@ -199,7 +198,7 @@ export class RoomController {
     const room = await RoomModel.findById(data.roomId);
 
     room.status = "COUNTDOWN";
-    if (data.domination) room.flags = ["DOMINATION"];
+    if (data.control) room.flags = ["CONTROL"];
 
     const streetCoordinates = await getStreetCoordinates(
       data.hostLocation,
@@ -334,7 +333,6 @@ export class RoomController {
       (player: any) => player._id === data.playerId
     );
     const player = room.players[playerIndex];
-    // const isDomination = room.flags.includes("DOMINATION");
 
     const previousScore = room.map.points.reduce((acc: number, point: any) => {
       if (point.collectedBy?._id === player._id) return acc + point.weight;

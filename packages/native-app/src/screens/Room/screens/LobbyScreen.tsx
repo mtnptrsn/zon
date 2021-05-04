@@ -58,7 +58,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
         roomId: props.room._id,
         duration: 1000 * 60 * settings.duration,
         radius: settings.radius,
-        domination: gameMode === 'domination',
+        control: gameMode === 'control',
         hostLocation: [
           props.position.coords.longitude,
           props.position.coords.latitude,
@@ -136,7 +136,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
               style={{color: Colors.primary}}>
               {[
                 {label: 'Normal', value: 'normal'},
-                {label: 'Domination', value: 'domination'},
+                {label: 'Control', value: 'control'},
               ].map(gameMode => {
                 return (
                   <Picker.Item

@@ -71,7 +71,7 @@ export const ticker = async (io: Server) => {
     if (
       timeUntil.distributeScore <= 0 &&
       room.status === "PLAYING" &&
-      room.flags.includes("DOMINATION")
+      room.flags.includes("CONTROL")
     )
       return onDistributeScore(io, room);
   });

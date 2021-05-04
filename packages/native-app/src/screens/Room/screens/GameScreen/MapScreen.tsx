@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
 });
 
 const getPointColor = (player: any, point: IPoint, flags: string[]) => {
-  const isDomination = flags.includes('DOMINATION');
+  const isControl = flags.includes('CONTROL');
 
   const disabledColor = new TinyColor(Colors.grey30)
     .setAlpha(0.3)
@@ -50,7 +50,7 @@ const getPointColor = (player: any, point: IPoint, flags: string[]) => {
   if (point.collectedBy?.color)
     return new TinyColor(point.collectedBy.color).setAlpha(0.8).toRgbString();
 
-  if (!isDomination) {
+  if (!isControl) {
     if (!player.hasTakenFirstPoint && point.belongsTo?._id !== player._id)
       return disabledColor;
     if (Boolean(point.belongsTo) && point.belongsTo?._id !== player._id)
