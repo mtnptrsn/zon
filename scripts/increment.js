@@ -2,14 +2,17 @@ const fs = require("fs");
 const [_, __, newVersion, androidBuildNumber, iosBuildNumber] = process.argv;
 
 const rootPackageJson = require("../package.json");
+// TODO: Improve this, loop through each package instead of hardcoding
 const socketPackageJson = require("../packages/socket-server/package.json");
 const nativeAppPackageJson = require("../packages/native-app/package.json");
+const sharedPackageJson = require("../packages/shared/package.json");
 const buildGradlePath = "./packages/native-app/android/app/build.gradle";
 const infoPlistPath = "./packages/native-app/ios/orient/Info.plist";
 
 rootPackageJson.version = newVersion;
 socketPackageJson.version = newVersion;
 nativeAppPackageJson.version = newVersion;
+sharedPackageJson.version = newVersion;
 
 fs.writeFileSync("./package.json", JSON.stringify(rootPackageJson, null, 2));
 fs.writeFileSync(
@@ -19,6 +22,10 @@ fs.writeFileSync(
 fs.writeFileSync(
   "./packages/native-app/package.json",
   JSON.stringify(nativeAppPackageJson, null, 2)
+);
+fs.writeFileSync(
+  "./packages/shared/package.json",
+  JSON.stringify(sharedPackageJson, null, 2)
 );
 
 const buildGradleBuffer = fs.readFileSync(buildGradlePath);
