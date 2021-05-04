@@ -1,6 +1,5 @@
 import React, {FC, useContext, useEffect, useState} from 'react';
 import {Alert, Vibration} from 'react-native';
-import {IPoint} from '../../types';
 import {SocketContext} from '../../../../socket/context';
 import {getUniqueId} from 'react-native-device-info';
 import subscribeToEvents from '../../../../socket/subscribeToEvents';
@@ -73,24 +72,32 @@ const GameScreen: FC<IGameScreenProps> = props => {
 
   const renderNotification = () => {
     if (!event) return null;
-    const eventBelongsToCurrentPlayer = event?.player?._id == getUniqueId();
+    const currentIsPlayer = event?.player?._id === getUniqueId();
+    const currentIsVictim = event?.victim?._id === getUniqueId();
 
-    if (event.type === 'score') {
+    if (event.type === 'capture' && event.mode === 'NORMAL') {
       return (
         <NotificationScore
           current={event.player.score}
-          name={eventBelongsToCurrentPlayer ? 'You' : event.player.name}
-          color={event.player.color}
+          name={currentIsPlayer ? 'You' : event.player.name}
+          color={event.captor.color}
         />
       );
     }
-
+    if (event.type === 'capture' && event.mode === 'CONTROL') {
+      const message = Boolean(event.victim)
+        ? `${currentIsPlayer ? 'You' : event.player.name} stole a zone from ${
+            currentIsVictim ? 'you' : event.victim.name
+          }`
+        : `${currentIsPlayer ? 'You' : event.player.name} captured a zone`;
+      return <NotificationInfo message={message} />;
+    }
     if (event.type === 'info-player')
       return (
         <NotificationInfo
           icon={event.icon}
           message={translateEventMessage(
-            {player: eventBelongsToCurrentPlayer ? 'You' : event.player.name},
+            {player: currentIsPlayer ? 'You' : event.player.name},
             event.message,
           )}
         />

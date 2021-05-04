@@ -333,6 +333,7 @@ export class RoomController {
       (player: any) => player._id === data.playerId
     );
     const player = room.players[playerIndex];
+    const isControl = room.flags.includes("CONTROL");
 
     const previousScore = room.map.points.reduce((acc: number, point: any) => {
       if (point.collectedBy?._id === player._id) return acc + point.weight;
@@ -347,7 +348,6 @@ export class RoomController {
           lat: room.map.start.location.coordinates[1],
         }
       ) < gameConfig.hitbox.home;
-
     if (playerIsWithinHome !== player.isWithinHome) {
       room.players[playerIndex].isWithinHome = playerIsWithinHome;
       if (playerIsWithinHome)
@@ -359,27 +359,29 @@ export class RoomController {
         };
       didUpdate = true;
     }
-
     room.map.points.forEach((point: any, index: number) => {
-      const pointCollected = checkPointCollected(
-        point,
-        player,
-        data.coordinate,
-        gameConfig.hitbox.point,
-        room.flags
-      );
-      if (!pointCollected) return;
+      if (
+        !checkPointCollected(
+          point,
+          player,
+          data.coordinate,
+          gameConfig.hitbox.point,
+          room.flags
+        )
+      )
+        return;
       if (!player.hasTakenFirstPoint)
         room.players[playerIndex].hasTakenFirstPoint = true;
       didUpdate = true;
-      room.map.points[index].collectedBy = player;
-      room.map.points[index].collectedAt = new Date();
-      room.players[playerIndex].score += point.weight;
-
+      const previousCaptor = point.collectedBy;
+      point.collectedBy = player;
+      point.collectedAt = new Date();
+      if (!isControl) room.players[playerIndex].score += point.weight;
       event = {
-        player,
-        type: "score",
-        previousScore,
+        victim: previousCaptor,
+        player: player,
+        type: "capture",
+        mode: isControl ? "CONTROL" : "NORMAL",
       };
     });
     await room.save();
