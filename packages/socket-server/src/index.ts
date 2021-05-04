@@ -4,6 +4,8 @@ import { routes } from "./routes";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import { ticker } from "./ticker";
 import dotenv from "dotenv";
+//@ts-ignore
+import packageJson from "../package.json";
 
 const port = Number(process.env.PORT) || 3000;
 
@@ -19,9 +21,7 @@ const connectToMongoDB = async () => {
     authSource: "admin",
   });
   console.log(
-    `Successfully connected to MongoDB: ${getDBName(
-      process.env.MONGO_URL as string
-    )}`
+    `Connected to MongoDB: ${getDBName(process.env.MONGO_URL as string)}`
   );
 };
 
@@ -32,8 +32,8 @@ const initiateSocketServer = () => {
     routes(io, socket);
   });
   io.listen(port);
-  console.log(`Server started on port ${port}`);
-
+  console.log(`Socket Port: ${port}`);
+  console.log(`Version: ${packageJson.version}`);
   return io;
 };
 
