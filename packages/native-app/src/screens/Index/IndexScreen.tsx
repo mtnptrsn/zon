@@ -8,6 +8,8 @@ import DeviceInfo from 'react-native-device-info';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Socket} from 'socket.io-client';
 import {DefaultEventsMap} from 'socket.io-client/build/typed-events';
+// @ts-ignore
+import packageJson from '../../../package.json';
 
 const findOngoingRoom = async (
   socket: Socket<DefaultEventsMap, DefaultEventsMap>,
@@ -94,9 +96,12 @@ const IndexScreen: FC = () => {
 
   return (
     <View flex spread>
-      <Text text20 center marginT-140>
-        Zon
-      </Text>
+      <View center>
+        <Text text20 center marginT-140>
+          Zon
+        </Text>
+        <Text grey30>Version {packageJson.version}</Text>
+      </View>
       <View padding-12>
         <View marginH-12>
           <TextField
