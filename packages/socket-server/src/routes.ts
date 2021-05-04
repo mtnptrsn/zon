@@ -1,6 +1,8 @@
 import { Server, Socket } from "socket.io";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import { RoomController } from "./controllers/RoomController";
+//@ts-ignore
+import packageJson from "../package.json";
 
 export const routes = (
   io: Server<DefaultEventsMap, DefaultEventsMap>,
@@ -25,4 +27,9 @@ export const routes = (
   socket.on("user:updatePosition", (data, cb) =>
     RoomController.positionUpdate(data, cb, socket, io)
   );
+
+  // TODO: Extract this to controller
+  socket.on("version:get", (data, cb) => {
+    cb(packageJson.version);
+  });
 };

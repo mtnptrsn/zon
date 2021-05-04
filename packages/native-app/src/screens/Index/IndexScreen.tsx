@@ -57,6 +57,7 @@ const IndexScreen: FC = () => {
         );
     })();
   }, []);
+
   const onReadQR = (data: string) => {
     socket!.emit(
       'room:join',
@@ -73,11 +74,13 @@ const IndexScreen: FC = () => {
       },
     );
   };
+
   const onPressJoinGame = () => {
     if (!name)
       return Alert.alert('Empty field', 'You must enter a name to continue.');
     navigation.navigate('ScanQR', {onRead: onReadQR});
   };
+
   const onPressCreateGame = () => {
     if (!name)
       return Alert.alert('Empty field', 'You must enter a name to continue.');

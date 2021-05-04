@@ -15,21 +15,37 @@ import MapboxGL from '@react-native-mapbox-gl/maps';
 import {requestLocationPermission} from './src/utils/location';
 import ReplayScreen from './src/screens/ReplayScreen/ReplayScreen';
 import {SafeAreaView} from 'react-native';
+import {LoaderScreen} from 'react-native-ui-lib';
+//@ts-ignore
+import packageJson from './package.json';
+import UpdateScreen from './src/screens/UpdateScreen';
+const clientVersion = packageJson.version;
+import {satisfies} from 'semver';
 
 MapboxGL.setAccessToken(MAPBOX_ACCESS_TOKEN);
 const Stack = createStackNavigator();
 
 const App: FC = () => {
+  const [serverVersion, setServerVersion] = useState<string | null>(null);
   const [socket, setSocket] = useState<null | Socket>(null);
   const [isConnected, setIsConnected] = useState(false);
   useEffect(() => {
     requestLocationPermission();
     const socket = io(SERVER_URL, {transports: ['websocket']});
     setSocket(socket);
+    socket!.emit('version:get', null, (version: string) =>
+      setServerVersion(version),
+    );
     socket.on('connect', () => setIsConnected(true));
     socket.on('disconnect', () => setIsConnected(false));
   }, []);
-  if (!socket) return <LoadingScreen />;
+  if (!socket || !serverVersion) return <LoaderScreen />;
+  const versionIsAllowed = satisfies(serverVersion, `~${clientVersion}`);
+
+  if (!versionIsAllowed)
+    return (
+      <UpdateScreen version={clientVersion} latestVersion={serverVersion} />
+    );
 
   return (
     <>
