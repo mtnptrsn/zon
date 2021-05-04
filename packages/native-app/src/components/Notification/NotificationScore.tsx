@@ -3,7 +3,6 @@ import {StyleSheet} from 'react-native';
 import {Text, View} from 'react-native-ui-lib';
 
 interface INotificationScoreProps {
-  previous: number;
   current: number;
   name: string;
   color: string;

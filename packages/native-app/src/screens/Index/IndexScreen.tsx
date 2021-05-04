@@ -99,7 +99,12 @@ const IndexScreen: FC = () => {
       </Text>
       <View padding-12>
         <View marginH-12>
-          <TextField value={name} onChangeText={setName} title="Your Name" />
+          <TextField
+            placeholder="Your name"
+            value={name}
+            onChangeText={setName}
+            title="Name"
+          />
         </View>
         <Button label="Create Game" marginB-6 onPress={onPressCreateGame} />
         <Button label="Join Game" onPress={onPressJoinGame} />

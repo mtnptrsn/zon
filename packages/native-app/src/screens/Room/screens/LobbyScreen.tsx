@@ -3,7 +3,14 @@ import React, {FC, useContext, useState} from 'react';
 import {Alert, StyleSheet} from 'react-native';
 import {getUniqueId} from 'react-native-device-info';
 import {useTheme} from 'react-native-elements';
-import {Text, Slider, View, Button, LoaderScreen} from 'react-native-ui-lib';
+import {
+  Switch,
+  Text,
+  Slider,
+  View,
+  Button,
+  LoaderScreen,
+} from 'react-native-ui-lib';
 // import {Button} from 'react-native-elements';
 import {SocketContext} from '../../../socket/context';
 import {getSpacing} from '../../../theme/utils';
@@ -20,7 +27,11 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
   const userId = getUniqueId();
   const roomHost = props.room.players.find((player: any) => player.isHost);
   const isHost = userId === roomHost._id;
-  const [settings, setSettings] = useState({duration: 40, radius: 2000});
+  const [settings, setSettings] = useState({
+    duration: 40,
+    radius: 2000,
+    domination: false,
+  });
   const hasAccuratePositon =
     props.position.coords.latitude !== 0 &&
     props.position.coords.longitude !== 0;
@@ -49,6 +60,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
         roomId: props.room._id,
         duration: 1000 * 60 * settings.duration,
         radius: settings.radius,
+        domination: settings.domination,
         hostLocation: [
           props.position.coords.longitude,
           props.position.coords.latitude,
@@ -110,6 +122,18 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
               }}
             />
             <Text grey30>{settings.radius} meters in radius</Text>
+
+            <Text marginT-12 marginB-6 text70>
+              Domination
+            </Text>
+            <Switch
+              height={30}
+              width={50}
+              value={settings.domination}
+              onValueChange={(value: any) => {
+                setSettings(settings => ({...settings, domination: value}));
+              }}
+            />
           </View>
         )}
       </View>

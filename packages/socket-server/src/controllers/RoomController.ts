@@ -2,7 +2,7 @@ import { IController } from "../types/controller";
 import { RoomModel } from "../models/RoomModel";
 import { getDistance } from "geolib";
 import { getRandomPlayerColor } from "../utils/color";
-import { add, isValid } from "date-fns";
+import { add, differenceInMilliseconds, isValid } from "date-fns";
 import { generateMap } from "../utils/map";
 import { PlayerPositionModel } from "../models/PlayerPositionModel";
 import { Document, isValidObjectId } from "mongoose";
@@ -36,6 +36,7 @@ export namespace RoomController {
     hostLocation: [number, number];
     duration: number;
     radius: number;
+    domination: boolean;
     // map: [number, number][];
   }
 
@@ -50,10 +51,10 @@ export namespace RoomController {
   }
 }
 
-function shuffle(array: any[]) {
-  var currentIndex = array.length,
-    temporaryValue,
-    randomIndex;
+const shuffle = (array: any[]) => {
+  let currentIndex = array.length;
+  let temporaryValue;
+  let randomIndex;
 
   // While there remain elements to shuffle...
   while (0 !== currentIndex) {
@@ -68,27 +69,41 @@ function shuffle(array: any[]) {
   }
 
   return array;
-}
+};
 
 const checkPointCollected = (
   point: any,
   player: any,
   playerCoordinate: [number, number],
-  hitbox: number
+  hitbox: number,
+  flags: string[]
 ) => {
+  const isDomination = flags.includes("DOMINATION");
   const [longitude, latitude] = point.location.coordinates;
   const distance = getDistance(
     { lng: longitude, lat: latitude },
     { lng: playerCoordinate[0], lat: playerCoordinate[1] }
   );
   const isWithinHitbox = distance < hitbox;
+  const timeSinceCollected = differenceInMilliseconds(
+    new Date(),
+    new Date(point.collectedAt)
+  );
 
   if (!isWithinHitbox) return false;
-  if (!player.hasTakenFirstPoint && point.belongsTo?.id !== player._id)
-    return false;
-  if (Boolean(point.belongsTo) && point.belongsTo?.id !== player._id)
-    return false;
-  if (Boolean(point.collectedBy)) return false;
+  if (point.collectedBy?._id === player._id) return false;
+
+  if (!isDomination) {
+    if (!player.hasTakenFirstPoint && point.belongsTo?.id !== player._id)
+      return false;
+    if (Boolean(point.belongsTo) && point.belongsTo?.id !== player._id)
+      return false;
+    if (Boolean(point.collectedAt)) return false;
+  }
+  if (isDomination) {
+    if (Boolean(point.collectedAt) && timeSinceCollected < 1000 * 10)
+      return false;
+  }
 
   return true;
 };
@@ -184,11 +199,10 @@ export class RoomController {
     const room = await RoomModel.findById(data.roomId);
 
     room.status = "COUNTDOWN";
+    if (data.domination) room.flags = ["DOMINATION"];
 
     const streetCoordinates = await getStreetCoordinates(
       data.hostLocation,
-      // [-73.99392595404598, 40.72458054965671],
-      // [18.064170017918602, 59.334781722737716],
       data.radius
     );
 
@@ -259,6 +273,9 @@ export class RoomController {
     room.startedAt = add(new Date(), {
       seconds: gameConfig.durations.start,
     });
+    room.scoreDistributedAt = add(new Date(), {
+      seconds: gameConfig.durations.start,
+    });
     room.finishedAt = add(new Date(), {
       seconds: data.duration / 1000 + gameConfig.durations.start,
     });
@@ -317,6 +334,7 @@ export class RoomController {
       (player: any) => player._id === data.playerId
     );
     const player = room.players[playerIndex];
+    // const isDomination = room.flags.includes("DOMINATION");
 
     const previousScore = room.map.points.reduce((acc: number, point: any) => {
       if (point.collectedBy?._id === player._id) return acc + point.weight;
@@ -349,19 +367,22 @@ export class RoomController {
         point,
         player,
         data.coordinate,
-        gameConfig.hitbox.point
+        gameConfig.hitbox.point,
+        room.flags
       );
       if (!pointCollected) return;
       if (!player.hasTakenFirstPoint)
         room.players[playerIndex].hasTakenFirstPoint = true;
       didUpdate = true;
+      room.map.points[index].collectedBy = player;
+      room.map.points[index].collectedAt = new Date();
+      room.players[playerIndex].score += point.weight;
+
       event = {
         player,
         type: "score",
         previousScore,
       };
-      room.map.points[index].collectedBy = player;
-      room.map.points[index].collectedAt = new Date();
     });
     await room.save();
     if (event) io.emit(`room:${room._id}:onEvent`, event);

@@ -25,6 +25,10 @@ const PlayerSchema: Schema = new Schema({
     type: Boolean,
     default: false,
   },
+  score: {
+    type: Number,
+    default: 0,
+  },
 });
 
 const PointSchema: Schema = new Schema({
@@ -68,15 +72,23 @@ const RoomSchema: Schema = new Schema(
       points: [PointSchema],
       start: PointSchema,
     },
+    alerts: {
+      type: [String],
+      default: [],
+    },
+    flags: {
+      type: [String],
+      default: [],
+    },
     finishedAt: {
       type: Date,
     },
     startedAt: {
       type: Date,
     },
-    alerts: {
-      type: [String],
-      default: [],
+    scoreDistributedAt: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true }

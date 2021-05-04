@@ -76,19 +76,9 @@ const GameScreen: FC<IGameScreenProps> = props => {
     const eventBelongsToCurrentPlayer = event?.player?._id == getUniqueId();
 
     if (event.type === 'score') {
-      const score = props.room.map.points.reduce(
-        (acc: number, point: IPoint) => {
-          if (point.collectedBy?._id === event.player._id)
-            return acc + point.weight;
-          return acc;
-        },
-        0,
-      );
-
       return (
         <NotificationScore
-          previous={event.previousScore}
-          current={score}
+          current={event.player.score}
           name={eventBelongsToCurrentPlayer ? 'You' : event.player.name}
           color={event.player.color}
         />

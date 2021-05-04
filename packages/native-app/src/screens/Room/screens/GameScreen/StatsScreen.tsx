@@ -52,20 +52,8 @@ const StatsScreen: FC<IStatsScreenProps> = props => {
 
   const renderPlayers = () => {
     return props.room.players
-      .map((player: any) => {
-        const score = props.room.map.points.reduce(
-          (acc: number, point: IPoint) => {
-            if (point.collectedBy?._id === player._id)
-              return acc + point.weight;
-            return acc;
-          },
-          0,
-        );
-
-        return {score, player};
-      })
       .sort((a: any, b: any) => b.score - a.score)
-      .map(({score, player}: {score: number; player: any}) => {
+      .map((player: any) => {
         const playerPositions = (props.room.playerPositions || []).filter(
           (pp: any) => pp.playerId === player._id,
         );
@@ -85,7 +73,8 @@ const StatsScreen: FC<IStatsScreenProps> = props => {
                 br100
               />
               <Text text70 marginL-8>
-                {isCurrentPlayer ? 'You' : player.name} - {score} point(s){' '}
+                {isCurrentPlayer ? 'You' : player.name} - {player.score}{' '}
+                point(s){' '}
                 {!player.isWithinHome && props.room.status === 'FINISHED'
                   ? '(disqualified)'
                   : ''}

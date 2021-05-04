@@ -40,26 +40,28 @@ const styles = StyleSheet.create({
   },
 });
 
-const getPointColor = (player: any, point: IPoint) => {
+const getPointColor = (player: any, point: IPoint, flags: string[]) => {
+  const isDomination = flags.includes('DOMINATION');
+
   const disabledColor = new TinyColor(Colors.grey30)
     .setAlpha(0.3)
     .toRgbString();
+
   if (point.collectedBy?.color)
     return new TinyColor(point.collectedBy.color).setAlpha(0.8).toRgbString();
-  if (!player.hasTakenFirstPoint && point.belongsTo?._id !== player._id)
-    return disabledColor;
-  if (Boolean(point.belongsTo) && point.belongsTo?._id !== player._id)
-    return disabledColor;
+
+  if (!isDomination) {
+    if (!player.hasTakenFirstPoint && point.belongsTo?._id !== player._id)
+      return disabledColor;
+    if (Boolean(point.belongsTo) && point.belongsTo?._id !== player._id)
+      return disabledColor;
+  }
+
   return new TinyColor(Colors.green30).setAlpha(0.8).toRgbString();
 };
 
 const MapScreen: FC<IMapScreenProps> = props => {
   const cameraRef = useRef(null);
-
-  const score = props.room.map.points.reduce((acc: number, point: IPoint) => {
-    if (point.collectedBy?._id === props.player._id) return acc + point.weight;
-    return acc;
-  }, 0);
 
   const onPressCenter = () => {
     (cameraRef.current as any).setCamera({
@@ -91,7 +93,7 @@ const MapScreen: FC<IMapScreenProps> = props => {
       textColor: 'white',
       textSize: [
         'interpolate',
-        ['exponential', 1.5],
+        ['exponential', 2],
         ['zoom'],
         minZoomLevel,
         12,
@@ -113,11 +115,8 @@ const MapScreen: FC<IMapScreenProps> = props => {
           properties: {
             color: isHome
               ? new TinyColor(Colors.blue30).setAlpha(0.4).toRgbString()
-              : getPointColor(props.player, point),
-            text: isHome
-              ? ''
-              : point.collectedBy?.name?.substring(0, 1)?.toUpperCase?.() ||
-                point.weight,
+              : getPointColor(props.player, point, props.room.flags),
+            text: isHome ? '' : point.weight,
             minSize: getPointRadius(
               props.position.coords.latitude,
               minZoomLevel,
@@ -181,7 +180,7 @@ const MapScreen: FC<IMapScreenProps> = props => {
       </Button>
 
       <TimeLeft finishedAt={new Date(props.room.finishedAt)} />
-      <Score score={score} />
+      <Score score={props.player.score} />
       {props.player.isWithinHome && <HomeIndicator />}
     </View>
   );

@@ -166,7 +166,7 @@ const ReplayScreen: FC = () => {
       textColor: 'white',
       textSize: [
         'interpolate',
-        ['exponential', 1.5],
+        ['exponential', 2],
         ['zoom'],
         minZoomLevel,
         12,
@@ -239,15 +239,6 @@ const ReplayScreen: FC = () => {
         </MapBoxGL.ShapeSource>
 
         {playersWithCoordinate.map(({player, coordinate}: any) => {
-          const score = room.map.points.reduce((acc: number, point: IPoint) => {
-            if (
-              point.collectedBy?._id === player._id &&
-              time > new Date(point.collectedAt)
-            )
-              return acc + point.weight;
-            return acc;
-          }, 0);
-
           return (
             <MapBoxGL.MarkerView
               id={coordinateToString(coordinate)}
@@ -255,7 +246,7 @@ const ReplayScreen: FC = () => {
               coordinate={coordinate}>
               <Marker size={28} color={player.color}>
                 <Text style={styles.markerText} text70 center white>
-                  {score}
+                  {player.name.substring(0, 1).toUpperCase()}
                 </Text>
               </Marker>
             </MapBoxGL.MarkerView>
