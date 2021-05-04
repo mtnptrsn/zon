@@ -74,12 +74,32 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
 
   const renderPlayers = () => {
     return props.room.players.map((player: any) => {
+      const isCurrentPlayer = player._id === getUniqueId();
+
       return (
-        <View key={player._id} row centerV marginB-6>
-          <View backgroundColor={player.color} height={25} width={25} br100 />
-          <Text text70 marginL-8>
-            {player.name}
-          </Text>
+        <View key={player._id} marginB-6>
+          <View row centerV>
+            <View
+              center
+              backgroundColor={player.color}
+              height={33}
+              width={33}
+              br100>
+              <Text
+                style={{
+                  textShadowColor: 'rgba(0,0,0,.5)',
+                  textShadowOffset: {width: 0, height: 0},
+                  textShadowRadius: 3,
+                }}
+                text70L
+                white>
+                {player.name.substring(0, 1).toUpperCase()}
+              </Text>
+            </View>
+            <Text text70L marginL-8>
+              {isCurrentPlayer ? 'You' : player.name}
+            </Text>
+          </View>
         </View>
       );
     });

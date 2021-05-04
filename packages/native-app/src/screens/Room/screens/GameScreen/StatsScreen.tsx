@@ -62,32 +62,56 @@ const StatsScreen: FC<IStatsScreenProps> = props => {
           playerPositions.map((pp: any) => pp.location.coordinates),
         );
         const pace = getPace(duration, distance);
+        const scorePerMinute = props.room.map.points.reduce(
+          (acc: number, point: any) => {
+            return point.collectedBy?._id === player._id
+              ? acc + point.weight
+              : acc;
+          },
+          0,
+        );
 
         return (
           <View key={player._id} marginB-6>
             <View row centerV>
               <View
+                center
                 backgroundColor={player.color}
-                height={25}
-                width={25}
-                br100
-              />
-              <Text text70 marginL-8>
-                {isCurrentPlayer ? 'You' : player.name} - {player.score}{' '}
-                point(s){' '}
+                height={37}
+                width={37}
+                br100>
+                <Text
+                  style={{
+                    textShadowColor: 'rgba(0,0,0,.5)',
+                    textShadowOffset: {width: 0, height: 0},
+                    textShadowRadius: 3,
+                  }}
+                  text70L
+                  white>
+                  {player.score}
+                </Text>
+              </View>
+              <Text text65L marginL-8>
+                {isCurrentPlayer ? 'You' : player.name}
                 {!player.isWithinHome && props.room.status === 'FINISHED'
                   ? '(disqualified)'
                   : ''}
               </Text>
             </View>
-            {props.room.status === 'FINISHED' && (
-              <View marginL-34 marginT-3>
-                <Text grey30>
-                  Distance: {Math.round((distance / 1000) * 10) / 10} km
-                </Text>
-                <Text grey30>Pace: {pace} min/km</Text>
-              </View>
-            )}
+            <View marginL-46 marginT-3>
+              {Boolean(
+                props.room.flags.includes('CONTROL') &&
+                  props.room.status === 'PLAYING',
+              ) && <Text grey30>Score growth: {scorePerMinute} / min</Text>}
+              {props.room.status === 'FINISHED' && (
+                <>
+                  <Text grey30>
+                    Distance: {Math.round((distance / 1000) * 10) / 10} km
+                  </Text>
+                  <Text grey30>Pace: {pace} min/km</Text>
+                </>
+              )}
+            </View>
           </View>
         );
       });
@@ -95,8 +119,8 @@ const StatsScreen: FC<IStatsScreenProps> = props => {
 
   return (
     <View paddingB-56 flex absF backgroundColor="white" padding-12>
-      <Text text50L>Leaderboard</Text>
-      <View flex marginT-12>
+      <Text text50L>Players</Text>
+      <View marginT-12 flex>
         {renderPlayers()}
       </View>
       <View>
