@@ -125,7 +125,7 @@ const IndexScreen: FC = () => {
       <KeyboardAvoidingView
         style={{flex: 1}}
         behavior="height"
-        keyboardVerticalOffset={18}>
+        keyboardVerticalOffset={36}>
         {content}
       </KeyboardAvoidingView>
     );
