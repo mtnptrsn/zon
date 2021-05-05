@@ -98,7 +98,7 @@ const StatsScreen: FC<IStatsScreenProps> = props => {
                   : ''}
               </Text>
             </View>
-            <View marginL-46 marginT-3>
+            <View marginL-46 style={{marginTop: -3}}>
               {Boolean(
                 props.room.flags.includes('CONTROL') &&
                   props.room.status === 'PLAYING',
