@@ -97,34 +97,40 @@ const IndexScreen: FC = () => {
     );
   };
 
-  return (
-    <KeyboardAvoidingView
-      style={{flex: 1}}
-      behavior="height"
-      enabled={Platform.OS === 'ios'}
-      keyboardVerticalOffset={18}>
-      <View flex height={Dimensions.get('screen').height}>
-        <View center flex>
-          <Text text20 center>
-            Zon
-          </Text>
-          <Text grey30>Version {packageJson.version}</Text>
-        </View>
-        <View padding-12>
-          <View marginH-12>
-            <TextField
-              placeholder="Your name"
-              value={name}
-              onChangeText={setName}
-              title="Name"
-            />
-          </View>
-          <Button label="Create Game" marginB-6 onPress={onPressCreateGame} />
-          <Button label="Join Game" onPress={onPressJoinGame} />
-        </View>
+  const content = (
+    <View flex height={Dimensions.get('screen').height}>
+      <View center flex>
+        <Text text20 center>
+          Zon
+        </Text>
+        <Text grey30>Version {packageJson.version}</Text>
       </View>
-    </KeyboardAvoidingView>
+      <View padding-12>
+        <View marginH-12>
+          <TextField
+            placeholder="Your name"
+            value={name}
+            onChangeText={setName}
+            title="Name"
+          />
+        </View>
+        <Button label="Create Game" marginB-6 onPress={onPressCreateGame} />
+        <Button label="Join Game" onPress={onPressJoinGame} />
+      </View>
+    </View>
   );
+
+  if (Platform.OS === 'ios')
+    return (
+      <KeyboardAvoidingView
+        style={{flex: 1}}
+        behavior="height"
+        keyboardVerticalOffset={18}>
+        {content}
+      </KeyboardAvoidingView>
+    );
+
+  return content;
 };
 
 export default IndexScreen;
