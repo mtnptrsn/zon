@@ -1,7 +1,13 @@
 import {useNavigation} from '@react-navigation/core';
 import React, {FC, useContext, useEffect, useState} from 'react';
-import {Alert} from 'react-native';
-import {View, Text, Button, TextField} from 'react-native-ui-lib';
+import {Alert, Dimensions, KeyboardAvoidingView, Platform} from 'react-native';
+import {
+  View,
+  Text,
+  Button,
+  TextField,
+  KeyboardAwareScrollView,
+} from 'react-native-ui-lib';
 import {SocketContext} from '../../socket/context';
 import {RoomController} from 'socket-server/src/controllers/RoomController';
 import DeviceInfo from 'react-native-device-info';
@@ -98,26 +104,31 @@ const IndexScreen: FC = () => {
   };
 
   return (
-    <View flex spread>
-      <View center>
-        <Text text20 center marginT-140>
-          Zon
-        </Text>
-        <Text grey30>Version {packageJson.version}</Text>
-      </View>
-      <View padding-12>
-        <View marginH-12>
-          <TextField
-            placeholder="Your name"
-            value={name}
-            onChangeText={setName}
-            title="Name"
-          />
+    <KeyboardAvoidingView
+      behavior="padding"
+      enabled={Platform.OS === 'ios'}
+      style={{flex: 1}}>
+      <View flex spread>
+        <View center>
+          <Text text20 center marginT-140>
+            Zon
+          </Text>
+          <Text grey30>Version {packageJson.version}</Text>
         </View>
-        <Button label="Create Game" marginB-6 onPress={onPressCreateGame} />
-        <Button label="Join Game" onPress={onPressJoinGame} />
+        <View padding-12>
+          <View marginH-12>
+            <TextField
+              placeholder="Your name"
+              value={name}
+              onChangeText={setName}
+              title="Name"
+            />
+          </View>
+          <Button label="Create Game" marginB-6 onPress={onPressCreateGame} />
+          <Button label="Join Game" onPress={onPressJoinGame} />
+        </View>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 

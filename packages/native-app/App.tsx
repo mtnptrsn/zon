@@ -14,7 +14,7 @@ import MapboxGL from '@react-native-mapbox-gl/maps';
 import {requestLocationPermission} from './src/utils/location';
 import ReplayScreen from './src/screens/ReplayScreen/ReplayScreen';
 import {SafeAreaView} from 'react-native';
-import {LoaderScreen} from 'react-native-ui-lib';
+import {Colors, LoaderScreen, ThemeManager} from 'react-native-ui-lib';
 import HelpScreen from './src/screens/HelpScreen/HelpScren';
 import UpdateScreen from './src/screens/UpdateScreen';
 //@ts-ignore
@@ -22,7 +22,9 @@ import packageJson from './package.json';
 const clientVersion = packageJson.version;
 import {satisfies} from 'semver';
 
+ThemeManager.setComponentTheme('View', {backgroundColor: 'white'});
 MapboxGL.setAccessToken(MAPBOX_ACCESS_TOKEN);
+
 const Stack = createStackNavigator();
 
 const App: FC = () => {
