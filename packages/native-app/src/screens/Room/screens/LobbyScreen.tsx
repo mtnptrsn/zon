@@ -68,10 +68,6 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
     );
   };
 
-  const onPressHelp = () => {
-    navigation.navigate('Help');
-  };
-
   const renderPlayers = () => {
     return props.room.players.map((player: any) => {
       const isCurrentPlayer = player._id === getUniqueId();
@@ -112,10 +108,12 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
     <View padding-12 flex>
       <View flex>
         <Text text50L>Players</Text>
-        <View marginT-12>{renderPlayers()}</View>
+        <View marginB-24 marginT-12>
+          {renderPlayers()}
+        </View>
 
         {isHost && (
-          <View marginT-24>
+          <View>
             <Text text50L>Settings</Text>
             <Text text70 marginT-12>
               Duration
@@ -167,20 +165,20 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
                 );
               })}
             </Picker>
-            <Text
-              onPress={onPressHelp}
-              text70L
-              primary
-              style={{
-                marginTop: -12,
-                textDecorationStyle: 'solid',
-                textDecorationColor: Colors.primary,
-                textDecorationLine: 'underline',
-              }}>
-              How does it work?
-            </Text>
           </View>
         )}
+        {/* <Text
+          onPress={onPressHelp}
+          text70L
+          primary
+          style={{
+            marginTop: -12,
+            textDecorationStyle: 'solid',
+            textDecorationColor: Colors.primary,
+            textDecorationLine: 'underline',
+          }}>
+          What are the rules?
+        </Text> */}
       </View>
 
       <View>

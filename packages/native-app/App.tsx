@@ -14,15 +14,15 @@ import MapboxGL from '@react-native-mapbox-gl/maps';
 import {requestLocationPermission} from './src/utils/location';
 import ReplayScreen from './src/screens/ReplayScreen/ReplayScreen';
 import {SafeAreaView} from 'react-native';
-import {Colors, LoaderScreen, ThemeManager} from 'react-native-ui-lib';
-import HelpScreen from './src/screens/HelpScreen/HelpScren';
+import {LoaderScreen, View, Text} from 'react-native-ui-lib';
+import Walkthrough from './src/screens/WalkthroughScreen/WalkthroughScreen';
 import UpdateScreen from './src/screens/UpdateScreen';
 //@ts-ignore
 import packageJson from './package.json';
 const clientVersion = packageJson.version;
 import {satisfies} from 'semver';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-ThemeManager.setComponentTheme('View', {backgroundColor: 'white'});
 MapboxGL.setAccessToken(MAPBOX_ACCESS_TOKEN);
 
 const Stack = createStackNavigator();
@@ -31,7 +31,11 @@ const App: FC = () => {
   const [serverVersion, setServerVersion] = useState<string | null>(null);
   const [socket, setSocket] = useState<null | Socket>(null);
   const [isConnected, setIsConnected] = useState(false);
-  useEffect(() => {
+  const [showWalkthrough, setShowWalkthrough] = useState(false);
+
+  const onMount = async () => {
+    const hasSeenTutorial = await AsyncStorage.getItem('hasSeenTutorial');
+    if (!hasSeenTutorial) setShowWalkthrough(true);
     requestLocationPermission();
     const socket = io(SERVER_URL, {transports: ['websocket']});
     setSocket(socket);
@@ -40,6 +44,15 @@ const App: FC = () => {
     );
     socket.on('connect', () => setIsConnected(true));
     socket.on('disconnect', () => setIsConnected(false));
+  };
+
+  const onPressCloseWalkthrough = async () => {
+    await AsyncStorage.setItem('hasSeenTutorial', '1');
+    setShowWalkthrough(false);
+  };
+
+  useEffect(() => {
+    onMount();
   }, []);
   if (!socket || !serverVersion) return <LoaderScreen />;
   const versionIsAllowed = satisfies(serverVersion, `~${clientVersion}`);
@@ -49,8 +62,11 @@ const App: FC = () => {
       <UpdateScreen version={clientVersion} latestVersion={serverVersion} />
     );
 
+  if (showWalkthrough)
+    return <Walkthrough showPrompt onPressClose={onPressCloseWalkthrough} />;
+
   return (
-    <>
+    <View flex>
       {!isConnected && <ConnectionWarning />}
       <SocketContext.Provider value={socket}>
         <SafeAreaView style={{flex: 1}}>
@@ -82,16 +98,11 @@ const App: FC = () => {
                 name="Replay"
                 component={ReplayScreen}
               />
-              <Stack.Screen
-                options={{headerTitle: 'Game Modes'}}
-                name="Help"
-                component={HelpScreen}
-              />
             </Stack.Navigator>
           </NavigationContainer>
         </SafeAreaView>
       </SocketContext.Provider>
-    </>
+    </View>
   );
 };
 
