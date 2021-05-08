@@ -92,6 +92,7 @@ const checkPointCollected = (
   if (!isWithinHitbox) return false;
   if (point.collectedBy?._id === player._id) return false;
 
+  // TODO: Refactor this
   if (!isControl) {
     if (!player.hasTakenFirstPoint && point.belongsTo?.id !== player._id)
       return false;
@@ -99,8 +100,17 @@ const checkPointCollected = (
       return false;
     if (Boolean(point.collectedAt)) return false;
   }
+
   if (isControl) {
-    if (Boolean(point.collectedAt) && timeSinceCollected < 1000 * 10)
+    if (!player.hasTakenFirstPoint && point.belongsTo?.id !== player._id)
+      return false;
+    if (
+      point.belongsTo?.id !== player._id &&
+      Boolean(point.belongsTo) &&
+      !Boolean(point.collectedBy)
+    )
+      return false;
+    if (Boolean(point.collectedAt) && timeSinceCollected < 1000 * 60 * 3)
       return false;
   }
 

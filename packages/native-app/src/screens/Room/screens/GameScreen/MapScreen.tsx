@@ -1,4 +1,4 @@
-import React, {FC, useRef} from 'react';
+import React, {FC, useRef, useState} from 'react';
 import {StyleSheet} from 'react-native';
 import MapBoxGL from '@react-native-mapbox-gl/maps';
 import {IPoint} from '../../types';
@@ -12,8 +12,10 @@ import {getSpacing} from '../../../../theme/utils';
 import Feather from 'react-native-vector-icons/Feather';
 import {getPointRadius} from '../../../../utils/map';
 import {gameConfig} from '../../../../config/game';
+import {differenceInMilliseconds} from 'date-fns';
+import useInterval from '@use-it/interval';
 
-const minZoomLevel = 11;
+const minZoomLevel = 13;
 const maxZoomLevel = 19;
 
 interface IMapScreenProps {
@@ -21,6 +23,11 @@ interface IMapScreenProps {
   position: GeolocationResponse;
   player: any;
 }
+
+const useForceUpdate = () => {
+  const [_, setValue] = useState(0); // integer state
+  return () => setValue(value => value + 1); // update the state to force render
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -46,23 +53,34 @@ const getPointColor = (player: any, point: IPoint, flags: string[]) => {
   const disabledColor = new TinyColor(Colors.grey30)
     .setAlpha(0.3)
     .toRgbString();
-
   if (point.collectedBy?.color)
     return new TinyColor(point.collectedBy.color).setAlpha(0.8).toRgbString();
-
-  if (!isControl) {
-    if (!player.hasTakenFirstPoint && point.belongsTo?._id !== player._id)
+  if (!player.hasTakenFirstPoint && point.belongsTo?._id !== player._id)
+    return disabledColor;
+  if (isControl) {
+    if (
+      Boolean(point.belongsTo) &&
+      point.belongsTo?._id !== player._id &&
+      !Boolean(point.collectedBy)
+    )
       return disabledColor;
+  }
+  if (!isControl) {
     if (Boolean(point.belongsTo) && point.belongsTo?._id !== player._id)
       return disabledColor;
   }
-
   return new TinyColor(Colors.green30).setAlpha(0.8).toRgbString();
 };
 
 const MapScreen: FC<IMapScreenProps> = props => {
   const cameraRef = useRef(null);
   const isControl = props.room.flags.includes('CONTROL');
+  const update = useForceUpdate();
+
+  // TODO: Remove this after db refactor
+  useInterval(() => {
+    update();
+  }, 3000);
 
   const scoreGrowth = props.room.map.points.reduce(
     (acc: number, point: any) => {
@@ -106,9 +124,9 @@ const MapScreen: FC<IMapScreenProps> = props => {
         ['exponential', 2],
         ['zoom'],
         minZoomLevel,
-        12,
+        ['get', 'textSizeMin'],
         maxZoomLevel,
-        80,
+        ['get', 'textSizeMax'],
       ],
     },
   };
@@ -118,6 +136,23 @@ const MapScreen: FC<IMapScreenProps> = props => {
     features: [props.room.map.start, ...props.room.map.points].map(
       (point: any) => {
         const isHome = !point.weight;
+        const isLocked =
+          Boolean(point.collectedAt) &&
+          differenceInMilliseconds(new Date(), new Date(point.collectedAt)) <
+            1000 * 60 * 3;
+
+        const text = isHome ? '' : isLocked ? 'LOCK' : point.weight;
+
+        const textSizes = {
+          large: {
+            min: 14,
+            max: 110,
+          },
+          small: {
+            min: 8,
+            max: 110,
+          },
+        };
 
         return {
           type: 'Feature',
@@ -126,17 +161,22 @@ const MapScreen: FC<IMapScreenProps> = props => {
             color: isHome
               ? new TinyColor(Colors.blue30).setAlpha(0.4).toRgbString()
               : getPointColor(props.player, point, props.room.flags),
-            text: isHome ? '' : point.weight,
-            minSize: getPointRadius(
-              props.position.coords.latitude,
-              minZoomLevel,
-              isHome ? gameConfig.hitbox.home : gameConfig.hitbox.point,
+            text,
+            minSize: Math.max(
+              getPointRadius(
+                props.position.coords.latitude,
+                minZoomLevel,
+                isHome ? gameConfig.hitbox.home : gameConfig.hitbox.point,
+              ),
+              12,
             ),
             maxSize: getPointRadius(
               props.position.coords.latitude,
               maxZoomLevel,
               isHome ? gameConfig.hitbox.home : gameConfig.hitbox.point,
             ),
+            textSizeMin: isLocked ? textSizes.small.min : textSizes.large.min,
+            textSizeMax: isLocked ? textSizes.small.max : textSizes.large.max,
           },
           geometry: {
             type: 'Point',
