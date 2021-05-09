@@ -21,7 +21,7 @@ import {getPointRadius} from '../../utils/map';
 import {gameConfig} from '../../config/game';
 import {Colors, Text} from 'react-native-ui-lib';
 
-const minZoomLevel = 11;
+const minZoomLevel = 13;
 const maxZoomLevel = 19;
 
 const getPointColor = (point: IPoint, time: Date) => {
@@ -169,9 +169,9 @@ const ReplayScreen: FC = () => {
         ['exponential', 2],
         ['zoom'],
         minZoomLevel,
-        12,
+        14,
         maxZoomLevel,
-        80,
+        110,
       ],
     },
   };
@@ -189,10 +189,13 @@ const ReplayScreen: FC = () => {
             ? new TinyColor(Colors.blue30).setAlpha(0.4).toRgbString()
             : getPointColor(point, time),
           text: isHome ? '' : getPointText(point, time),
-          minSize: getPointRadius(
-            room.map.start.location.coordinates[1],
-            minZoomLevel,
-            isHome ? gameConfig.hitbox.home : gameConfig.hitbox.point,
+          minSize: Math.max(
+            getPointRadius(
+              room.map.start.location.coordinates[1],
+              minZoomLevel,
+              isHome ? gameConfig.hitbox.home : gameConfig.hitbox.point,
+            ),
+            12,
           ),
           maxSize: getPointRadius(
             room.map.start.location.coordinates[1],
