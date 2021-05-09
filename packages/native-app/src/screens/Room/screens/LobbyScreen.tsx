@@ -13,6 +13,8 @@ import {
 } from 'react-native-ui-lib';
 import {SocketContext} from '../../../socket/context';
 import {GeolocationResponse} from '@react-native-community/geolocation';
+import analytics from '@react-native-firebase/analytics';
+
 interface ILobbyScreenProps {
   room: any;
   position: GeolocationResponse;
@@ -51,6 +53,8 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
 
     if (!hasAccuratePositon)
       return Alert.alert('Error', `Couldn't get your location.`);
+
+    analytics().logEvent('start_game');
 
     socket!.emit(
       'room:update:start',

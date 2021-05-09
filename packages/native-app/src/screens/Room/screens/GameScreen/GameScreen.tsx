@@ -13,6 +13,7 @@ import {StackActions, useNavigation} from '@react-navigation/native';
 import Notification from '../../../../components/Notification/Notification';
 import NotificationScore from '../../../../components/Notification/NotificationScore';
 import NotificationInfo from '../../../../components/Notification/NotificationInfo';
+import analytics from '@react-native-firebase/analytics';
 
 const translateEventMessage = (
   translateMap: {[key: string]: string},
@@ -124,7 +125,10 @@ const GameScreen: FC<IGameScreenProps> = props => {
   };
 
   const onPressLeave = () => {
-    const leave = () => navigation.dispatch(StackActions.popToTop());
+    const leave = () => {
+      analytics().logEvent('leave_game');
+      navigation.dispatch(StackActions.popToTop());
+    };
     Alert.alert('Confirmation', 'Are you sure you want to leave the game?', [
       {text: 'No', onPress: () => {}},
       {text: 'Yes', onPress: leave},

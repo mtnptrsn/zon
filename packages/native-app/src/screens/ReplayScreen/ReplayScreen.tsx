@@ -20,6 +20,7 @@ import Slider from 'react-native-slider';
 import {getPointRadius} from '../../utils/map';
 import {gameConfig} from '../../config/game';
 import {Colors, Text} from 'react-native-ui-lib';
+import analytics from '@react-native-firebase/analytics';
 
 const minZoomLevel = 13;
 const maxZoomLevel = 19;
@@ -123,6 +124,10 @@ const ReplayScreen: FC = () => {
       coordinate: closestPlayerPosition.location.coordinates,
     };
   });
+
+  useEffect(() => {
+    analytics().logEvent('open_replay');
+  }, []);
 
   useEffect(() => {
     if (progress >= 1) {

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "38111540538",
+    "project_id": "mg-zon",
+    "storage_bucket": "mg-zon.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:38111540538:android:2c999a48ad0d7274d30c03",
+        "android_client_info": {
+          "package_name": "mg.zon"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "38111540538-dui8dl4b6e17mpj5nv3ts0ipn1i8a3nc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDkRH6EF9VvmZhzew-XK9Psxx0aVg2PfPY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "38111540538-dui8dl4b6e17mpj5nv3ts0ipn1i8a3nc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

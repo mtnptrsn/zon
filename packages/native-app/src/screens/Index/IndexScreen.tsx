@@ -10,6 +10,7 @@ import {Socket} from 'socket.io-client';
 import {DefaultEventsMap} from 'socket.io-client/build/typed-events';
 // @ts-ignore
 import packageJson from '../../../package.json';
+import analytics from '@react-native-firebase/analytics';
 
 const findOngoingRoom = async (
   socket: Socket<DefaultEventsMap, DefaultEventsMap>,
@@ -29,14 +30,6 @@ const IndexScreen: FC = () => {
   const socket = useContext(SocketContext);
   const navigation = useNavigation();
   const [name, setName] = useState('');
-
-  // useEffect(() => {
-  //   socket!.emit(
-  //     'room:get',
-  //     {roomId: '608ec270005a19c2a893779c'},
-  //     (room: any) => navigation.navigate('Replay', {room}),
-  //   );
-  // }, []);
 
   useEffect(() => {
     (async () => {
@@ -68,7 +61,7 @@ const IndexScreen: FC = () => {
             'Invalid QR',
             'The QR code you scanned is invalid.',
           );
-
+        analytics().logEvent('join_room');
         AsyncStorage.setItem('roomId', data);
         navigation.navigate('Room', {roomId: data});
       },
@@ -84,7 +77,7 @@ const IndexScreen: FC = () => {
   const onPressCreateGame = () => {
     if (!name)
       return Alert.alert('Empty field', 'You must enter a name to continue.');
-
+    analytics().logEvent('create_room');
     socket!.emit(
       'room:create',
       {

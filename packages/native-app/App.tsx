@@ -55,6 +55,7 @@ const App: FC = () => {
   useEffect(() => {
     onMount();
   }, []);
+
   if (!socket) return <LoaderScreen />;
   if (connectionStatus === 'CONNECTING')
     return <LoaderScreen message="Connecting to server" />;
