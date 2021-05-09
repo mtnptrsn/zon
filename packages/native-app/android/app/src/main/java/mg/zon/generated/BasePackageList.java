@@ -1,4 +1,4 @@
-package com.orient.generated;
+package mg.zon.generated;
 
 import java.util.Arrays;
 import java.util.List;

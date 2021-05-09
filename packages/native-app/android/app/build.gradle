@@ -136,7 +136,7 @@ android {
     }
 
     defaultConfig {
-        applicationId 'com.orient'
+        applicationId 'mg.zon'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 12

@@ -1,4 +1,4 @@
-package com.orient;
+package mg.zon;
 
 import com.facebook.react.ReactActivity;
 
