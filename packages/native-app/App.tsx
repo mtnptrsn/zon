@@ -30,44 +30,44 @@ const Stack = createStackNavigator();
 const App: FC = () => {
   const [serverVersion, setServerVersion] = useState<string | null>(null);
   const [socket, setSocket] = useState<null | Socket>(null);
-  const [isConnected, setIsConnected] = useState(false);
-  const [showWalkthrough, setShowWalkthrough] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState('CONNECTING');
+  const [walkthroughIsVisible, setWalkthroughIsVisible] = useState(false);
 
   const onMount = async () => {
-    const hasSeenTutorial = await AsyncStorage.getItem('hasSeenTutorial@1');
-    if (!hasSeenTutorial) setShowWalkthrough(true);
+    const hasSeenWalkthrough = await AsyncStorage.getItem('hasSeenTutorial@1');
+    if (!hasSeenWalkthrough) setWalkthroughIsVisible(true);
     requestLocationPermission();
     const socket = io(SERVER_URL, {transports: ['websocket']});
     setSocket(socket);
     socket!.emit('version:get', null, (version: string) =>
       setServerVersion(version),
     );
-    socket.on('connect', () => setIsConnected(true));
-    socket.on('disconnect', () => setIsConnected(false));
+    socket.on('connect', () => setConnectionStatus('CONNECTED'));
+    socket.on('disconnect', () => setConnectionStatus('DISCONNECTED'));
+    socket.on('connect_error', () => setConnectionStatus('ERROR_CONNECTING'));
   };
 
   const onPressCloseWalkthrough = async () => {
     await AsyncStorage.setItem('hasSeenTutorial@1', '1');
-    setShowWalkthrough(false);
+    setWalkthroughIsVisible(false);
   };
 
   useEffect(() => {
     onMount();
   }, []);
-  if (!socket || !serverVersion) return <LoaderScreen />;
-  const versionIsAllowed = satisfies(serverVersion, `~${clientVersion}`);
-
-  if (!versionIsAllowed)
+  if (!socket) return <LoaderScreen />;
+  if (connectionStatus === 'CONNECTING')
+    return <LoaderScreen message="Connecting to server" />;
+  const versionIsAllowed = satisfies(serverVersion || '', `~${clientVersion}`);
+  if (!versionIsAllowed && serverVersion)
     return (
       <UpdateScreen version={clientVersion} latestVersion={serverVersion} />
     );
-
-  if (showWalkthrough)
+  if (walkthroughIsVisible)
     return <Walkthrough showPrompt onPressClose={onPressCloseWalkthrough} />;
-
   return (
     <View flex>
-      {!isConnected && <ConnectionWarning />}
+      {connectionStatus !== 'CONNECTED' && <ConnectionWarning />}
       <SocketContext.Provider value={socket}>
         <SafeAreaView style={{flex: 1}}>
           <NavigationContainer>
