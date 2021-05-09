@@ -24,10 +24,8 @@ const Prompt: FC<IStepProps> = props => {
       <Text center text40L primary>
         Welcome to Zon
       </Text>
-      <Text text70L grey30 marginV-12>
-        Please consider having a look at the walkthrough. Zon is easy to learn,
-        but you will benefit from having a basic understanding of the game
-        before you play.
+      <Text text70L grey30 marginT-6 marginH-24>
+        If you haven't played before, consider having a look at the walkthrough.
       </Text>
 
       <View style={{position: 'absolute', bottom: 12, left: 12, right: 12}}>
@@ -50,13 +48,17 @@ const FirstZone: FC<IStepProps> = props => {
         style={{flex: 1}}
         contentContainerStyle={{padding: getSpacing(1)}}>
         <Text primary text50L>
-          First Phase: Capture <Text text50BL>your</Text> zone
+          Objective 1: Capture The First Zone
         </Text>
-
-        <Text grey30 text70L marginT-6>
-          As soon as the game starts, you will be assigned with a zone, which
-          you'll have to take before taking any other zones. This zone will be
-          marked with green.
+        <Text grey30 text70L marginT-12>
+          When the game begins, you will notice that you're inside a blue area
+          on the map. This is your home. You are allowed to leave the home, but
+          make sure to be back before the time runs out.
+        </Text>
+        <Text grey30 text70L marginT-12>
+          Now it's time to capture zones. This first zone will be assigned to
+          you and you are required to take this zone before you can take other
+          zones.
         </Text>
       </ScrollView>
       <View padding-12 style={{marginTop: 'auto'}} row spread>
@@ -79,36 +81,17 @@ const AfterFirstZone: FC<IStepProps> = props => {
         style={{flex: 1}}
         contentContainerStyle={{padding: getSpacing(1)}}>
         <Text primary text50L>
-          Second Phase: Capture zones
+          Objective 2: Capture Zones
         </Text>
 
-        <Text grey30 text70L marginT-6>
-          After capturing your first zone, you're free to take all other zones.
+        <Text grey30 text70L marginT-12>
+          After capturing your first zone, you're free to take more zones.
         </Text>
 
-        <Text grey30 text70L marginT-6>
+        <Text grey30 text70L marginT-12>
           Available zones will be marked with green, but could also be the color
           of the player who captured it. Depending on the game mode, you might
           be able to steal zones from other players.
-        </Text>
-
-        <Text primary text60BL marginT-12>
-          Mode: Normal
-        </Text>
-
-        <Text grey30 text70L marginT-6>
-          In normal mode, you can only take a zone once. As soon as you've
-          captured a point, no one else can capture it again or steal it from
-          you.
-        </Text>
-
-        <Text primary text60BL marginT-12>
-          Mode: Control
-        </Text>
-        <Text grey30 text70L marginT-6>
-          In control mode, you can steal zones from others, however, zones are
-          secured for 3 minutes after being captured. Locked zones will be
-          marked with a lock symbol.
         </Text>
       </ScrollView>
       <View style={{marginTop: 'auto'}} row spread padding-12>
@@ -134,24 +117,9 @@ const Distance: FC<IStepProps> = props => {
           Zone Weights
         </Text>
 
-        <Text grey30 text70L marginT-6>
+        <Text grey30 text70L marginT-12>
           Different zones give different amount of points. The further away from
-          the starting position (home) the more points a zone gives.
-        </Text>
-
-        <Text primary text60BL marginT-12>
-          Mode: Normal
-        </Text>
-        <Text grey30 text70L marginT-6>
-          When you catch a zone, you are awarded immediately.
-        </Text>
-
-        <Text primary text60BL marginT-12>
-          Mode: Control
-        </Text>
-        <Text grey30 text70L marginT-6>
-          When you catch a point, you aren't immediately awarded. Instead, zones
-          give you points over time.
+          the starting position (home) the more points a zone yields.
         </Text>
       </ScrollView>
       <View style={{marginTop: 'auto'}} row spread padding-12>
@@ -162,7 +130,7 @@ const Distance: FC<IStepProps> = props => {
   );
 };
 
-const Home: FC<IStepProps> = props => {
+const BackHome: FC<IStepProps> = props => {
   return (
     <View flex>
       <Image
@@ -174,18 +142,56 @@ const Home: FC<IStepProps> = props => {
         style={{flex: 1}}
         contentContainerStyle={{padding: getSpacing(1)}}>
         <Text primary text50L>
-          Home
+          Objective 3: Get Back Home
         </Text>
 
-        <Text grey30 text70L marginT-6>
-          The home is wherever you started the game and is marked with a blue
-          circle. Make sure to be back home before the time runs out, or you
-          will be disqualified.
+        <Text grey30 text70L marginT-12>
+          Make sure to get back home before the time runs out. If you don't
+          manage to get back in time, you will be disqualified.
         </Text>
       </ScrollView>
       <View style={{marginTop: 'auto'}} row spread padding-12>
         <Button outline label="Back" onPress={props.onPressBack} />
-        <Button label="Finish" onPress={props.onPressClose} />
+        <Button label="Next" onPress={props.onPressNext} />
+      </View>
+    </View>
+  );
+};
+
+const GameModes: FC<IStepProps> = props => {
+  return (
+    <View flex>
+      <ScrollView
+        style={{flex: 1}}
+        contentContainerStyle={{padding: getSpacing(1)}}>
+        <Text primary text50L>
+          Game Modes
+        </Text>
+
+        <Text primary text60L marginT-12>
+          Normal
+        </Text>
+
+        <Text grey30 text70L marginT-6>
+          Capture as many zones as you can. When a zone is taken, no one else
+          can take it from you. You earn points immediately as you capture a
+          zone.
+        </Text>
+
+        <Text primary text60L marginT-12>
+          Control
+        </Text>
+
+        <Text grey30 text70L marginT-6>
+          Capture as many zones as you can. When a zone is taken, it will be
+          yours for at least 3 minutes. After 3 minutes, other players can steal
+          it from you. You aren't rewarded immediately when you capture a zone.
+          Instead, zones yield you points every minute.
+        </Text>
+      </ScrollView>
+      <View style={{marginTop: 'auto'}} row spread padding-12>
+        <Button outline label="Back" onPress={props.onPressBack} />
+        <Button label="Play Now" onPress={props.onPressClose} />
       </View>
     </View>
   );
@@ -198,7 +204,8 @@ const Walkthrough: FC<IWalkthroughProps> = props => {
     FirstZone,
     AfterFirstZone,
     Distance,
-    Home,
+    BackHome,
+    GameModes,
   ];
   const Component: FC<IStepProps> = pages[page];
   return (

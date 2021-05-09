@@ -34,7 +34,7 @@ const App: FC = () => {
   const [showWalkthrough, setShowWalkthrough] = useState(false);
 
   const onMount = async () => {
-    const hasSeenTutorial = await AsyncStorage.getItem('hasSeenTutorial');
+    const hasSeenTutorial = await AsyncStorage.getItem('hasSeenTutorial@1');
     if (!hasSeenTutorial) setShowWalkthrough(true);
     requestLocationPermission();
     const socket = io(SERVER_URL, {transports: ['websocket']});
@@ -47,7 +47,7 @@ const App: FC = () => {
   };
 
   const onPressCloseWalkthrough = async () => {
-    await AsyncStorage.setItem('hasSeenTutorial', '1');
+    await AsyncStorage.setItem('hasSeenTutorial@1', '1');
     setShowWalkthrough(false);
   };
 
