@@ -186,7 +186,7 @@ const GameModes: FC<IStepProps> = props => {
           Capture as many zones as you can. When a zone is taken, it will be
           yours for at least 3 minutes. After 3 minutes, other players can steal
           it from you. You aren't rewarded immediately when you capture a zone.
-          Instead, zones yield you points every minute.
+          Instead, each zone you control yields you points over time.
         </Text>
       </ScrollView>
       <View style={{marginTop: 'auto'}} row spread padding-12>
