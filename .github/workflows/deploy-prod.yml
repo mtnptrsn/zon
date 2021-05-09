@@ -1,4 +1,4 @@
-name: socket-server ci
+name: deploy stage
 on:
   #push:
   #  branches: [ master ]
@@ -27,11 +27,11 @@ jobs:
       - name: Pull latest image from Docker Hub on EC2
         uses: appleboy/ssh-action@master
         env:
-          MONGO_URL: ${{ secrets.MONGO_URL }}
+          MONGO_URL_PROD: ${{ secrets.MONGO_URL_PROD }}
           SERVER_PORT: ${{ secrets.SERVER_PORT }}
         with:
-          envs: MONGO_URL,SERVER_PORT
-          host: ${{ secrets.HOST }}
+          envs: MONGO_URL_PROD,SERVER_PORT
+          host: ${{ secrets.HOST_PROD }}
           username: ${{ secrets.USERNAME }}
           port: ${{ secrets.PORT }}
           key: ${{ secrets.SSH_KEY }}
@@ -39,4 +39,4 @@ jobs:
             docker system prune -a -f
             docker pull mtnptrsn/orient-socket-server
             docker rm socket-server -f
-            docker run --restart=on-failure --name socket-server -p 3000:3000 -e MONGO_URL=$MONGO_URL -e PORT=$SERVER_PORT -d mtnptrsn/orient-socket-server
+            docker run --restart=on-failure --name socket-server -p 3000:3000 -e MONGO_URL=$MONGO_URL_PROD -e PORT=$SERVER_PORT -d mtnptrsn/orient-socket-server
