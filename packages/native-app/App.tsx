@@ -1,27 +1,27 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import MapboxGL from '@react-native-mapbox-gl/maps';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import React, {FC, useEffect, useState} from 'react';
-import {io, Socket} from 'socket.io-client';
-import {SocketContext} from './src/socket/context';
-import IndexScreen from './src/screens/Index/IndexScreen';
-import ScanQRScreen from './src/screens/ScanQR/ScanQRScreen';
-import RoomScreen from './src/screens/Room/RoomScreen';
-import ShowQRScreen from './src/screens/ShowQR/ShowQRScreen';
-import ConnectionWarning from './src/components/ConnectionWarning';
-import CreateMapScreen from './src/screens/CreateMapScreen/CreateMapScreen';
-import {MAPBOX_ACCESS_TOKEN, SERVER_URL} from 'react-native-dotenv';
-import MapboxGL from '@react-native-mapbox-gl/maps';
-import {requestLocationPermission} from './src/utils/location';
-import ReplayScreen from './src/screens/ReplayScreen/ReplayScreen';
 import {SafeAreaView} from 'react-native';
-import {LoaderScreen, View, Text} from 'react-native-ui-lib';
-import Walkthrough from './src/screens/WalkthroughScreen/WalkthroughScreen';
-import UpdateScreen from './src/screens/UpdateScreen';
+import {MAPBOX_ACCESS_TOKEN, SERVER_URL} from 'react-native-dotenv';
+import {LoaderScreen, View} from 'react-native-ui-lib';
+import {satisfies} from 'semver';
+import {io, Socket} from 'socket.io-client';
 //@ts-ignore
 import packageJson from './package.json';
+import ConnectionWarning from './src/components/ConnectionWarning';
+import CreateMapScreen from './src/screens/CreateMapScreen/CreateMapScreen';
+import IndexScreen from './src/screens/Index/IndexScreen';
+import ReplayScreen from './src/screens/ReplayScreen/ReplayScreen';
+import RoomScreen from './src/screens/Room/RoomScreen';
+import ScanQRScreen from './src/screens/ScanQR/ScanQRScreen';
+import ShowQRScreen from './src/screens/ShowQR/ShowQRScreen';
+import UpdateScreen from './src/screens/UpdateScreen';
+import Walkthrough from './src/screens/WalkthroughScreen/WalkthroughScreen';
+import {SocketContext} from './src/socket/context';
+import {requestLocationPermission} from './src/utils/location';
 const clientVersion = packageJson.version;
-import {satisfies} from 'semver';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 MapboxGL.setAccessToken(MAPBOX_ACCESS_TOKEN);
 
@@ -34,8 +34,11 @@ const App: FC = () => {
   const [walkthroughIsVisible, setWalkthroughIsVisible] = useState(false);
 
   const onMount = async () => {
+    // Check if the user has already seen the walkthrough
     const hasSeenWalkthrough = await AsyncStorage.getItem('hasSeenTutorial@1');
+    // Show the user the walkthrough if they haven't
     if (!hasSeenWalkthrough) setWalkthroughIsVisible(true);
+
     requestLocationPermission();
     const socket = io(SERVER_URL, {transports: ['websocket']});
     setSocket(socket);

@@ -21,6 +21,7 @@ import {getPointRadius} from '../../utils/map';
 import {gameConfig} from '../../config/game';
 import {Colors, Text} from 'react-native-ui-lib';
 import analytics from '@react-native-firebase/analytics';
+import {ENV} from 'react-native-dotenv';
 
 const minZoomLevel = 13;
 const maxZoomLevel = 19;
@@ -126,7 +127,7 @@ const ReplayScreen: FC = () => {
   });
 
   useEffect(() => {
-    analytics().logEvent('open_replay');
+    if (ENV === 'production') analytics().logEvent('open_replay');
   }, []);
 
   useEffect(() => {

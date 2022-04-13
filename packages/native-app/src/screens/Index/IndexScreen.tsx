@@ -11,6 +11,7 @@ import {DefaultEventsMap} from 'socket.io-client/build/typed-events';
 // @ts-ignore
 import packageJson from '../../../package.json';
 import analytics from '@react-native-firebase/analytics';
+import {ENV} from 'react-native-dotenv';
 
 const findOngoingRoom = async (
   socket: Socket<DefaultEventsMap, DefaultEventsMap>,
@@ -61,7 +62,7 @@ const IndexScreen: FC = () => {
             'Invalid QR',
             'The QR code you scanned is invalid.',
           );
-        analytics().logEvent('join_room');
+        if (ENV === 'production') analytics().logEvent('join_room');
         AsyncStorage.setItem('roomId', data);
         navigation.navigate('Room', {roomId: data});
       },
@@ -77,7 +78,7 @@ const IndexScreen: FC = () => {
   const onPressCreateGame = () => {
     if (!name)
       return Alert.alert('Empty field', 'You must enter a name to continue.');
-    analytics().logEvent('create_room');
+    if (ENV === 'production') analytics().logEvent('create_room');
     socket!.emit(
       'room:create',
       {

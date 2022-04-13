@@ -102,7 +102,7 @@ const StatsScreen: FC<IStatsScreenProps> = props => {
               {Boolean(
                 props.room.flags.includes('CONTROL') &&
                   props.room.status === 'PLAYING',
-              ) && <Text grey30>Score growth: {scorePerMinute}/min</Text>}
+              ) && <Text grey30>Score/min: {scorePerMinute}</Text>}
               {props.room.status === 'FINISHED' && (
                 <>
                   <Text grey30>

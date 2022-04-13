@@ -14,6 +14,7 @@ import Notification from '../../../../components/Notification/Notification';
 import NotificationScore from '../../../../components/Notification/NotificationScore';
 import NotificationInfo from '../../../../components/Notification/NotificationInfo';
 import analytics from '@react-native-firebase/analytics';
+import {ENV} from 'react-native-dotenv';
 
 const translateEventMessage = (
   translateMap: {[key: string]: string},
@@ -126,7 +127,7 @@ const GameScreen: FC<IGameScreenProps> = props => {
 
   const onPressLeave = () => {
     const leave = () => {
-      analytics().logEvent('leave_game');
+      if (ENV === 'production') analytics().logEvent('leave_game');
       navigation.dispatch(StackActions.popToTop());
     };
     Alert.alert('Confirmation', 'Are you sure you want to leave the game?', [
