@@ -75,6 +75,7 @@ const getPointColor = (player: any, point: IPoint, flags: string[]) => {
 const MapScreen: FC<IMapScreenProps> = props => {
   const cameraRef = useRef(null);
   const isControl = props.room.flags.includes('CONTROL');
+  const isHardMode = props.room.flags.includes('HARDMODE');
   const update = useForceUpdate();
 
   // TODO: Remove this after db refactor
@@ -218,16 +219,18 @@ const MapScreen: FC<IMapScreenProps> = props => {
             style={mapStyles.pointText as any}
           />
         </MapBoxGL.ShapeSource>
-        <MapBoxGL.UserLocation />
+        {!isHardMode && <MapBoxGL.UserLocation />}
       </MapBoxGL.MapView>
 
-      <Button
-        size={Button.sizes.xSmall}
-        style={styles.centerButtonContainer}
-        onPress={onPressCenter}
-        backgroundColor="white">
-        <Feather color="black" size={24} name="map-pin" />
-      </Button>
+      {!isHardMode && (
+        <Button
+          size={Button.sizes.xSmall}
+          style={styles.centerButtonContainer}
+          onPress={onPressCenter}
+          backgroundColor="white">
+          <Feather color="black" size={24} name="map-pin" />
+        </Button>
+      )}
 
       <TimeLeft finishedAt={new Date(props.room.finishedAt)} />
       <Score

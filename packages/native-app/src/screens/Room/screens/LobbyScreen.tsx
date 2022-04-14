@@ -10,6 +10,7 @@ import {
   LoaderScreen,
   Picker,
   Colors,
+  Checkbox,
 } from 'react-native-ui-lib';
 import {SocketContext} from '../../../socket/context';
 import {GeolocationResponse} from '@react-native-community/geolocation';
@@ -24,6 +25,7 @@ interface ILobbyScreenProps {
 const LobbyScreen: FC<ILobbyScreenProps> = props => {
   const [isLoading, setIsLoading] = useState(false);
   const [gameMode, setGameMode] = useState('normal');
+  const [hardmode, setHardMode] = useState(false);
   const navigation = useNavigation();
   const socket = useContext(SocketContext);
   const userId = getUniqueId();
@@ -64,6 +66,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
         duration: 1000 * 60 * settings.duration,
         radius: settings.radius,
         control: gameMode === 'control',
+        hardmode,
         hostLocation: [
           props.position.coords.longitude,
           props.position.coords.latitude,
@@ -170,6 +173,16 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
                 );
               })}
             </Picker>
+
+            <Checkbox
+              value={hardmode}
+              onValueChange={setHardMode}
+              label={'Hardmode'}
+            />
+            <Text grey30 marginT-12>
+              In hard mode you can't see your current position. NOT recommended
+              for beginners.
+            </Text>
           </View>
         )}
         {/* <Text

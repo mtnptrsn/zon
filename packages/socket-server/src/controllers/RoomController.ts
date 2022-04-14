@@ -37,6 +37,7 @@ export namespace RoomController {
     duration: number;
     radius: number;
     control: boolean;
+    hardmode: boolean;
   }
 
   export interface IEnd {
@@ -209,6 +210,7 @@ export class RoomController {
 
     room.status = "COUNTDOWN";
     if (data.control) room.flags = ["CONTROL"];
+    if (data.hardmode) room.flags = [...room.flags, "HARDMODE"];
 
     const streetCoordinates = await getStreetCoordinates(
       data.hostLocation,
