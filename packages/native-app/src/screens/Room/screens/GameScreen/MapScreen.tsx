@@ -138,21 +138,16 @@ const MapScreen: FC<IMapScreenProps> = props => {
       (point: any) => {
         const isHome = !point.weight;
         const isLocked =
+          isControl &&
           Boolean(point.collectedAt) &&
           differenceInMilliseconds(new Date(), new Date(point.collectedAt)) <
             1000 * 60 * 3;
 
-        const text = isHome ? '' : isLocked ? 'LOCK' : point.weight;
+        const text = isHome ? '' : isLocked ? 'L' : point.weight;
 
         const textSizes = {
-          large: {
-            min: 14,
-            max: 110,
-          },
-          small: {
-            min: 8,
-            max: 110,
-          },
+          min: 14,
+          max: 110,
         };
 
         return {
@@ -176,8 +171,8 @@ const MapScreen: FC<IMapScreenProps> = props => {
               maxZoomLevel,
               isHome ? gameConfig.hitbox.home : gameConfig.hitbox.point,
             ),
-            textSizeMin: isLocked ? textSizes.small.min : textSizes.large.min,
-            textSizeMax: isLocked ? textSizes.small.max : textSizes.large.max,
+            textSizeMin: textSizes.min,
+            textSizeMax: textSizes.max,
           },
           geometry: {
             type: 'Point',
