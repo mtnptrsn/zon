@@ -32,7 +32,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
   const roomHost = props.room.players.find((player: any) => player.isHost);
   const isHost = userId === roomHost._id;
   const [settings, setSettings] = useState({
-    duration: 40,
+    duration: 35,
     radius: 2000,
   });
   const hasAccuratePositon =
@@ -131,7 +131,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
               onValueChange={(value: any) => {
                 setSettings(settings => ({...settings, duration: value}));
               }}
-              maximumValue={80}
+              maximumValue={60}
               minimumValue={10}
               step={1}
             />
@@ -143,7 +143,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
             <Slider
               step={1}
               minimumValue={1000}
-              maximumValue={2500}
+              maximumValue={3000}
               value={settings.radius}
               onValueChange={(value: any) => {
                 setSettings(settings => ({...settings, radius: value}));
@@ -180,23 +180,11 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
               label={'Hardmode'}
             />
             <Text grey30 marginT-12>
-              In hard mode you can't see your current position. NOT recommended
-              for beginners.
+              In hardmode you can't see your current position. Only suitable for
+              experienced players.
             </Text>
           </View>
         )}
-        {/* <Text
-          onPress={onPressHelp}
-          text70L
-          primary
-          style={{
-            marginTop: -12,
-            textDecorationStyle: 'solid',
-            textDecorationColor: Colors.primary,
-            textDecorationLine: 'underline',
-          }}>
-          What are the rules?
-        </Text> */}
       </View>
 
       <View>
