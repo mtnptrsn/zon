@@ -1,13 +1,18 @@
-import React, {FC} from 'react';
+import {speak} from 'expo-speech';
+import React, {FC, useEffect} from 'react';
 import {StyleSheet} from 'react-native';
+import Sound from 'react-native-sound';
 import {Text, View} from 'react-native-ui-lib';
-import Score from '../../screens/Room/components/Score';
+
+const successSound = new Sound(require('../../../assets/sounds/success.mp3'));
+const alertSound = new Sound(require('../../../assets/sounds/alert.mp3'));
 
 interface INotificationScoreProps {
   score: number;
   scoreGrowth?: number;
   color: string;
   message: string;
+  isVictim: boolean;
 }
 
 const styles = StyleSheet.create({
@@ -20,6 +25,15 @@ const styles = StyleSheet.create({
 });
 
 const NotificationScore: FC<INotificationScoreProps> = props => {
+  useEffect(() => {
+    if (props.isVictim) alertSound.play();
+    else successSound.play();
+
+    setTimeout(() => {
+      speak(props.message);
+    }, 1000);
+  }, []);
+
   return (
     <View br10 row centerV backgroundColor="white" style={[styles.container]}>
       <View

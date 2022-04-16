@@ -2239,18 +2239,18 @@
     "@types/react" "^16"
 
 "@types/react@*":
-  version "17.0.5"
-  resolved "https://registry.yarnpkg.com/@types/react/-/react-17.0.5.tgz#3d887570c4489011f75a3fc8f965bf87d09a1bea"
-  integrity sha512-bj4biDB9ZJmGAYTWSKJly6bMr4BLUiBrx9ujiJEoP9XIDY9CTaPGxE5QWN/1WjpPLzYF7/jRNnV2nNxNe970sw==
+  version "17.0.44"
+  resolved "https://registry.yarnpkg.com/@types/react/-/react-17.0.44.tgz#c3714bd34dd551ab20b8015d9d0dbec812a51ec7"
+  integrity sha512-Ye0nlw09GeMp2Suh8qoOv0odfgCoowfM/9MG6WeRD60Gq9wS90bdkdRtYbRkNhXOpG4H+YXGvj4wOWhAC0LJ1g==
   dependencies:
     "@types/prop-types" "*"
     "@types/scheduler" "*"
     csstype "^3.0.2"
 
 "@types/react@^16":
-  version "16.14.24"
-  resolved "https://registry.yarnpkg.com/@types/react/-/react-16.14.24.tgz#f2c5e9fa78f83f769884b83defcf7924b9eb5c82"
-  integrity sha512-e7U2WC8XQP/xfR7bwhOhNFZKPTfW1ph+MiqtudKb8tSV8RyCsovQx2sNVtKoOryjxFKpHPPC/yNiGfdeVM5Gyw==
+  version "16.14.25"
+  resolved "https://registry.yarnpkg.com/@types/react/-/react-16.14.25.tgz#d003f712c7563fdef5a87327f1892825af375608"
+  integrity sha512-cXRVHd7vBT5v1is72mmvmsg9stZrbJO04DJqFeh3Yj2tVKO6vmxg5BI+ybI6Ls7ROXRG3aFbZj9x0WA3ZAoDQw==
   dependencies:
     "@types/prop-types" "*"
     "@types/scheduler" "*"
@@ -4490,6 +4490,11 @@ expo-permissions@~12.0.1:
   version "12.0.1"
   resolved "https://registry.yarnpkg.com/expo-permissions/-/expo-permissions-12.0.1.tgz#5163c00d991bf565bf987354611628c298ddd0c4"
   integrity sha512-TtypNPPLG4SdVEKBlrArLLZIyhlhE+3B4dhz2HaY1Mve2rcvKE0C7z/e1WoUVU8+LgcdKoNGwg/wRVeCkxeEhg==
+
+expo-speech@^9.x.x:
+  version "9.2.1"
+  resolved "https://registry.yarnpkg.com/expo-speech/-/expo-speech-9.2.1.tgz#cc13e6c8d0463d7899c220f2bab858939969da5d"
+  integrity sha512-H5BCSUpHgStK6GnbHGsErsnUWWhpy4ejxkwK+RP8ERBbsFaT5mUowEWLY+/OiRueTwj35qXzYgeqW/tBv90A3g==
 
 extend-shallow@^2.0.1:
   version "2.0.1"

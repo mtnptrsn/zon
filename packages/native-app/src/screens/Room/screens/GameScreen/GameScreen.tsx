@@ -77,9 +77,31 @@ const GameScreen: FC<IGameScreenProps> = props => {
     const currentIsPlayer = event?.player?._id === getUniqueId();
     const currentIsVictim = event?.victim?._id === getUniqueId();
 
+    const scoreGrowth = props.room.map.points.reduce(
+      (acc: number, point: any) => {
+        return point.collectedBy?._id === player._id ? acc + point.weight : acc;
+      },
+      0,
+    );
+
+    if (event?.type === 'scoreDistribution' && scoreGrowth > 0) {
+      return (
+        <NotificationScore
+          isVictim={false}
+          score={player.score}
+          scoreGrowth={scoreGrowth}
+          color={player.color}
+          message={`You gained ${scoreGrowth} ${
+            scoreGrowth > 1 ? 'points' : 'point'
+          }`}
+        />
+      );
+    }
+
     if (event.type === 'capture' && event.mode === 'NORMAL') {
       return (
         <NotificationScore
+          isVictim={!currentIsPlayer}
           score={event.player.score}
           message={`${
             currentIsPlayer ? 'You' : event.player.name
@@ -89,21 +111,18 @@ const GameScreen: FC<IGameScreenProps> = props => {
       );
     }
     if (event.type === 'capture' && event.mode === 'CONTROL') {
-      const scoreGrowth = props.room.map.points.reduce(
-        (acc: number, point: any) => {
-          return point.collectedBy?._id === event.player._id
-            ? acc + point.weight
-            : acc;
-        },
-        0,
-      );
       const message = Boolean(event.victim)
         ? `${currentIsPlayer ? 'You' : event.player.name} stole a zone from ${
             currentIsVictim ? 'you' : event.victim.name
-          }`
-        : `${currentIsPlayer ? 'You' : event.player.name} captured a zone`;
+          } worth ${event.weight} ${event.weight > 1 ? 'points' : 'point'}`
+        : `${
+            currentIsPlayer ? 'You' : event.player.name
+          } captured a zone worth ${event.weight} ${
+            event.weight > 1 ? 'points' : 'point'
+          }`;
       return (
         <NotificationScore
+          isVictim={!currentIsPlayer}
           scoreGrowth={scoreGrowth}
           score={event.player.score}
           message={message}

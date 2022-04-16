@@ -349,11 +349,6 @@ export class RoomController {
     const player = room.players[playerIndex];
     const isControl = room.flags.includes("CONTROL");
 
-    const previousScore = room.map.points.reduce((acc: number, point: any) => {
-      if (point.collectedBy?._id === player._id) return acc + point.weight;
-      return acc;
-    }, 0);
-
     const playerIsWithinHome =
       getDistance(
         { lng: data.coordinate[0], lat: data.coordinate[1] },
@@ -366,7 +361,7 @@ export class RoomController {
       room.players[playerIndex].isWithinHome = playerIsWithinHome;
       if (playerIsWithinHome)
         event = {
-          message: `{player} just arrived back home`,
+          message: `{player} arrived back home`,
           type: "info-player",
           player,
           icon: "home",
@@ -396,6 +391,7 @@ export class RoomController {
         player: player,
         type: "capture",
         mode: isControl ? "CONTROL" : "NORMAL",
+        weight: point.weight,
       };
     });
     await room.save();

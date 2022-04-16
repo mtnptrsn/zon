@@ -42,6 +42,11 @@ const onDistributeScore = async (io: Server, room: any) => {
     if (player) player.score += point.weight;
   });
   await room.save();
+  const event = {
+    type: "scoreDistribution",
+    message: "Points were distributed",
+  };
+  io.emit(`room:${room._id}:onEvent`, event);
   io.emit(`room:${room._id}:onUpdate`, room);
   if (process.env.LOGS) console.timeEnd("ticker:onDistributeScore");
 };

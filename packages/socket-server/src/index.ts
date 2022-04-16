@@ -40,7 +40,7 @@ const initiateSocketServer = () => {
 const initiateTicker = (io: Server<DefaultEventsMap, DefaultEventsMap>) => {
   setInterval(() => {
     ticker(io);
-  }, 2000);
+  }, 3000);
 };
 
 const main = async () => {

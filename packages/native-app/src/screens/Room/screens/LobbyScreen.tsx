@@ -33,7 +33,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
   const isHost = userId === roomHost._id;
   const [settings, setSettings] = useState({
     duration: 35,
-    radius: 2000,
+    radius: 1500,
   });
   const hasAccuratePositon =
     props.position.coords.latitude !== 0 &&
@@ -143,7 +143,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
             <Slider
               step={1}
               minimumValue={1000}
-              maximumValue={3000}
+              maximumValue={2000}
               value={settings.radius}
               onValueChange={(value: any) => {
                 setSettings(settings => ({...settings, radius: value}));
