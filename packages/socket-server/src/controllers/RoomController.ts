@@ -75,10 +75,8 @@ const checkPointCollected = (
   point: any,
   player: any,
   playerCoordinate: [number, number],
-  hitbox: number,
-  flags: string[]
+  hitbox: number
 ) => {
-  const isControl = flags.includes("CONTROL");
   const [longitude, latitude] = point.location.coordinates;
   const distance = getDistance(
     { lng: longitude, lat: latitude },
@@ -93,27 +91,19 @@ const checkPointCollected = (
   if (!isWithinHitbox) return false;
   if (point.collectedBy?._id === player._id) return false;
 
-  // TODO: Refactor this
-  if (!isControl) {
-    if (!player.hasTakenFirstPoint && point.belongsTo?.id !== player._id)
-      return false;
-    if (Boolean(point.belongsTo) && point.belongsTo?.id !== player._id)
-      return false;
-    if (Boolean(point.collectedAt)) return false;
-  }
-
-  if (isControl) {
-    if (!player.hasTakenFirstPoint && point.belongsTo?.id !== player._id)
-      return false;
-    if (
-      point.belongsTo?.id !== player._id &&
-      Boolean(point.belongsTo) &&
-      !Boolean(point.collectedBy)
-    )
-      return false;
-    if (Boolean(point.collectedAt) && timeSinceCollected < 1000 * 60 * 3)
-      return false;
-  }
+  if (!player.hasTakenFirstPoint && point.belongsTo?.id !== player._id)
+    return false;
+  if (
+    point.belongsTo?.id !== player._id &&
+    Boolean(point.belongsTo) &&
+    !Boolean(point.collectedBy)
+  )
+    return false;
+  if (
+    Boolean(point.collectedAt) &&
+    timeSinceCollected < gameConfig.durations.zoneLockedAfterCapture
+  )
+    return false;
 
   return true;
 };
@@ -209,7 +199,6 @@ export class RoomController {
     const room = await RoomModel.findById(data.roomId);
 
     room.status = "COUNTDOWN";
-    if (data.control) room.flags = ["CONTROL"];
     if (data.hardmode) room.flags = [...room.flags, "HARDMODE"];
 
     const streetCoordinates = await getStreetCoordinates(
@@ -284,13 +273,10 @@ export class RoomController {
       },
     };
     room.startedAt = add(new Date(), {
-      seconds: gameConfig.durations.start,
-    });
-    room.scoreDistributedAt = add(new Date(), {
-      seconds: gameConfig.durations.start,
+      seconds: gameConfig.durations.start / 1000,
     });
     room.finishedAt = add(new Date(), {
-      seconds: data.duration / 1000 + gameConfig.durations.start,
+      seconds: (data.duration + gameConfig.durations.start) / 1000,
     });
     await room.save();
     io.emit(`room:${room._id}:onUpdate`, room);
@@ -305,6 +291,20 @@ export class RoomController {
     io
   ) => {
     const room = await RoomModel.findById(data.roomId);
+
+    room.players.forEach((player: any) => {
+      if (player.isWithinHome) {
+        const points = room.map.points.filter((point: any) => {
+          return point.collectedBy?._id === player._id;
+        });
+        const scoreToAdd = points.reduce(
+          (acc: number, point: any) => acc + point.weight,
+          0
+        );
+        player.score += scoreToAdd;
+      }
+    });
+
     room.finishedAt = new Date();
     room.status = "FINISHED";
     await room.save();
@@ -347,7 +347,6 @@ export class RoomController {
       (player: any) => player._id === data.playerId
     );
     const player = room.players[playerIndex];
-    const isControl = room.flags.includes("CONTROL");
 
     const playerIsWithinHome =
       getDistance(
@@ -374,23 +373,21 @@ export class RoomController {
           point,
           player,
           data.coordinate,
-          gameConfig.hitbox.point,
-          room.flags
+          gameConfig.hitbox.point
         )
       )
         return;
       if (!player.hasTakenFirstPoint)
         room.players[playerIndex].hasTakenFirstPoint = true;
       didUpdate = true;
-      const previousCaptor = point.collectedBy;
+      const previousOwner = point.collectedBy;
       point.collectedBy = player;
       point.collectedAt = new Date();
-      if (!isControl) room.players[playerIndex].score += point.weight;
+      room.players[playerIndex].score += point.weight;
       event = {
-        victim: previousCaptor,
+        previousOwner,
         player: player,
         type: "capture",
-        mode: isControl ? "CONTROL" : "NORMAL",
         weight: point.weight,
       };
     });

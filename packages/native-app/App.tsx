@@ -31,13 +31,13 @@ const App: FC = () => {
   const [serverVersion, setServerVersion] = useState<string | null>(null);
   const [socket, setSocket] = useState<null | Socket>(null);
   const [connectionStatus, setConnectionStatus] = useState('CONNECTING');
-  const [walkthroughIsVisible, setWalkthroughIsVisible] = useState(false);
+  // const [walkthroughIsVisible, setWalkthroughIsVisible] = useState(false);
 
   const onMount = async () => {
     // Check if the user has already seen the walkthrough
-    const hasSeenWalkthrough = await AsyncStorage.getItem('hasSeenTutorial@1');
+    // const hasSeenWalkthrough = await AsyncStorage.getItem('hasSeenTutorial@1');
     // Show the user the walkthrough if they haven't
-    if (!hasSeenWalkthrough) setWalkthroughIsVisible(true);
+    // if (!hasSeenWalkthrough) setWalkthroughIsVisible(true);
 
     requestLocationPermission();
     const socket = io(SERVER_URL, {transports: ['websocket']});
@@ -50,10 +50,10 @@ const App: FC = () => {
     socket.on('connect_error', () => setConnectionStatus('ERROR_CONNECTING'));
   };
 
-  const onPressCloseWalkthrough = async () => {
-    await AsyncStorage.setItem('hasSeenTutorial@1', '1');
-    setWalkthroughIsVisible(false);
-  };
+  // const onPressCloseWalkthrough = async () => {
+  //   await AsyncStorage.setItem('hasSeenTutorial@1', '1');
+  //   setWalkthroughIsVisible(false);
+  // };
 
   useEffect(() => {
     onMount();
@@ -67,8 +67,8 @@ const App: FC = () => {
     return (
       <UpdateScreen version={clientVersion} latestVersion={serverVersion} />
     );
-  if (walkthroughIsVisible)
-    return <Walkthrough showPrompt onPressClose={onPressCloseWalkthrough} />;
+  // if (walkthroughIsVisible)
+  //   return <Walkthrough showPrompt onPressClose={onPressCloseWalkthrough} />;
   return (
     <View flex>
       {connectionStatus !== 'CONNECTED' && <ConnectionWarning />}

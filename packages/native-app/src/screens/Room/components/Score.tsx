@@ -6,7 +6,7 @@ import {getSpacing} from '../../../theme/utils';
 
 interface IScoreProps {
   score: number;
-  scoreGrowth?: number;
+  zoneScore: number;
 }
 
 const styles = StyleSheet.create({
@@ -18,7 +18,6 @@ const styles = StyleSheet.create({
     borderStyle: 'solid',
     borderColor: 'rgba(0,0,0,.1)',
   },
-  text: {},
 });
 
 const Score: FC<IScoreProps> = props => {
@@ -30,13 +29,17 @@ const Score: FC<IScoreProps> = props => {
       center
       br10
       style={styles.container}>
-      <Text text50L>{props.score}</Text>
-
-      {typeof props.scoreGrowth === 'number' && (
-        <Text grey30 text90L style={{marginTop: -4}}>
-          {props.scoreGrowth}/min
+      <View
+        row
+        style={{
+          justifyContent: 'flex-end',
+          alignItems: 'flex-end',
+        }}>
+        <Text text50L>{props.score}</Text>
+        <Text text65L marginB-2 grey30 marginL-3>
+          (+{props.zoneScore})
         </Text>
-      )}
+      </View>
     </View>
   );
 };

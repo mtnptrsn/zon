@@ -74,56 +74,22 @@ const GameScreen: FC<IGameScreenProps> = props => {
 
   const renderNotification = () => {
     if (!event) return null;
-    const currentIsPlayer = event?.player?._id === getUniqueId();
-    const currentIsVictim = event?.victim?._id === getUniqueId();
+    const currentIsNewOwner = event?.player?._id === getUniqueId();
+    const currentIsPreviosOwner = event?.previousOwner?._id === getUniqueId();
 
-    const scoreGrowth = props.room.map.points.reduce(
-      (acc: number, point: any) => {
-        return point.collectedBy?._id === player._id ? acc + point.weight : acc;
-      },
-      0,
-    );
-
-    if (event?.type === 'scoreDistribution' && scoreGrowth > 0) {
-      return (
-        <NotificationScore
-          isVictim={false}
-          score={player.score}
-          scoreGrowth={scoreGrowth}
-          color={player.color}
-          message={`You gained ${scoreGrowth} ${
-            scoreGrowth > 1 ? 'points' : 'point'
-          }`}
-        />
-      );
-    }
-
-    if (event.type === 'capture' && event.mode === 'NORMAL') {
-      return (
-        <NotificationScore
-          isVictim={!currentIsPlayer}
-          score={event.player.score}
-          message={`${
-            currentIsPlayer ? 'You' : event.player.name
-          } captured a zone`}
-          color={event.player.color}
-        />
-      );
-    }
-    if (event.type === 'capture' && event.mode === 'CONTROL') {
-      const message = Boolean(event.victim)
-        ? `${currentIsPlayer ? 'You' : event.player.name} stole a zone from ${
-            currentIsVictim ? 'you' : event.victim.name
+    if (event.type === 'capture') {
+      const message = Boolean(event.previousOwner)
+        ? `${currentIsNewOwner ? 'You' : event.player.name} stole a zone from ${
+            currentIsPreviosOwner ? 'you' : event.previousOwner.name
           } worth ${event.weight} ${event.weight > 1 ? 'points' : 'point'}`
         : `${
-            currentIsPlayer ? 'You' : event.player.name
+            currentIsNewOwner ? 'You' : event.player.name
           } captured a zone worth ${event.weight} ${
             event.weight > 1 ? 'points' : 'point'
           }`;
       return (
         <NotificationScore
-          isVictim={!currentIsPlayer}
-          scoreGrowth={scoreGrowth}
+          sound={currentIsNewOwner ? 'success' : 'alert'}
           score={event.player.score}
           message={message}
           color={event.player.color}
@@ -135,7 +101,7 @@ const GameScreen: FC<IGameScreenProps> = props => {
         <NotificationInfo
           icon={event.icon}
           message={translateEventMessage(
-            {player: currentIsPlayer ? 'You' : event.player.name},
+            {player: currentIsNewOwner ? 'You' : event.player.name},
             event.message,
           )}
         />

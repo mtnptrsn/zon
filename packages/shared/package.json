@@ -1,8 +1,5 @@
 {
   "name": "shared",
   "version": "0.3.2",
-  "license": "MIT",
-  "devDependencies": {
-    "mongoose": "^5.12.5"
-  }
+  "license": "MIT"
 }

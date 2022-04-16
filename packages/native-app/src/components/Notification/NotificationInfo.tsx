@@ -30,11 +30,15 @@ const NotificationInfo: FC<INotificationInfoProps> = props => {
 
   return (
     <View backgroundColor="white" centerV br10 row style={styles.container}>
-      <View padding-10 backgroundColor={props.color || Colors.primary}>
+      <View
+        height={'100%'}
+        padding-10
+        backgroundColor={props.color || Colors.primary}
+        center>
         <Feather color="white" size={30} name={props.icon || 'info'} />
       </View>
 
-      <Text marginL-16 text65L>
+      <Text marginL-16 marginR-16 text65L style={{flex: 1}}>
         {props.message}
       </Text>
     </View>

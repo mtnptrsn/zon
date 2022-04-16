@@ -65,7 +65,6 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
         roomId: props.room._id,
         duration: 1000 * 60 * settings.duration,
         radius: settings.radius,
-        control: gameMode === 'control',
         hardmode,
         hostLocation: [
           props.position.coords.longitude,
@@ -151,28 +150,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
             />
             <Text grey30>{settings.radius} meters in radius</Text>
 
-            <Picker
-              marginT-12
-              placeholder="Game Mode"
-              floatingPlaceholder
-              value={gameMode}
-              enableModalBlur={false}
-              onChange={(item: any) => setGameMode(item.value)}
-              topBarProps={{title: 'Game Modes'}}
-              style={{color: Colors.primary}}>
-              {[
-                {label: 'Normal', value: 'normal'},
-                {label: 'Control', value: 'control'},
-              ].map(gameMode => {
-                return (
-                  <Picker.Item
-                    label={gameMode.label}
-                    key={gameMode.value}
-                    value={gameMode.value}
-                  />
-                );
-              })}
-            </Picker>
+            <View marginT-24 />
 
             <Checkbox
               value={hardmode}

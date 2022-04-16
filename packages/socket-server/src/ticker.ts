@@ -5,6 +5,20 @@ import { PlayerPositionModel } from "./models/PlayerPositionModel";
 
 const onFinish = async (io: Server, room: any) => {
   if (process.env.LOGS) console.time("ticker:onFinish");
+
+  room.players.forEach((player: any) => {
+    if (player.isWithinHome) {
+      const points = room.map.points.filter((point: any) => {
+        return point.collectedBy?._id === player._id;
+      });
+      const scoreToAdd = points.reduce(
+        (acc: number, point: any) => acc + point.weight,
+        0
+      );
+      player.score += scoreToAdd;
+    }
+  });
+
   room.status = "FINISHED";
   const playerPositions = await PlayerPositionModel.find({
     roomId: room._id,
@@ -32,25 +46,6 @@ const onStart = async (io: Server, room: any) => {
   if (process.env.LOGS) console.timeEnd("ticker:onStart");
 };
 
-const onDistributeScore = async (io: Server, room: any) => {
-  if (process.env.LOGS) console.time("ticker:onDistributeScore");
-  room.scoreDistributedAt = new Date();
-  room.map.points.forEach((point: any) => {
-    const player = room.players.find((player: any) => {
-      return player._id === point.collectedBy?._id;
-    });
-    if (player) player.score += point.weight;
-  });
-  await room.save();
-  const event = {
-    type: "scoreDistribution",
-    message: "Points were distributed",
-  };
-  io.emit(`room:${room._id}:onEvent`, event);
-  io.emit(`room:${room._id}:onUpdate`, room);
-  if (process.env.LOGS) console.timeEnd("ticker:onDistributeScore");
-};
-
 export const ticker = async (io: Server) => {
   const rooms = await RoomModel.find({
     status: { $in: ["PLAYING", "COUNTDOWN"] },
@@ -60,20 +55,10 @@ export const ticker = async (io: Server) => {
     const timeUntil = {
       start: differenceInMilliseconds(room.startedAt, new Date()),
       finish: differenceInMilliseconds(room.finishedAt, new Date()),
-      distributeScore: differenceInMilliseconds(
-        add(room.scoreDistributedAt, { minutes: 1 }),
-        new Date()
-      ),
     };
 
     if (timeUntil.start <= 0 && room.status === "COUNTDOWN")
       return onStart(io, room);
     if (timeUntil.finish <= 0) return onFinish(io, room);
-    if (
-      timeUntil.distributeScore <= 0 &&
-      room.status === "PLAYING" &&
-      room.flags.includes("CONTROL")
-    )
-      return onDistributeScore(io, room);
   });
 };

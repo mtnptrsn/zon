@@ -9,10 +9,9 @@ const alertSound = new Sound(require('../../../assets/sounds/alert.mp3'));
 
 interface INotificationScoreProps {
   score: number;
-  scoreGrowth?: number;
   color: string;
   message: string;
-  isVictim: boolean;
+  sound: 'success' | 'alert';
 }
 
 const styles = StyleSheet.create({
@@ -26,7 +25,7 @@ const styles = StyleSheet.create({
 
 const NotificationScore: FC<INotificationScoreProps> = props => {
   useEffect(() => {
-    if (props.isVictim) alertSound.play();
+    if (props.sound === 'alert') alertSound.play();
     else successSound.play();
 
     setTimeout(() => {
@@ -36,21 +35,13 @@ const NotificationScore: FC<INotificationScoreProps> = props => {
 
   return (
     <View br10 row centerV backgroundColor="white" style={[styles.container]}>
-      <View
-        backgroundColor={props.color}
-        padding-10={Boolean(props.scoreGrowth)}
-        padding-14={!props.scoreGrowth}>
+      <View height={'100%'} padding-14 backgroundColor={props.color} center>
         <Text center white text60L>
           {props.score}
         </Text>
-        {typeof props.scoreGrowth === 'number' && (
-          <Text white text90L style={{marginTop: -2}}>
-            {props.scoreGrowth}/min
-          </Text>
-        )}
       </View>
 
-      <Text text65L marginL-16>
+      <Text marginL-16 marginR-16 text65L style={{flex: 1}}>
         {props.message}
       </Text>
     </View>

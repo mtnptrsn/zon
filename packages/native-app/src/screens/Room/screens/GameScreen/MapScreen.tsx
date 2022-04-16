@@ -33,13 +33,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  centerButtonContainer: {
-    position: 'absolute',
-    bottom: getSpacing(1),
-    right: getSpacing(1),
-    paddingTop: getSpacing(1),
-    paddingBottom: getSpacing(1),
-  },
   markerText: {
     textShadowColor: 'rgba(0,0,0,0.5)',
     textShadowOffset: {width: 0, height: 0},
@@ -47,9 +40,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const getPointColor = (player: any, point: IPoint, flags: string[]) => {
-  const isControl = flags.includes('CONTROL');
-
+const getPointColor = (player: any, point: IPoint) => {
   const disabledColor = new TinyColor(Colors.grey30)
     .setAlpha(0.3)
     .toRgbString();
@@ -57,24 +48,17 @@ const getPointColor = (player: any, point: IPoint, flags: string[]) => {
     return new TinyColor(point.collectedBy.color).setAlpha(0.8).toRgbString();
   if (!player.hasTakenFirstPoint && point.belongsTo?._id !== player._id)
     return disabledColor;
-  if (isControl) {
-    if (
-      Boolean(point.belongsTo) &&
-      point.belongsTo?._id !== player._id &&
-      !Boolean(point.collectedBy)
-    )
-      return disabledColor;
-  }
-  if (!isControl) {
-    if (Boolean(point.belongsTo) && point.belongsTo?._id !== player._id)
-      return disabledColor;
-  }
+  if (
+    Boolean(point.belongsTo) &&
+    point.belongsTo?._id !== player._id &&
+    !Boolean(point.collectedBy)
+  )
+    return disabledColor;
   return new TinyColor(Colors.green30).setAlpha(0.8).toRgbString();
 };
 
 const MapScreen: FC<IMapScreenProps> = props => {
   const cameraRef = useRef(null);
-  const isControl = props.room.flags.includes('CONTROL');
   const isHardMode = props.room.flags.includes('HARDMODE');
   const update = useForceUpdate();
 
@@ -83,24 +67,11 @@ const MapScreen: FC<IMapScreenProps> = props => {
     update();
   }, 3000);
 
-  const scoreGrowth = props.room.map.points.reduce(
-    (acc: number, point: any) => {
-      return point.collectedBy?._id === props.player._id
-        ? acc + point.weight
-        : acc;
-    },
-    0,
-  );
-
-  const onPressCenter = () => {
-    (cameraRef.current as any).setCamera({
-      centerCoordinate: [
-        props.position.coords.longitude,
-        props.position.coords.latitude,
-      ],
-      zoomLevel: 14,
-    });
-  };
+  const zoneScore = props.room.map.points.reduce((acc: number, point: any) => {
+    return point.collectedBy?._id === props.player._id
+      ? acc + point.weight
+      : acc;
+  }, 0);
 
   const mapStyles = {
     pointCircle: {
@@ -138,10 +109,9 @@ const MapScreen: FC<IMapScreenProps> = props => {
       (point: any) => {
         const isHome = !point.weight;
         const isLocked =
-          isControl &&
           Boolean(point.collectedAt) &&
           differenceInMilliseconds(new Date(), new Date(point.collectedAt)) <
-            1000 * 60 * 3;
+            gameConfig.durations.zoneLockedAfterCapture;
 
         const text = isHome ? '' : isLocked ? 'L' : point.weight;
 
@@ -156,7 +126,7 @@ const MapScreen: FC<IMapScreenProps> = props => {
           properties: {
             color: isHome
               ? new TinyColor(Colors.blue30).setAlpha(0.4).toRgbString()
-              : getPointColor(props.player, point, props.room.flags),
+              : getPointColor(props.player, point),
             text,
             minSize: Math.max(
               getPointRadius(
@@ -186,11 +156,13 @@ const MapScreen: FC<IMapScreenProps> = props => {
   return (
     <View style={styles.container}>
       <MapBoxGL.MapView
-        logoEnabled={false}
         style={{flex: 1}}
+        logoEnabled={false}
         pitchEnabled={false}
-        rotateEnabled={false}>
+        rotateEnabled={false}
+        scrollEnabled={isHardMode}>
         <MapBoxGL.Camera
+          followUserLocation={!isHardMode}
           minZoomLevel={minZoomLevel}
           maxZoomLevel={maxZoomLevel}
           ref={cameraRef}
@@ -201,7 +173,6 @@ const MapScreen: FC<IMapScreenProps> = props => {
           zoomLevel={14}
           animationDuration={0}
         />
-
         <MapBoxGL.ShapeSource shape={points} id="points">
           <MapBoxGL.CircleLayer
             id="circleRadius"
@@ -214,24 +185,11 @@ const MapScreen: FC<IMapScreenProps> = props => {
             style={mapStyles.pointText as any}
           />
         </MapBoxGL.ShapeSource>
-        {!isHardMode && <MapBoxGL.UserLocation />}
+        <MapBoxGL.UserLocation visible={!isHardMode} />
       </MapBoxGL.MapView>
 
-      {!isHardMode && (
-        <Button
-          size={Button.sizes.xSmall}
-          style={styles.centerButtonContainer}
-          onPress={onPressCenter}
-          backgroundColor="white">
-          <Feather color="black" size={24} name="map-pin" />
-        </Button>
-      )}
-
       <TimeLeft finishedAt={new Date(props.room.finishedAt)} />
-      <Score
-        scoreGrowth={isControl ? scoreGrowth : null}
-        score={props.player.score}
-      />
+      <Score zoneScore={zoneScore} score={props.player.score} />
       {props.player.isWithinHome && <HomeIndicator />}
     </View>
   );

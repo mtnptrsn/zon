@@ -131,7 +131,6 @@ const FinishedScreen: FC<ILobbyScreenProps> = props => {
               />
               <Text style={styles.playerText}>
                 {isCurrentPlayer ? 'You' : player.name} - {score} point(s){' '}
-                {!player.isWithinHome ? '(disqualified)' : ''}
               </Text>
             </View>
             <View style={styles.statsContainer}>

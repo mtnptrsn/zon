@@ -14,7 +14,7 @@ const useForceUpdate = () => {
 };
 
 const CountdownScreen: FC = () => {
-  const [timeLeft, setTime] = useState(gameConfig.durations.start);
+  const [timeLeft, setTime] = useState(gameConfig.durations.start / 1000);
   useEffect(() => Vibration.vibrate(vibrationDurations.short), []);
 
   const forceUpdate = useForceUpdate();

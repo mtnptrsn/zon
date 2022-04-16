@@ -86,10 +86,6 @@ const RoomSchema: Schema = new Schema(
     startedAt: {
       type: Date,
     },
-    scoreDistributedAt: {
-      type: Date,
-      default: null,
-    },
   },
   { timestamps: true }
 );
