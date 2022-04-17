@@ -201,26 +201,16 @@ export class RoomController {
     room.status = "COUNTDOWN";
     if (data.hardmode) room.flags = [...room.flags, "HARDMODE"];
 
+    // console.time("RoomController:start:getStreetCoordinates");
     const streetCoordinates = await getStreetCoordinates(
       data.hostLocation,
       data.radius
     );
+    // console.timeEnd("RoomController:start:getStreetCoordinates");
 
     const points = generateMap(shuffle(streetCoordinates!), data.radius, [
       data.hostLocation,
     ]);
-
-    const longestDistancePoint = points.reduce(
-      (acc: number, coordinate: [number, number]) => {
-        const distance = getDistance(
-          { longitude: coordinate[0], latitude: coordinate[1] },
-          { longitude: data.hostLocation[0], latitude: data.hostLocation[1] }
-        );
-        if (distance > acc) return distance;
-        return acc;
-      },
-      0
-    );
 
     const map = points.map((coordinate) => {
       const distance = getDistance(
@@ -231,7 +221,7 @@ export class RoomController {
       // TODO: Refactor
       // TODO: Improve this
       const max = 3;
-      const dp = distance / longestDistancePoint;
+      const dp = distance / data.radius;
       const randAdd = Math.pow(Math.random(), 2) * dp * max;
       const weight = Math.max(1, Math.floor(dp * max + randAdd));
 
@@ -256,6 +246,8 @@ export class RoomController {
       );
       return aDistance - bDistance;
     });
+
+    // console.log({ roomPlayers: room.players });
 
     shuffle(room.players).forEach((player: any, index: number) => {
       const mapIndex = map.findIndex(

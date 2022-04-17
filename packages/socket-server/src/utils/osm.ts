@@ -5,13 +5,18 @@ import {
   getDistance,
   getRhumbLineBearing,
 } from "geolib";
-import { parseStringPromise } from "xml2js";
 
 const getOverpassQuery = (coordinate: [number, number], radius: number) => {
-  return `<?xml version="1.0" encoding="UTF-8"?><osm-script><query type="way"><around lat="${coordinate[1]}" lon="${coordinate[0]}" radius="${radius}"/><has-kv k="highway" /></query><union><item/><recurse type="down"/></union><print/></osm-script>`;
+  return `
+    [out:json][timeout:25];
+    way[highway](around:${radius},${coordinate[1]},${coordinate[0]});
+    out skel qt; 
+    >;
+    out skel qt;
+  `;
 };
 
-const populateWay = (way: [number, number][], margin: number) => {
+const generateNodesBetween = (way: [number, number][], margin: number) => {
   let points: [number, number][] = [];
   way.forEach((point, index) => {
     const isLast = index === way.length - 1;
@@ -61,32 +66,41 @@ export const getStreetCoordinates = async (
       }
     )
   );
-  if (err) return null;
+
+  // console.log(getOverpassQuery(center, radius));
+
   // console.timeEnd("gsc:fetch");
 
-  const parsedData = await parseStringPromise(response!.data);
+  if (err) return null;
 
-  let nodes: [number, number][] = [];
-  // console.time("gsc:getReferences");
-  const ways: [number, number][][] = parsedData.osm.way.map((way: any) => {
-    const nodes = way.nd.map((nodeRef: any) => {
-      const nodeId = nodeRef.$.ref;
-      const node = parsedData.osm.node.find(
-        (node: any) => node.$.id === nodeId
-      );
-      return [node.$.lon, node.$.lat];
-    });
-    return nodes;
-  });
-  // console.timeEnd("gsc:getReferences");
-  // console.time("gsc:populateWay");
-  ways.forEach((way) => (nodes = [...nodes, ...populateWay(way, 30)]));
-  // console.timeEnd("gsc:populateWay");
-  return nodes.filter((coordinate: [number, number]) => {
-    const distance = getDistance(
-      { lon: coordinate[0], lat: coordinate[1] },
-      { lon: center[0], lat: center[1] }
-    );
-    return distance <= radius;
-  });
+  const nodeMap = new Map<string, [number, number]>(
+    response!.data.elements
+      .filter((element: any) => element.type === "node")
+      .map((element: any) => {
+        return [element.id, [element.lon, element.lat]];
+      })
+  );
+
+  return (
+    response!.data.elements
+      .filter((element: any) => element.type === "way")
+      // Populate node references
+      .map((way: any) =>
+        way.nodes.map((nodeId: string) => nodeMap.get(nodeId)!)
+      )
+      // Generate nodes between nodes that are far apart
+      .reduce((acc: [number, number][][], way: [number, number][]) => {
+        return [...acc, ...generateNodesBetween(way, 10)];
+      }, [])
+      // Filter out nodes that are too far away. Ways can be further away
+      // than the radius that is set in the overpass query. Therefore we need
+      // to do this filtering.
+      .filter((coordinate: [number, number]) => {
+        const distance = getDistance(
+          { lon: coordinate[0], lat: coordinate[1] },
+          { lon: center[0], lat: center[1] }
+        );
+        return distance <= radius;
+      })
+  );
 };
