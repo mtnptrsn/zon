@@ -24,15 +24,6 @@ const styles = StyleSheet.create({
 });
 
 const NotificationScore: FC<INotificationScoreProps> = props => {
-  useEffect(() => {
-    if (props.sound === 'alert') alertSound.play();
-    else successSound.play();
-
-    setTimeout(() => {
-      speak(props.message);
-    }, 1000);
-  }, []);
-
   return (
     <View br10 row centerV backgroundColor="white" style={[styles.container]}>
       <View height={'100%'} padding-14 backgroundColor={props.color} center>
@@ -41,7 +32,7 @@ const NotificationScore: FC<INotificationScoreProps> = props => {
         </Text>
       </View>
 
-      <Text marginL-16 marginR-16 text65L style={{flex: 1}}>
+      <Text marginH-16 marginV-8 text65L style={{flex: 1}}>
         {props.message}
       </Text>
     </View>

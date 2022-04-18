@@ -12,6 +12,7 @@ import {DefaultEventsMap} from 'socket.io-client/build/typed-events';
 import packageJson from '../../../package.json';
 import analytics from '@react-native-firebase/analytics';
 import {ENV} from 'react-native-dotenv';
+import useStoredState from '../../hooks/useAsyncStorage';
 
 const findOngoingRoom = async (
   socket: Socket<DefaultEventsMap, DefaultEventsMap>,
@@ -30,7 +31,7 @@ const findOngoingRoom = async (
 const IndexScreen: FC = () => {
   const socket = useContext(SocketContext);
   const navigation = useNavigation();
-  const [name, setName] = useState('');
+  const [name, setName] = useStoredState('name', '');
 
   useEffect(() => {
     (async () => {

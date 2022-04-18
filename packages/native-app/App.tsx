@@ -75,7 +75,7 @@ const App: FC = () => {
       <SocketContext.Provider value={socket}>
         <SafeAreaView style={{flex: 1}}>
           <NavigationContainer>
-            <Stack.Navigator>
+            <Stack.Navigator screenOptions={{gestureEnabled: false}}>
               <Stack.Screen
                 options={{headerShown: false}}
                 name="Index"

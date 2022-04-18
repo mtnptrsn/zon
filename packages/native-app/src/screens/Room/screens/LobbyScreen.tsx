@@ -1,6 +1,6 @@
 import {StackActions, useNavigation} from '@react-navigation/core';
 import React, {FC, useContext, useState} from 'react';
-import {Alert} from 'react-native';
+import {Alert, ScrollView} from 'react-native';
 import {getUniqueId} from 'react-native-device-info';
 import {
   Text,
@@ -8,14 +8,14 @@ import {
   View,
   Button,
   LoaderScreen,
-  Picker,
-  Colors,
   Checkbox,
+  KeyboardAwareScrollView,
 } from 'react-native-ui-lib';
 import {SocketContext} from '../../../socket/context';
 import {GeolocationResponse} from '@react-native-community/geolocation';
 import analytics from '@react-native-firebase/analytics';
 import {ENV} from 'react-native-dotenv';
+import useStoredState from '../../../hooks/useAsyncStorage';
 
 interface ILobbyScreenProps {
   room: any;
@@ -24,8 +24,8 @@ interface ILobbyScreenProps {
 
 const LobbyScreen: FC<ILobbyScreenProps> = props => {
   const [isLoading, setIsLoading] = useState(false);
-  const [gameMode, setGameMode] = useState('normal');
   const [hardmode, setHardMode] = useState(false);
+  const [tutorial, setTutorial] = useStoredState('tutorial', true);
   const navigation = useNavigation();
   const socket = useContext(SocketContext);
   const userId = getUniqueId();
@@ -112,72 +112,85 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
   if (isLoading) return <LoaderScreen message="Creating map" />;
 
   return (
-    <View padding-12 flex>
-      <View flex>
-        <Text text50L>Players</Text>
-        <View marginB-24 marginT-12>
-          {renderPlayers()}
+    <KeyboardAwareScrollView flex>
+      <View padding-12>
+        <View>
+          <Text text50L>Players</Text>
+          <View marginB-24 marginT-12>
+            {renderPlayers()}
+          </View>
+
+          {isHost && (
+            <View>
+              <Text text50L>Settings</Text>
+              <Text text70 marginT-12>
+                Duration
+              </Text>
+              <Slider
+                value={settings.duration}
+                onValueChange={(value: any) => {
+                  setSettings(settings => ({...settings, duration: value}));
+                }}
+                maximumValue={60}
+                minimumValue={10}
+                step={1}
+              />
+              <Text grey30>{settings.duration} minutes</Text>
+
+              <Text text70 marginT-12>
+                Map Size
+              </Text>
+              <Slider
+                step={1}
+                minimumValue={1000}
+                maximumValue={2000}
+                value={settings.radius}
+                onValueChange={(value: any) => {
+                  setSettings(settings => ({...settings, radius: value}));
+                }}
+              />
+              <Text grey30>{settings.radius} meters in radius</Text>
+
+              <View marginT-24 />
+
+              <Checkbox
+                value={hardmode}
+                onValueChange={setHardMode}
+                label={'Hardmode'}
+              />
+              <Text grey30 marginT-12>
+                In hardmode you can't see your current position. Only suitable
+                for experienced players.
+              </Text>
+            </View>
+          )}
+          <View marginT-24 />
+
+          <Checkbox
+            value={tutorial}
+            onValueChange={setTutorial}
+            label={'Tutorial'}
+          />
+          <Text grey30 marginT-12>
+            The rules will be explained while you play. Make sure to have sound
+            turned on for better convinience.
+          </Text>
         </View>
 
-        {isHost && (
-          <View>
-            <Text text50L>Settings</Text>
-            <Text text70 marginT-12>
-              Duration
-            </Text>
-            <Slider
-              value={settings.duration}
-              onValueChange={(value: any) => {
-                setSettings(settings => ({...settings, duration: value}));
-              }}
-              maximumValue={60}
-              minimumValue={10}
-              step={1}
-            />
-            <Text grey30>{settings.duration} minutes</Text>
-
-            <Text text70 marginT-12>
-              Map Size
-            </Text>
-            <Slider
-              step={1}
-              minimumValue={1000}
-              maximumValue={2000}
-              value={settings.radius}
-              onValueChange={(value: any) => {
-                setSettings(settings => ({...settings, radius: value}));
-              }}
-            />
-            <Text grey30>{settings.radius} meters in radius</Text>
-
-            <View marginT-24 />
-
-            <Checkbox
-              value={hardmode}
-              onValueChange={setHardMode}
-              label={'Hardmode'}
-            />
-            <Text grey30 marginT-12>
-              In hardmode you can't see your current position. Only suitable for
-              experienced players.
-            </Text>
-          </View>
-        )}
+        <View marginT-24>
+          <Button outline onPress={onPressLeave} label="Leave" />
+          <Button marginT-6 outline label="Invite" onPress={onPressInvite} />
+          {isHost && (
+            <Button
+              marginT-6
+              disabled={!hasAccuratePositon}
+              onPress={onPressStart}
+              label="Start"
+              loading={!hasAccuratePositon || isLoading}></Button>
+          )}
+        </View>
       </View>
-
-      <View>
-        <Button outline onPress={onPressLeave} label="Leave" />
-        <Button marginT-6 outline label="Invite" onPress={onPressInvite} />
-        {isHost && (
-          <Button
-            marginT-6
-            disabled={!hasAccuratePositon}
-            onPress={onPressStart}
-            label="Start"
-            loading={!hasAccuratePositon || isLoading}></Button>
-        )}
-      </View>
-    </View>
+    </KeyboardAwareScrollView>
   );
 };
 

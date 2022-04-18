@@ -7,9 +7,11 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from 'react-native-reanimated';
+import {View} from 'react-native-ui-lib';
 
 interface INotificationProps {
   top: number;
+  isVisible: boolean;
 }
 
 const styles = StyleSheet.create({
@@ -21,35 +23,12 @@ const styles = StyleSheet.create({
 });
 
 const Notification: FC<INotificationProps> = props => {
-  const [isVisible, setIsVisible] = useState(true);
-  const offset = useSharedValue(-10);
-  const opacity = useSharedValue(0);
-  useEffect(() => {
-    offset.value = withSpring(0);
-    opacity.value = withSpring(1);
-    setTimeout(() => {
-      offset.value = withSpring(-10);
-      opacity.value = withSpring(0);
-      setTimeout(() => setIsVisible(false), 1000);
-    }, 6000);
-  }, []);
+  if (!props.isVisible) return null;
 
-  const animatedStyles = useAnimatedStyle(() => {
-    return {
-      transform: [{translateY: offset.value}],
-      opacity: opacity.value,
-    };
-  });
-  if (!isVisible) return null;
   return (
-    <Animated.View
-      style={[
-        styles.container,
-        {top: props.top || getSpacing(2)},
-        animatedStyles,
-      ]}>
+    <View style={[styles.container, {top: props.top || getSpacing(2)}]}>
       {props.children}
-    </Animated.View>
+    </View>
   );
 };
 

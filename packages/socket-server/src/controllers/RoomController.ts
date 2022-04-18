@@ -247,8 +247,6 @@ export class RoomController {
       return aDistance - bDistance;
     });
 
-    // console.log({ roomPlayers: room.players });
-
     shuffle(room.players).forEach((player: any, index: number) => {
       const mapIndex = map.findIndex(
         (point) =>
@@ -331,7 +329,7 @@ export class RoomController {
 
     let didUpdate = false;
     // TODO: Add support for multiple events
-    let event = null;
+    let events: any[] = [];
     // How will this work when there are multiple clients calling this simultaneously?
     // TODO: Figure this out.
     const room = await RoomModel.findById(data.roomId);
@@ -350,13 +348,23 @@ export class RoomController {
       ) < gameConfig.hitbox.home;
     if (playerIsWithinHome !== player.isWithinHome) {
       room.players[playerIndex].isWithinHome = playerIsWithinHome;
-      if (playerIsWithinHome)
-        event = {
-          message: `{player} arrived back home`,
-          type: "info-player",
-          player,
-          icon: "home",
-        };
+      if (playerIsWithinHome) {
+        events = [
+          ...events,
+          ...room.players.map((_player: any) => {
+            const isCurrentPlayer = _player._id === player._id;
+
+            return {
+              to: _player._id,
+              message: `${
+                isCurrentPlayer ? "You" : player.name
+              } arrived back home.`,
+              type: "info",
+              vibrate: isCurrentPlayer ? "long" : "short",
+            };
+          }),
+        ];
+      }
       didUpdate = true;
     }
     room.map.points.forEach((point: any, index: number) => {
@@ -376,15 +384,41 @@ export class RoomController {
       point.collectedBy = player;
       point.collectedAt = new Date();
       room.players[playerIndex].score += point.weight;
-      event = {
-        previousOwner,
-        player: player,
-        type: "capture",
-        weight: point.weight,
-      };
+
+      events = [
+        ...events,
+        ...room.players.map((_player: any) => {
+          const isCurrentPlayer = _player._id === player._id;
+          const isPreviousOwner = _player._id === previousOwner?._id;
+
+          const previous = isPreviousOwner ? "you" : previousOwner?.name;
+          const current = isCurrentPlayer ? "You" : player.name;
+
+          let message = `${current} captured a zone worth ${point.weight} ${
+            point.weight > 1 ? "points" : "point"
+          }.`;
+          if (previousOwner)
+            message = `${current} stole a zone from ${previous} worth ${
+              point.weight
+            } ${point.weight > 1 ? "points" : "point"}.`;
+
+          return {
+            to: _player._id,
+            message,
+            type: "capture",
+            player,
+            sound: isCurrentPlayer ? "success" : "alert",
+            vibrate: isCurrentPlayer ? "long" : "short",
+            zone: point,
+          };
+        }),
+      ];
     });
     await room.save();
-    if (event) io.emit(`room:${room._id}:onEvent`, event);
+
+    events.forEach((event: any) =>
+      io.emit(`player:${event.to}:onEvent`, event)
+    );
     if (didUpdate) io.emit(`room:${room._id}:onUpdate`, room);
     callback?.(room);
   };
