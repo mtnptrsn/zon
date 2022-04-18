@@ -107,7 +107,7 @@ const GameScreen: FC<IGameScreenProps> = props => {
         setTutorialNotifications(x => x + 1);
       }
       if (isThirdZone) {
-        const message = `You earn points for capturing zones, and at the end of the game you also earn points for each zone you own. Just make sure you get home before time runs out.`;
+        const message = `You earn points for capturing zones, and at the end of the game you also earn points for each zone you own. Just make sure you get home before time runs out. Good luck!`;
         addToQueue({message, type: 'info'}, () => speakP(message));
         setTutorialNotifications(x => x + 1);
       }

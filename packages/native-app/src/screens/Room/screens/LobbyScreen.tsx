@@ -161,7 +161,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
                 onValueChange={setHardMode}
                 label={'Hardmode'}
               />
-              <Text grey30 marginT-16>
+              <Text grey30 marginT-6>
                 In hardmode you can't see your current position. Only suitable
                 for experienced players.
               </Text>
@@ -175,7 +175,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
             onValueChange={setTutorial}
             label={'Tutorial'}
           />
-          <Text grey30 marginT-12>
+          <Text grey30 marginT-6>
             The rules will be explained while you play. Make sure to have sound
             turned on for better convinience.
           </Text>
