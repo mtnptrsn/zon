@@ -394,13 +394,18 @@ export class RoomController {
           const previous = isPreviousOwner ? "you" : previousOwner?.name;
           const current = isCurrentPlayer ? "You" : player.name;
 
+          const hasHave = isCurrentPlayer ? "have" : "has";
+
           let message = `${current} captured a zone worth ${point.weight} ${
             point.weight > 1 ? "points" : "point"
-          }.`;
+          } and now ${hasHave} a total of ${player.score}.`;
+
           if (previousOwner)
             message = `${current} stole a zone from ${previous} worth ${
               point.weight
-            } ${point.weight > 1 ? "points" : "point"}.`;
+            } ${
+              point.weight > 1 ? "points" : "point"
+            } and now ${hasHave} a total of ${player.score}.`;
 
           return {
             to: _player._id,
