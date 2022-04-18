@@ -35,6 +35,8 @@ const sounds: any = {
 interface IGameScreenProps {
   room: any;
   position: GeolocationResponse;
+
+  onPressMap: (coordinate: [number, number]) => void;
 }
 
 const GameScreen: FC<IGameScreenProps> = props => {
@@ -196,7 +198,12 @@ const GameScreen: FC<IGameScreenProps> = props => {
 
   return (
     <View flex>
-      <MapScreen room={props.room} player={player} position={props.position} />
+      <MapScreen
+        onPressMap={props.onPressMap}
+        room={props.room}
+        player={player}
+        position={props.position}
+      />
       {activeScreen === 1 && (
         <StatsScreen
           player={player}

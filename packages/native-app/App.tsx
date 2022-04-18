@@ -82,7 +82,7 @@ const App: FC = () => {
                 component={IndexScreen}
               />
               <Stack.Screen
-                options={{headerTitle: 'Scan QR'}}
+                options={{headerTitle: 'Scan QR', headerBackTitle: 'Back'}}
                 name="ScanQR"
                 component={ScanQRScreen}
               />

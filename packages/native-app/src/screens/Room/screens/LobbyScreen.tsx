@@ -112,18 +112,21 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
   if (isLoading) return <LoaderScreen message="Creating map" />;
 
   return (
-    <KeyboardAwareScrollView flex>
+    <KeyboardAwareScrollView>
       <View padding-12>
         <View>
-          <Text text50L>Players</Text>
-          <View marginB-24 marginT-12>
-            {renderPlayers()}
-          </View>
+          <Text text60L>Players</Text>
+          <View marginT-6 height={1} width="100%" backgroundColor="#e3e3e3" />
+          <View marginT-12>{renderPlayers()}</View>
+
+          <Text text60L marginT-16>
+            Settings
+          </Text>
+          <View marginT-6 height={1} width="100%" backgroundColor="#e3e3e3" />
 
           {isHost && (
             <View>
-              <Text text50L>Settings</Text>
-              <Text text70 marginT-12>
+              <Text text80 marginT-12>
                 Duration
               </Text>
               <Slider
@@ -137,7 +140,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
               />
               <Text grey30>{settings.duration} minutes</Text>
 
-              <Text text70 marginT-12>
+              <Text text80 marginT-12>
                 Map Size
               </Text>
               <Slider
@@ -151,20 +154,21 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
               />
               <Text grey30>{settings.radius} meters in radius</Text>
 
-              <View marginT-24 />
+              <View marginT-16 />
 
               <Checkbox
                 value={hardmode}
                 onValueChange={setHardMode}
                 label={'Hardmode'}
               />
-              <Text grey30 marginT-12>
+              <Text grey30 marginT-16>
                 In hardmode you can't see your current position. Only suitable
                 for experienced players.
               </Text>
             </View>
           )}
-          <View marginT-24 />
+
+          <View marginT-12 />
 
           <Checkbox
             value={tutorial}

@@ -22,6 +22,8 @@ interface IMapScreenProps {
   room: any;
   position: GeolocationResponse;
   player: any;
+
+  onPressMap: (coordinate: [number, number]) => void;
 }
 
 const useForceUpdate = () => {
@@ -156,6 +158,7 @@ const MapScreen: FC<IMapScreenProps> = props => {
   return (
     <View style={styles.container}>
       <MapBoxGL.MapView
+        onPress={e => props.onPressMap(e.geometry.coordinates)}
         style={{flex: 1}}
         logoEnabled={false}
         pitchEnabled={false}

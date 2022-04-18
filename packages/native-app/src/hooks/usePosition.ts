@@ -6,7 +6,7 @@ import Geolocation, {
 
 let watchId = 0;
 
-const getInitialPosition = () => ({
+export const getInitialPosition = () => ({
   coords: {
     accuracy: 0,
     altitude: 0,
