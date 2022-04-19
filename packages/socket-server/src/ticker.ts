@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import { RoomModel } from "./models/RoomModel";
 import { add, differenceInMilliseconds, sub } from "date-fns";
 import { PlayerPositionModel } from "./models/PlayerPositionModel";
+import { getDistance } from "geolib";
 
 const onFinish = async (io: Server, room: any) => {
   if (process.env.LOGS) console.time("ticker:onFinish");
@@ -11,11 +12,38 @@ const onFinish = async (io: Server, room: any) => {
       const points = room.map.points.filter((point: any) => {
         return point.collectedBy?._id === player._id;
       });
-      const scoreToAdd = points.reduce(
-        (acc: number, point: any) => acc + point.weight,
-        0
+
+      const playerLocation = player.location.coordinates;
+      const homes = room.map.homes.map(
+        (home: any) => home.location.coordinates
+      );
+
+      const closestHome = homes.reduce(
+        (acc: any, current: any) => {
+          const previousDistance = acc[1];
+          const currentDistance = getDistance(playerLocation, current);
+          if (currentDistance < previousDistance)
+            return [current, currentDistance];
+          return acc;
+        },
+        [homes[0], getDistance(playerLocation, homes[0])]
+      );
+
+      const distanceFromHome = closestHome[1];
+      const endPointMultiplier = Math.max(
+        0,
+        1 - distanceFromHome / room.map.radius
+      );
+
+      const scoreToAdd = Math.ceil(
+        points.reduce((acc: number, point: any) => acc + point.weight, 0) *
+          endPointMultiplier
       );
       player.score += scoreToAdd;
+
+      io.emit(`player:${player._id}:onEvent`, {
+        message: `The game is over! You earned ${scoreToAdd} extra points. Well played!`,
+      });
     }
   });
 
@@ -25,10 +53,10 @@ const onFinish = async (io: Server, room: any) => {
   });
   await room.save();
 
-  io.emit(`room:${room._id}:onEvent`, {
-    message: "The game is over",
-    type: "info",
-  });
+  // io.emit(`room:${room._id}:onEvent`, {
+  //   message: "The game is over",
+  //   type: "info",
+  // });
 
   io.emit(`room:${room._id}:onUpdate`, {
     ...room.toObject(),
@@ -52,7 +80,7 @@ const onTimeAnnouncenment = async (io: Server, room: any) => {
   await room.save();
 
   io.emit(`room:${room._id}:onEvent`, {
-    message: `It's only 10 minutes left. Make sure to be back home to collect additional points from your zones.`,
+    message: `It's only 10 minutes left. Make sure to be as close to your home as possible for maximum points.`,
     type: "info",
     sound: "alert",
     vibrate: "long",
@@ -79,7 +107,8 @@ export const ticker = async (io: Server) => {
     if (timeUntil.finish <= 0) return onFinish(io, room);
     if (
       timeUntil.timeLeftAnnouncement <= 0 &&
-      !room.flags.includes("10_MINUTES_LEFT_ANNOUNCEMENT")
+      !room.flags.includes("10_MINUTES_LEFT_ANNOUNCEMENT") &&
+      room.status === "PLAYING"
     )
       return onTimeAnnouncenment(io, room);
   });

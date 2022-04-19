@@ -147,7 +147,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
                   setSettings(settings => ({...settings, duration: value}));
                 }}
                 maximumValue={60}
-                minimumValue={10}
+                minimumValue={1}
                 step={1}
               />
               <Text grey30>{settings.duration} minutes</Text>

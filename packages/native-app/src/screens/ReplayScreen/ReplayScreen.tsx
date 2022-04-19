@@ -196,14 +196,14 @@ const ReplayScreen: FC = () => {
           text: isHome ? '' : getPointText(point, time),
           minSize: Math.max(
             getPointRadius(
-              player.location.coordinates[1],
+              player.startLocation.coordinates[1],
               minZoomLevel,
               isHome ? gameConfig.hitbox.home : gameConfig.hitbox.point,
             ),
             12,
           ),
           maxSize: getPointRadius(
-            player.location.coordinates[1],
+            player.startLocation.coordinates[1],
             maxZoomLevel,
             isHome ? gameConfig.hitbox.home : gameConfig.hitbox.point,
           ),
@@ -227,7 +227,7 @@ const ReplayScreen: FC = () => {
           maxZoomLevel={maxZoomLevel}
           minZoomLevel={minZoomLevel}
           defaultSettings={{
-            centerCoordinate: player.location.coordinates,
+            centerCoordinate: player.startLocation.coordinates,
             zoomLevel: 14,
           }}
           zoomLevel={14}

@@ -37,6 +37,17 @@ const PlayerSchema: Schema = new Schema({
       default: () => [0, 0],
     },
   },
+  startLocation: {
+    type: {
+      type: String,
+      default: "Point",
+      enum: ["Point"],
+    },
+    coordinates: {
+      type: [Number],
+      default: () => [0, 0],
+    },
+  },
 });
 
 const PointSchema: Schema = new Schema({
@@ -79,6 +90,10 @@ const RoomSchema: Schema = new Schema(
     map: {
       points: [PointSchema],
       homes: [PointSchema],
+      radius: {
+        type: Number,
+        default: 0,
+      },
     },
     alerts: {
       type: [String],

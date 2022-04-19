@@ -102,13 +102,13 @@ const GameScreen: FC<IGameScreenProps> = props => {
       }
 
       if (isSecondZone) {
-        const message = `You are getting good at this! The further away a zone is from your home, the more likely it is to give you more points.`;
+        const message = `You are getting good at this! The further away a zone is from your home, the more points it will give.`;
         addToQueue({message, type: 'info'}, () => speakP(message));
         setTutorialNotifications(x => x + 1);
       }
 
       if (isThirdZone) {
-        const message = `You earn points for capturing zones, and at the end of the game you also earn points for each zone you own. Just make sure you get home before time runs out. Good luck!`;
+        const message = `You earn points for capturing zones, and at the end of the game you also earn points for each zone you own. The closer you are to your home when the game ends, the more points each zone will give.`;
         addToQueue({message, type: 'info'}, () => speakP(message));
         setTutorialNotifications(x => x + 1);
       }

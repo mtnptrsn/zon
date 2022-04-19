@@ -2,6 +2,7 @@ import {GeolocationResponse} from '@react-native-community/geolocation';
 import MapBoxGL from '@react-native-mapbox-gl/maps';
 import useInterval from '@use-it/interval';
 import {differenceInMilliseconds} from 'date-fns';
+import {getDistance} from 'geolib';
 import React, {FC, useRef, useState} from 'react';
 import {StyleSheet} from 'react-native';
 import {Colors, View} from 'react-native-ui-lib';
@@ -40,6 +41,38 @@ const styles = StyleSheet.create({
   },
 });
 
+const getZoneScore = (room: any, player: any) => {
+  const points = room.map.points.filter((point: any) => {
+    return point.collectedBy?._id === player._id;
+  });
+
+  const playerLocation = player.location.coordinates;
+  const homes = room.map.homes.map((home: any) => home.location.coordinates);
+
+  const closestHome = homes.reduce(
+    (acc: any, current: any) => {
+      const previousDistance = acc[1];
+      const currentDistance = getDistance(playerLocation, current);
+      if (currentDistance < previousDistance) return [current, currentDistance];
+      return acc;
+    },
+    [homes[0], getDistance(playerLocation, homes[0])],
+  );
+
+  const distanceFromHome = closestHome[1];
+  const endPointMultiplier = Math.max(
+    0,
+    1 - distanceFromHome / room.map.radius,
+  );
+
+  const scoreToAdd = Math.ceil(
+    points.reduce((acc: number, point: any) => acc + point.weight, 0) *
+      endPointMultiplier,
+  );
+
+  return scoreToAdd;
+};
+
 const getPointColor = (player: any, point: IPoint) => {
   if (point.collectedBy?.color)
     return new TinyColor(point.collectedBy.color).setAlpha(0.8).toRgbString();
@@ -56,11 +89,10 @@ const MapScreen: FC<IMapScreenProps> = props => {
     update();
   }, 3000);
 
-  const zoneScore = props.room.map.points.reduce((acc: number, point: any) => {
-    return point.collectedBy?._id === props.player._id
-      ? acc + point.weight
-      : acc;
-  }, 0);
+  const zoneScore =
+    props.room.status === 'FINISHED'
+      ? null
+      : getZoneScore(props.room, props.player);
 
   const mapStyles = {
     pointCircle: {

@@ -193,7 +193,7 @@ export class RoomController {
 
     // TODO: Add error handling here, if player location isn't set
     const playerLocations = room.players.map(
-      (player: any) => player.location.coordinates
+      (player: any) => player.startLocation.coordinates
     );
 
     // TODO: Add error handling
@@ -219,6 +219,7 @@ export class RoomController {
     if (data.hardmode) room.flags = [...room.flags, "HARDMODE"];
     const map = await getMap(homes, data.radius);
     room.map.points = map;
+    room.map.radius = data.radius;
     room.map.homes = homes.map((home) => {
       return {
         location: {
@@ -249,16 +250,43 @@ export class RoomController {
     const room = await RoomModel.findById(data.roomId);
 
     room.players.forEach((player: any) => {
-      if (player.isWithinHome) {
-        const points = room.map.points.filter((point: any) => {
-          return point.collectedBy?._id === player._id;
-        });
-        const scoreToAdd = points.reduce(
-          (acc: number, point: any) => acc + point.weight,
-          0
-        );
-        player.score += scoreToAdd;
-      }
+      const playerLocation = player.location.coordinates;
+      const homes = room.map.homes.map(
+        (home: any) => home.location.coordinates
+      );
+
+      const closestHome = homes.reduce(
+        (acc: any, current: any) => {
+          const previousDistance = acc[1];
+          const currentDistance = getDistance(playerLocation, current);
+          if (currentDistance < previousDistance)
+            return [current, currentDistance];
+          return acc;
+        },
+        [homes[0], getDistance(playerLocation, homes[0])]
+      );
+
+      const distanceFromHome = closestHome[1];
+
+      const endPointMultiplier = Math.max(
+        0,
+        1 - distanceFromHome / room.map.radius
+      );
+
+      const points = room.map.points.filter((point: any) => {
+        return point.collectedBy?._id === player._id;
+      });
+
+      const scoreToAdd = Math.ceil(
+        points.reduce((acc: number, point: any) => acc + point.weight, 0) *
+          endPointMultiplier
+      );
+
+      player.score += scoreToAdd;
+
+      io.emit(`player:${player._id}:onEvent`, {
+        message: `The host ended the game. You earned ${scoreToAdd} extra points. Well played!`,
+      });
     });
 
     room.finishedAt = new Date();
@@ -271,10 +299,10 @@ export class RoomController {
       ...room.toObject(),
       playerPositions,
     });
-    io.emit(`room:${room._id}:onEvent`, {
-      message: `The host ended the game`,
-      type: "info",
-    });
+    // io.emit(`room:${room._id}:onEvent`, {
+    //   message: `The host ended the game`,
+    //   type: "info",
+    // });
     callback?.(room);
   };
 
@@ -284,6 +312,7 @@ export class RoomController {
     socket,
     io
   ) => {
+    // rework this?
     PlayerPositionModel.create({
       roomId: data.roomId,
       playerId: data.playerId,
@@ -293,25 +322,17 @@ export class RoomController {
       },
     });
 
-    let didUpdate = false;
-    // TODO: Add support for multiple events
     let events: any[] = [];
-    // How will this work when there are multiple clients calling this simultaneously?
-    // TODO: Figure this out.
     const room = await RoomModel.findById(data.roomId);
     const playerIndex = room.players.findIndex(
       (player: any) => player._id === data.playerId
     );
     const player = room.players[playerIndex];
 
-    // const playerIsWithinHome =
-    //   getDistance(
-    //     { lng: data.coordinate[0], lat: data.coordinate[1] },
-    //     {
-    //       lng: room.map.start.location.coordinates[0],
-    //       lat: room.map.start.location.coordinates[1],
-    //     }
-    //   ) < gameConfig.hitbox.home;
+    room.players[playerIndex].location = {
+      type: "Point",
+      coordinates: data.coordinate,
+    };
 
     const playerIsWithinHome = room.map.homes.some((home: any) => {
       return (
@@ -339,7 +360,6 @@ export class RoomController {
           }),
         ];
       }
-      didUpdate = true;
     }
     room.map.points.forEach((point: any, index: number) => {
       if (
@@ -351,7 +371,6 @@ export class RoomController {
         )
       )
         return;
-      didUpdate = true;
       const previousOwner = point.collectedBy;
       point.collectedBy = player;
       point.collectedAt = new Date();
@@ -396,7 +415,7 @@ export class RoomController {
     events.forEach((event: any) =>
       io.emit(`player:${event.to}:onEvent`, event)
     );
-    if (didUpdate) io.emit(`room:${room._id}:onUpdate`, room);
+    io.emit(`room:${room._id}:onUpdate`, room);
     callback?.(room);
   };
 
@@ -406,7 +425,7 @@ export class RoomController {
       const playerIndex = room.players.findIndex(
         (player: any) => player._id === data.playerId
       );
-      room.players[playerIndex].location = {
+      room.players[playerIndex].startLocation = {
         type: "Point",
         coordinates: data.coordinate,
       };
