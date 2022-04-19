@@ -1,4 +1,5 @@
 import { model, Schema, Model } from "mongoose";
+import shortId from "shortid";
 
 const PlayerSchema: Schema = new Schema({
   _id: {
@@ -21,13 +22,20 @@ const PlayerSchema: Schema = new Schema({
     type: Boolean,
     default: true,
   },
-  hasTakenFirstPoint: {
-    type: Boolean,
-    default: false,
-  },
   score: {
     type: Number,
     default: 0,
+  },
+  location: {
+    type: {
+      type: String,
+      default: "Point",
+      enum: ["Point"],
+    },
+    coordinates: {
+      type: [Number],
+      default: () => [0, 0],
+    },
   },
 });
 
@@ -55,14 +63,14 @@ const PointSchema: Schema = new Schema({
     type: Number,
     default: null,
   },
-  belongsTo: {
-    type: PlayerSchema,
-    default: null,
-  },
 });
 
 const RoomSchema: Schema = new Schema(
   {
+    shortId: {
+      type: String,
+      default: shortId.generate,
+    },
     players: [PlayerSchema],
     status: {
       type: String,
@@ -70,7 +78,7 @@ const RoomSchema: Schema = new Schema(
     },
     map: {
       points: [PointSchema],
-      start: PointSchema,
+      homes: [PointSchema],
     },
     alerts: {
       type: [String],

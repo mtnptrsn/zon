@@ -1,21 +1,21 @@
-import {StackActions, useNavigation} from '@react-navigation/core';
-import React, {FC, useContext, useState} from 'react';
-import {Alert, ScrollView} from 'react-native';
-import {getUniqueId} from 'react-native-device-info';
-import {
-  Text,
-  Slider,
-  View,
-  Button,
-  LoaderScreen,
-  Checkbox,
-  KeyboardAwareScrollView,
-} from 'react-native-ui-lib';
-import {SocketContext} from '../../../socket/context';
 import {GeolocationResponse} from '@react-native-community/geolocation';
 import analytics from '@react-native-firebase/analytics';
+import {StackActions, useNavigation} from '@react-navigation/core';
+import React, {FC, useContext, useEffect, useState} from 'react';
+import {Alert} from 'react-native';
+import {getUniqueId} from 'react-native-device-info';
 import {ENV} from 'react-native-dotenv';
+import {
+  Button,
+  Checkbox,
+  KeyboardAwareScrollView,
+  LoaderScreen,
+  Slider,
+  Text,
+  View,
+} from 'react-native-ui-lib';
 import useStoredState from '../../../hooks/useAsyncStorage';
+import {SocketContext} from '../../../socket/context';
 
 interface ILobbyScreenProps {
   room: any;
@@ -31,6 +31,9 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
   const userId = getUniqueId();
   const roomHost = props.room.players.find((player: any) => player.isHost);
   const isHost = userId === roomHost._id;
+  const player = props.room.players.find(
+    (player: any) => player._id === userId,
+  );
   const [settings, setSettings] = useState({
     duration: 35,
     radius: 1500,
@@ -39,8 +42,21 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
     props.position.coords.latitude !== 0 &&
     props.position.coords.longitude !== 0;
 
+  useEffect(() => {
+    if (hasAccuratePositon) {
+      socket!.emit('user:updatePosition:lobby', {
+        roomId: props.room._id,
+        playerId: player._id,
+        coordinate: [
+          props.position.coords.longitude,
+          props.position.coords.latitude,
+        ],
+      });
+    }
+  }, [props.position.coords]);
+
   const onPressInvite = () => {
-    navigation.navigate('ShowQR', {data: props.room._id, title: 'Invite'});
+    navigation.navigate('ShowQR', {data: props.room.shortId, title: 'Invite'});
   };
 
   const onPressLeave = () => {
@@ -66,10 +82,6 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
         duration: 1000 * 60 * settings.duration,
         radius: settings.radius,
         hardmode,
-        hostLocation: [
-          props.position.coords.longitude,
-          props.position.coords.latitude,
-        ],
       },
       () => {},
     );

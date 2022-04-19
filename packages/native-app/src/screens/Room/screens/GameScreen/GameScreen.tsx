@@ -84,7 +84,7 @@ const GameScreen: FC<IGameScreenProps> = props => {
 
     if (tutorial && isCurrentPlayer) {
       const isFirstZone = Boolean(
-        event.type === 'capture' && event.zone?.belongsTo,
+        event.type === 'capture' && tutorialNotifications === 0,
       );
 
       const isSecondZone = Boolean(
@@ -96,16 +96,17 @@ const GameScreen: FC<IGameScreenProps> = props => {
       );
 
       if (isFirstZone) {
-        const message = `Well done! You captured your first zone. All other zones are now unlocked for you to capture.`;
+        const message = `Well done! You captured your first zone. When a zone is captured, it will be locked for one minute. After that, other players can steal it.`;
         addToQueue({message, type: 'info'}, () => speakP(message));
         setTutorialNotifications(x => x + 1);
       }
 
       if (isSecondZone) {
-        const message = `You are doing well! When a zone is captured, it will be locked for one minute. After that, other players can steal it.`;
+        const message = `You are getting good at this! The further away a zone is from your home, the more likely it is to give you more points.`;
         addToQueue({message, type: 'info'}, () => speakP(message));
         setTutorialNotifications(x => x + 1);
       }
+
       if (isThirdZone) {
         const message = `You earn points for capturing zones, and at the end of the game you also earn points for each zone you own. Just make sure you get home before time runs out. Good luck!`;
         addToQueue({message, type: 'info'}, () => speakP(message));
@@ -121,8 +122,7 @@ const GameScreen: FC<IGameScreenProps> = props => {
 
   useEffect(() => {
     if (player.score === 0 && tutorial && tutorialHydrated) {
-      const message =
-        'The game has started. Go capture your first zone, it is marked green on the map.';
+      const message = 'The game has started. Go capture your first zone!';
       addToQueue(
         {
           message,
@@ -141,6 +141,7 @@ const GameScreen: FC<IGameScreenProps> = props => {
     if (props.room.status !== 'PLAYING') return;
     const {longitude, latitude} = props.position.coords;
     if (longitude === 0 && latitude === 0) return;
+
     socket!.emit(
       'user:updatePosition',
       {
@@ -184,6 +185,7 @@ const GameScreen: FC<IGameScreenProps> = props => {
   const onPressReplay = () => {
     navigation.navigate('Replay', {
       room: props.room,
+      player,
     });
   };
 

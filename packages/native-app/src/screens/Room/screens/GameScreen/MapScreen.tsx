@@ -1,19 +1,17 @@
+import {GeolocationResponse} from '@react-native-community/geolocation';
+import MapBoxGL from '@react-native-mapbox-gl/maps';
+import useInterval from '@use-it/interval';
+import {differenceInMilliseconds} from 'date-fns';
 import React, {FC, useRef, useState} from 'react';
 import {StyleSheet} from 'react-native';
-import MapBoxGL from '@react-native-mapbox-gl/maps';
-import {IPoint} from '../../types';
-import {View, Button, Colors} from 'react-native-ui-lib';
-import TimeLeft from '../../components/TimeLeft';
-import Score from '../../components/Score';
-import HomeIndicator from '../../components/HomeIndicator';
-import {GeolocationResponse} from '@react-native-community/geolocation';
+import {Colors, View} from 'react-native-ui-lib';
 import TinyColor from 'tinycolor2';
-import {getSpacing} from '../../../../theme/utils';
-import Feather from 'react-native-vector-icons/Feather';
-import {getPointRadius} from '../../../../utils/map';
 import {gameConfig} from '../../../../config/game';
-import {differenceInMilliseconds} from 'date-fns';
-import useInterval from '@use-it/interval';
+import {getPointRadius} from '../../../../utils/map';
+import HomeIndicator from '../../components/HomeIndicator';
+import Score from '../../components/Score';
+import TimeLeft from '../../components/TimeLeft';
+import {IPoint} from '../../types';
 
 const minZoomLevel = 13;
 const maxZoomLevel = 19;
@@ -43,19 +41,8 @@ const styles = StyleSheet.create({
 });
 
 const getPointColor = (player: any, point: IPoint) => {
-  const disabledColor = new TinyColor(Colors.grey30)
-    .setAlpha(0.3)
-    .toRgbString();
   if (point.collectedBy?.color)
     return new TinyColor(point.collectedBy.color).setAlpha(0.8).toRgbString();
-  if (!player.hasTakenFirstPoint && point.belongsTo?._id !== player._id)
-    return disabledColor;
-  if (
-    Boolean(point.belongsTo) &&
-    point.belongsTo?._id !== player._id &&
-    !Boolean(point.collectedBy)
-  )
-    return disabledColor;
   return new TinyColor(Colors.green30).setAlpha(0.8).toRgbString();
 };
 
@@ -107,7 +94,7 @@ const MapScreen: FC<IMapScreenProps> = props => {
 
   const points = {
     type: 'FeatureCollection',
-    features: [props.room.map.start, ...props.room.map.points].map(
+    features: [...props.room.map.homes, ...props.room.map.points].map(
       (point: any) => {
         const isHome = !point.weight;
         const isLocked =
@@ -169,10 +156,6 @@ const MapScreen: FC<IMapScreenProps> = props => {
           minZoomLevel={minZoomLevel}
           maxZoomLevel={maxZoomLevel}
           ref={cameraRef}
-          defaultSettings={{
-            centerCoordinate: props.room.map.start.location.coordinates,
-            zoomLevel: 14,
-          }}
           zoomLevel={14}
           animationDuration={0}
         />

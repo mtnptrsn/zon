@@ -27,6 +27,9 @@ export const routes = (
   socket.on("user:updatePosition", (data, cb) =>
     RoomController.positionUpdate(data, cb, socket, io)
   );
+  socket.on("user:updatePosition:lobby", (data, cb) =>
+    RoomController.positionUpdateLobby(data, cb, socket, io)
+  );
 
   // TODO: Extract this to controller
   socket.on("version:get", (data, cb) => {

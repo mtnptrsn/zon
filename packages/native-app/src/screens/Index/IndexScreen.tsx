@@ -1,18 +1,18 @@
-import {useNavigation} from '@react-navigation/core';
-import React, {FC, useContext, useEffect, useState} from 'react';
-import {Alert, Dimensions, KeyboardAvoidingView, Platform} from 'react-native';
-import {View, Text, Button, TextField} from 'react-native-ui-lib';
-import {SocketContext} from '../../socket/context';
-import {RoomController} from 'socket-server/src/controllers/RoomController';
-import DeviceInfo from 'react-native-device-info';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import analytics from '@react-native-firebase/analytics';
+import {useNavigation} from '@react-navigation/core';
+import React, {FC, useContext, useEffect} from 'react';
+import {Alert, Dimensions, KeyboardAvoidingView, Platform} from 'react-native';
+import DeviceInfo from 'react-native-device-info';
+import {ENV} from 'react-native-dotenv';
+import {Button, Text, TextField, View} from 'react-native-ui-lib';
+import {RoomController} from 'socket-server/src/controllers/RoomController';
 import {Socket} from 'socket.io-client';
 import {DefaultEventsMap} from 'socket.io-client/build/typed-events';
 // @ts-ignore
 import packageJson from '../../../package.json';
-import analytics from '@react-native-firebase/analytics';
-import {ENV} from 'react-native-dotenv';
 import useStoredState from '../../hooks/useAsyncStorage';
+import {SocketContext} from '../../socket/context';
 
 const findOngoingRoom = async (
   socket: Socket<DefaultEventsMap, DefaultEventsMap>,
@@ -53,19 +53,19 @@ const IndexScreen: FC = () => {
     })();
   }, []);
 
-  const onReadQR = (data: string) => {
+  const joinRoom = (roomId: string) => {
     socket!.emit(
       'room:join',
-      {roomId: data, player: {id: DeviceInfo.getUniqueId(), name: name}},
+      {roomId, player: {id: DeviceInfo.getUniqueId(), name}},
       (room: any) => {
         if (!room)
           return Alert.alert(
-            'Invalid QR',
-            'The QR code you scanned is invalid.',
+            'Invalid code / QR',
+            'The codde / QR code you scanned is invalid.',
           );
         if (ENV === 'production') analytics().logEvent('join_room');
-        AsyncStorage.setItem('roomId', data);
-        navigation.navigate('Room', {roomId: data});
+        AsyncStorage.setItem('roomId', room._id);
+        navigation.navigate('Room', {roomId: room._id});
       },
     );
   };
@@ -73,7 +73,27 @@ const IndexScreen: FC = () => {
   const onPressJoinGame = () => {
     if (!name)
       return Alert.alert('Empty field', 'You must enter a name to continue.');
-    navigation.navigate('ScanQR', {onRead: onReadQR});
+
+    Alert.alert('Join game', 'How do you want to join the game?', [
+      {
+        text: 'Cancel',
+        onPress: () => {},
+      },
+      {
+        text: 'Enter Code Manually',
+        onPress: () => {
+          navigation.navigate('EnterCode', {
+            onSubmit: (code: string) => joinRoom(code, true),
+          });
+        },
+      },
+      {
+        text: 'Scan QR',
+        onPress: () => {
+          navigation.navigate('ScanQR', {onRead: joinRoom});
+        },
+      },
+    ]);
   };
 
   const onPressCreateGame = () => {

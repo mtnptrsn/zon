@@ -1,4 +1,3 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import MapboxGL from '@react-native-mapbox-gl/maps';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
@@ -12,13 +11,13 @@ import {io, Socket} from 'socket.io-client';
 import packageJson from './package.json';
 import ConnectionWarning from './src/components/ConnectionWarning';
 import CreateMapScreen from './src/screens/CreateMapScreen/CreateMapScreen';
+import EnterCodeScreen from './src/screens/EnterCodeScreen/EnterCodeScreen';
 import IndexScreen from './src/screens/Index/IndexScreen';
 import ReplayScreen from './src/screens/ReplayScreen/ReplayScreen';
 import RoomScreen from './src/screens/Room/RoomScreen';
 import ScanQRScreen from './src/screens/ScanQR/ScanQRScreen';
 import ShowQRScreen from './src/screens/ShowQR/ShowQRScreen';
 import UpdateScreen from './src/screens/UpdateScreen';
-import Walkthrough from './src/screens/WalkthroughScreen/WalkthroughScreen';
 import {SocketContext} from './src/socket/context';
 import {requestLocationPermission} from './src/utils/location';
 const clientVersion = packageJson.version;
@@ -85,6 +84,11 @@ const App: FC = () => {
                 options={{headerTitle: 'Scan QR', headerBackTitle: 'Back'}}
                 name="ScanQR"
                 component={ScanQRScreen}
+              />
+              <Stack.Screen
+                options={{headerTitle: 'Enter Code', headerBackTitle: 'Back'}}
+                name="EnterCode"
+                component={EnterCodeScreen}
               />
               <Stack.Screen
                 options={{headerShown: false}}

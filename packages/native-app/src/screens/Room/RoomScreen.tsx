@@ -34,15 +34,31 @@ const RoomScreen: FC = () => {
   const onPressMap = (coordinate: [number, number]) => {
     if (!PRESS_TO_MOVE) return;
 
-    setMockPosition({
-      ...mockPosition,
-      coords: {
-        ...mockPosition.coords,
-        accuracy: 1,
-        longitude: coordinate[0],
-        latitude: coordinate[1],
-      },
-    });
+    Alert.alert(
+      'Mock position',
+      `Do you want to move to ${coordinate.join(', ')}?`,
+      [
+        {text: 'Cancel', onPress: () => {}},
+        {
+          text: 'Turn off mock location',
+          onPress: () => setMockPosition(getInitialPosition()),
+        },
+        {
+          text: 'Confirm',
+          onPress: () => {
+            setMockPosition({
+              ...mockPosition,
+              coords: {
+                ...mockPosition.coords,
+                accuracy: 1,
+                longitude: coordinate[0],
+                latitude: coordinate[1],
+              },
+            });
+          },
+        },
+      ],
+    );
   };
 
   useEffect(() => {

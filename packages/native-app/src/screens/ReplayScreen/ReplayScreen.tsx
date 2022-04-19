@@ -1,27 +1,25 @@
-import React, {FC, useEffect, useRef, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
+import analytics from '@react-native-firebase/analytics';
 import MapBoxGL from '@react-native-mapbox-gl/maps';
-import {Coordinate, IPoint} from '../Room/types';
 import {useRoute} from '@react-navigation/core';
-import {Button, useTheme} from 'react-native-elements';
-import Marker from '../../components/Marker';
-import HomeMarker from '../../components/HomeMarker';
 import useInterval from '@use-it/interval';
 import {add} from 'date-fns';
 import differenceInMilliseconds from 'date-fns/differenceInMilliseconds';
-import DropDownPicker from 'react-native-dropdown-picker';
-import {getSpacing} from '../../theme/utils';
-import TimeLeft from '../Room/components/TimeLeft';
-import TinyColor from 'tinycolor2';
-import Feather from 'react-native-vector-icons/Feather';
+import React, {FC, useEffect, useState} from 'react';
+import {StyleSheet, View} from 'react-native';
+import {ENV} from 'react-native-dotenv';
+import {useTheme} from 'react-native-elements';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 // @ts-ignore
 import Slider from 'react-native-slider';
-import {getPointRadius} from '../../utils/map';
-import {gameConfig} from '../../config/game';
 import {Colors, Text} from 'react-native-ui-lib';
-import analytics from '@react-native-firebase/analytics';
-import {ENV} from 'react-native-dotenv';
+import Feather from 'react-native-vector-icons/Feather';
+import TinyColor from 'tinycolor2';
+import Marker from '../../components/Marker';
+import {gameConfig} from '../../config/game';
+import {getSpacing} from '../../theme/utils';
+import {getPointRadius} from '../../utils/map';
+import TimeLeft from '../Room/components/TimeLeft';
+import {Coordinate, IPoint} from '../Room/types';
 
 const minZoomLevel = 13;
 const maxZoomLevel = 19;
@@ -94,6 +92,7 @@ const ReplayScreen: FC = () => {
   const [timeElapsed, setTimeElapsed] = useState(0);
   const route = useRoute();
   const room = (route.params! as any).room;
+  const player = (route.params! as any).player;
   const theme = useTheme();
   const time = add(new Date(room.startedAt), {seconds: timeElapsed / 1000});
   const [isPaused, setIsPaused] = useState(false);
@@ -184,7 +183,7 @@ const ReplayScreen: FC = () => {
 
   const points = {
     type: 'FeatureCollection',
-    features: [room.map.start, ...room.map.points].map((point: any) => {
+    features: [...room.map.homes, ...room.map.points].map((point: any) => {
       const isHome = !point.weight;
 
       return {
@@ -197,14 +196,14 @@ const ReplayScreen: FC = () => {
           text: isHome ? '' : getPointText(point, time),
           minSize: Math.max(
             getPointRadius(
-              room.map.start.location.coordinates[1],
+              player.location.coordinates[1],
               minZoomLevel,
               isHome ? gameConfig.hitbox.home : gameConfig.hitbox.point,
             ),
             12,
           ),
           maxSize: getPointRadius(
-            room.map.start.location.coordinates[1],
+            player.location.coordinates[1],
             maxZoomLevel,
             isHome ? gameConfig.hitbox.home : gameConfig.hitbox.point,
           ),
@@ -228,7 +227,7 @@ const ReplayScreen: FC = () => {
           maxZoomLevel={maxZoomLevel}
           minZoomLevel={minZoomLevel}
           defaultSettings={{
-            centerCoordinate: room.map.start.location.coordinates,
+            centerCoordinate: player.location.coordinates,
             zoomLevel: 14,
           }}
           zoomLevel={14}
