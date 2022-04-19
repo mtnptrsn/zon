@@ -249,7 +249,7 @@ export class RoomController {
   ) => {
     const room = await RoomModel.findById(data.roomId);
 
-    room.players.forEach((player: any) => {
+    room.players.forEach((player: any, playerIndex: number) => {
       const playerLocation = player.location.coordinates;
       const homes = room.map.homes.map(
         (home: any) => home.location.coordinates
@@ -282,7 +282,7 @@ export class RoomController {
           endPointMultiplier
       );
 
-      player.score += scoreToAdd;
+      room.players[playerIndex].score += scoreToAdd;
 
       io.emit(`player:${player._id}:onEvent`, {
         message: `The host ended the game. You earned ${scoreToAdd} extra points. Well played!`,

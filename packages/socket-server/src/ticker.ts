@@ -7,7 +7,7 @@ import { getDistance } from "geolib";
 const onFinish = async (io: Server, room: any) => {
   if (process.env.LOGS) console.time("ticker:onFinish");
 
-  room.players.forEach((player: any) => {
+  room.players.forEach((player: any, playerIndex: number) => {
     if (player.isWithinHome) {
       const points = room.map.points.filter((point: any) => {
         return point.collectedBy?._id === player._id;
@@ -39,7 +39,7 @@ const onFinish = async (io: Server, room: any) => {
         points.reduce((acc: number, point: any) => acc + point.weight, 0) *
           endPointMultiplier
       );
-      player.score += scoreToAdd;
+      room.players[playerIndex].score += scoreToAdd;
 
       io.emit(`player:${player._id}:onEvent`, {
         message: `The game is over! You earned ${scoreToAdd} extra points. Well played!`,
