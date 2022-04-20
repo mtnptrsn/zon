@@ -34,7 +34,7 @@ const PlayerSchema: Schema = new Schema({
     },
     coordinates: {
       type: [Number],
-      default: () => [0, 0],
+      default: [0, 0],
     },
   },
   startLocation: {
@@ -50,31 +50,43 @@ const PlayerSchema: Schema = new Schema({
   },
 });
 
-const PointSchema: Schema = new Schema({
-  location: {
-    type: {
+const CaptureSchema: Schema = new Schema(
+  {
+    playerId: {
       type: String,
-      enum: ["Point"],
-      required: true,
-    },
-    coordinates: {
-      type: [Number],
       required: true,
     },
   },
-  collectedBy: {
-    type: PlayerSchema,
-    defalt: null,
+  { timestamps: true, id: true }
+);
+
+const PointSchema: Schema = new Schema(
+  {
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        required: true,
+      },
+      coordinates: {
+        type: [Number],
+        required: true,
+      },
+    },
+    captures: [CaptureSchema],
+    weight: {
+      type: Number,
+      default: null,
+    },
+    flags: {
+      type: Map,
+      of: { type: Boolean },
+      default: {},
+      required: true,
+    },
   },
-  collectedAt: {
-    type: Date,
-    default: null,
-  },
-  weight: {
-    type: Number,
-    default: null,
-  },
-});
+  { id: true }
+);
 
 const RoomSchema: Schema = new Schema(
   {
@@ -95,13 +107,11 @@ const RoomSchema: Schema = new Schema(
         default: 0,
       },
     },
-    alerts: {
-      type: [String],
-      default: [],
-    },
     flags: {
-      type: [String],
-      default: [],
+      type: Map,
+      of: { type: Boolean },
+      default: {},
+      required: true,
     },
     finishedAt: {
       type: Date,

@@ -24,19 +24,30 @@ import {Coordinate, IPoint} from '../Room/types';
 const minZoomLevel = 13;
 const maxZoomLevel = 19;
 
-const getPointColor = (point: IPoint, time: Date) => {
-  const hasBeenCollected =
-    Boolean(point.collectedAt) && new Date(point.collectedAt) < time;
-  if (hasBeenCollected) return point.collectedBy.color;
-  return new TinyColor(Colors.green30).setAlpha(0.8).toRgbString();
+const getPointColor = (point: any, time: Date, players: any[]) => {
+  const captures = point.captures.filter(
+    (capture: any) => new Date(capture.createdAt) <= time,
+  );
+  if (captures.length === 0)
+    return new TinyColor(Colors.green30).setAlpha(0.8).toRgbString();
+  const lastCapture = captures[captures.length - 1];
+  const player = players.find(
+    (player: any) => player._id === lastCapture.playerId,
+  );
+  return player.color;
 };
 
-const getPointText = (point: IPoint, time: Date) => {
-  const hasBeenCollected =
-    Boolean(point.collectedAt) && new Date(point.collectedAt) < time;
-  if (hasBeenCollected)
-    return point.collectedBy.name.substring(0, 1).toUpperCase();
-  return point.weight;
+const getPointText = (point: any, time: Date, players: any[]) => {
+  const captures = point.captures.filter(
+    (capture: any) => new Date(capture.createdAt) < time,
+  );
+  if (captures.length === 0) return point.weight;
+
+  const lastCapture = captures[captures.length - 1];
+  const player = players.find(
+    (player: any) => player._id === lastCapture.playerId,
+  );
+  return player.name.substring(0, 1).toUpperCase();
 };
 
 const styles = StyleSheet.create({
@@ -192,8 +203,8 @@ const ReplayScreen: FC = () => {
         properties: {
           color: isHome
             ? new TinyColor(Colors.blue30).setAlpha(0.4).toRgbString()
-            : getPointColor(point, time),
-          text: isHome ? '' : getPointText(point, time),
+            : getPointColor(point, time, room.players),
+          text: isHome ? '' : getPointText(point, time, room.players),
           minSize: Math.max(
             getPointRadius(
               player.startLocation.coordinates[1],

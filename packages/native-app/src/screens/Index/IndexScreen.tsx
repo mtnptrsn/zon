@@ -80,10 +80,10 @@ const IndexScreen: FC = () => {
         onPress: () => {},
       },
       {
-        text: 'Enter Code Manually',
+        text: 'Enter Code',
         onPress: () => {
           navigation.navigate('EnterCode', {
-            onSubmit: (code: string) => joinRoom(code, true),
+            onSubmit: (code: string) => joinRoom(code),
           });
         },
       },

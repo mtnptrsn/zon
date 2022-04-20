@@ -10,7 +10,8 @@ const onFinish = async (io: Server, room: any) => {
   room.players.forEach((player: any, playerIndex: number) => {
     if (player.isWithinHome) {
       const points = room.map.points.filter((point: any) => {
-        return point.collectedBy?._id === player._id;
+        const lastCapture = point.captures?.[point.captures.length - 1];
+        return lastCapture?.playerId === player._id;
       });
 
       const playerLocation = player.location.coordinates;
@@ -75,7 +76,7 @@ const onStart = async (io: Server, room: any) => {
 };
 
 const onTimeAnnouncenment = async (io: Server, room: any) => {
-  room.flags = [...room.flags, "10_MINUTES_LEFT_ANNOUNCEMENT"];
+  room.flags.set("10_MINUTES_LEFT_ANNOUNCEMENT", true);
 
   await room.save();
 
@@ -107,7 +108,7 @@ export const ticker = async (io: Server) => {
     if (timeUntil.finish <= 0) return onFinish(io, room);
     if (
       timeUntil.timeLeftAnnouncement <= 0 &&
-      !room.flags.includes("10_MINUTES_LEFT_ANNOUNCEMENT") &&
+      !room.flags.get("10_MINUTES_LEFT_ANNOUNCEMENT") &&
       room.status === "PLAYING"
     )
       return onTimeAnnouncenment(io, room);

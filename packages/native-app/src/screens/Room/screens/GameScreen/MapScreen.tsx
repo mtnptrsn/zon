@@ -1,9 +1,8 @@
 import {GeolocationResponse} from '@react-native-community/geolocation';
 import MapBoxGL from '@react-native-mapbox-gl/maps';
-import useInterval from '@use-it/interval';
 import {differenceInMilliseconds} from 'date-fns';
 import {getDistance} from 'geolib';
-import React, {FC, useRef, useState} from 'react';
+import React, {FC, useMemo, useRef} from 'react';
 import {StyleSheet} from 'react-native';
 import {Colors, View} from 'react-native-ui-lib';
 import TinyColor from 'tinycolor2';
@@ -12,7 +11,6 @@ import {getPointRadius} from '../../../../utils/map';
 import HomeIndicator from '../../components/HomeIndicator';
 import Score from '../../components/Score';
 import TimeLeft from '../../components/TimeLeft';
-import {IPoint} from '../../types';
 
 const minZoomLevel = 13;
 const maxZoomLevel = 19;
@@ -25,10 +23,10 @@ interface IMapScreenProps {
   onPressMap: (coordinate: [number, number]) => void;
 }
 
-const useForceUpdate = () => {
-  const [_, setValue] = useState(0); // integer state
-  return () => setValue(value => value + 1); // update the state to force render
-};
+// const useForceUpdate = () => {
+//   const [_, setValue] = useState(0); // integer state
+//   return () => setValue(value => value + 1); // update the state to force render
+// };
 
 const styles = StyleSheet.create({
   container: {
@@ -43,7 +41,9 @@ const styles = StyleSheet.create({
 
 const getZoneScore = (room: any, player: any) => {
   const points = room.map.points.filter((point: any) => {
-    return point.collectedBy?._id === player._id;
+    const lastCapture = point.captures?.[point.captures.length - 1];
+
+    return lastCapture?.playerId === player._id;
   });
 
   const playerLocation = player.location.coordinates;
@@ -73,26 +73,32 @@ const getZoneScore = (room: any, player: any) => {
   return scoreToAdd;
 };
 
-const getPointColor = (player: any, point: IPoint) => {
-  if (point.collectedBy?.color)
-    return new TinyColor(point.collectedBy.color).setAlpha(0.8).toRgbString();
-  return new TinyColor(Colors.green30).setAlpha(0.8).toRgbString();
+const getPointColor = (point: any, players: any[]) => {
+  if (point.captures.length === 0)
+    return new TinyColor(Colors.green30).setAlpha(0.8).toRgbString();
+
+  const lastCapture = point.captures[point.captures.length - 1];
+  const owner = players.find(
+    (player: any) => player._id === lastCapture.playerId,
+  );
+  return new TinyColor(owner.color).setAlpha(0.8).toRgbString();
 };
 
 const MapScreen: FC<IMapScreenProps> = props => {
   const cameraRef = useRef(null);
-  const isHardMode = props.room.flags.includes('HARDMODE');
-  const update = useForceUpdate();
+  const isHardMode = 'HARDMODE' in props.room.flags;
+  // const update = useForceUpdate();
 
-  // TODO: Remove this after db refactor
-  useInterval(() => {
-    update();
-  }, 3000);
+  // // TODO: Remove this after db refactor
+  // useInterval(() => {
+  //   update();
+  // }, 3000);
 
-  const zoneScore =
-    props.room.status === 'FINISHED'
-      ? null
+  const zoneScore = useMemo(() => {
+    return props.room.status === 'FINISHED'
+      ? undefined
       : getZoneScore(props.room, props.player);
+  }, [props.room, props.player]);
 
   const mapStyles = {
     pointCircle: {
@@ -129,10 +135,15 @@ const MapScreen: FC<IMapScreenProps> = props => {
     features: [...props.room.map.homes, ...props.room.map.points].map(
       (point: any) => {
         const isHome = !point.weight;
+
+        const lastCapture = point.captures?.[point.captures.length - 1];
+
         const isLocked =
-          Boolean(point.collectedAt) &&
-          differenceInMilliseconds(new Date(), new Date(point.collectedAt)) <
-            gameConfig.durations.zoneLockedAfterCapture;
+          Boolean(lastCapture?.createdAt) &&
+          differenceInMilliseconds(
+            new Date(),
+            new Date(lastCapture?.createdAt),
+          ) < gameConfig.durations.zoneLockedAfterCapture;
 
         const text = isHome ? '' : isLocked ? 'L' : point.weight;
 
@@ -147,7 +158,7 @@ const MapScreen: FC<IMapScreenProps> = props => {
           properties: {
             color: isHome
               ? new TinyColor(Colors.blue30).setAlpha(0.4).toRgbString()
-              : getPointColor(props.player, point),
+              : getPointColor(point, props.room.players),
             text,
             minSize: Math.max(
               getPointRadius(

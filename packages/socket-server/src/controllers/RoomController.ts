@@ -82,17 +82,19 @@ const checkPointCollected = (
   playerCoordinate: [number, number],
   hitbox: number
 ) => {
+  const lastCapture = point.captures?.[point.captures.length - 1];
   const distance = getDistance(point.location.coordinates, playerCoordinate);
   const isWithinHitbox = distance < hitbox;
   const timeSinceCollected = differenceInMilliseconds(
     new Date(),
-    new Date(point.collectedAt)
+    new Date(lastCapture?.createdAt)
   );
 
   if (!isWithinHitbox) return false;
-  if (point.collectedBy?._id === player._id) return false;
+
+  if (lastCapture?.playerId === player._id) return false;
   if (
-    Boolean(point.collectedAt) &&
+    Boolean(lastCapture?.createdAt) &&
     timeSinceCollected < gameConfig.durations.zoneLockedAfterCapture
   )
     return false;
@@ -216,7 +218,8 @@ export class RoomController {
     });
 
     room.status = "COUNTDOWN";
-    if (data.hardmode) room.flags = [...room.flags, "HARDMODE"];
+    if (data.hardmode) room.flags.set("HARDMODE", true);
+
     const map = await getMap(homes, data.radius);
     room.map.points = map;
     room.map.radius = data.radius;
@@ -274,7 +277,9 @@ export class RoomController {
       );
 
       const points = room.map.points.filter((point: any) => {
-        return point.collectedBy?._id === player._id;
+        const lastCapture = point.captures?.[point.captures.length - 1];
+
+        return lastCapture?.playerId === player._id;
       });
 
       const scoreToAdd = Math.ceil(
@@ -371,9 +376,20 @@ export class RoomController {
         )
       )
         return;
-      const previousOwner = point.collectedBy;
-      point.collectedBy = player;
-      point.collectedAt = new Date();
+
+      const previousOwnerId =
+        point.captures?.[point.captures.length - 1]?.playerId;
+      const previousOwner = room.players.find(
+        (player: any) => player._id === previousOwnerId
+      );
+
+      point.captures = [
+        ...point.captures,
+        {
+          playerId: player._id,
+        },
+      ];
+
       room.players[playerIndex].score += point.weight;
 
       events = [

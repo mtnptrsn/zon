@@ -62,14 +62,6 @@ const StatsScreen: FC<IStatsScreenProps> = props => {
           playerPositions.map((pp: any) => pp.location.coordinates),
         );
         const pace = getPace(duration, distance);
-        const scorePerMinute = props.room.map.points.reduce(
-          (acc: number, point: any) => {
-            return point.collectedBy?._id === player._id
-              ? acc + point.weight
-              : acc;
-          },
-          0,
-        );
 
         return (
           <View key={player._id} marginB-6>

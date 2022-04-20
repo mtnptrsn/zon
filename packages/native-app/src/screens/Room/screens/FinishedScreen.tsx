@@ -96,16 +96,7 @@ const FinishedScreen: FC<ILobbyScreenProps> = props => {
   const renderPlayers = () => {
     return props.room.players
       .map((player: any) => {
-        const score = props.room.map.points.reduce(
-          (acc: number, point: IPoint) => {
-            if (point.collectedBy?._id === player._id)
-              return acc + point.weight;
-            return acc;
-          },
-          0,
-        );
-
-        return {score, player};
+        return {score: player.score, player};
       })
       .sort((a: any, b: any) => b.score - a.score)
       .map(({score, player}: {score: number; player: any}) => {
