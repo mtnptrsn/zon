@@ -1,24 +1,22 @@
+import {GeolocationResponse} from '@react-native-community/geolocation';
+import {StackActions, useNavigation} from '@react-navigation/native';
+import {speak} from 'expo-speech';
 import React, {FC, useContext, useEffect, useState} from 'react';
 import {Alert, Vibration} from 'react-native';
-import {SocketContext} from '../../../../socket/context';
 import {getUniqueId} from 'react-native-device-info';
+import Sound from 'react-native-sound';
+import {TabBar, View} from 'react-native-ui-lib';
+import Notification from '../../../../components/Notification/Notification';
+import NotificationInfo from '../../../../components/Notification/NotificationInfo';
+import NotificationScore from '../../../../components/Notification/NotificationScore';
+import useStoredState from '../../../../hooks/useAsyncStorage';
+import {useEventQueue} from '../../../../hooks/useEventQueue';
+import {SocketContext} from '../../../../socket/context';
 import subscribeToEvents from '../../../../socket/subscribeToEvents';
+import {getSpacing} from '../../../../theme/utils';
 import {vibrationDurations} from '../../../../utils/vibration';
-import {GeolocationResponse} from '@react-native-community/geolocation';
 import MapScreen from './MapScreen';
 import StatsScreen from './StatsScreen';
-import {TabBar, View} from 'react-native-ui-lib';
-import {getSpacing} from '../../../../theme/utils';
-import {StackActions, useNavigation} from '@react-navigation/native';
-import Notification from '../../../../components/Notification/Notification';
-import NotificationScore from '../../../../components/Notification/NotificationScore';
-import NotificationInfo from '../../../../components/Notification/NotificationInfo';
-import analytics from '@react-native-firebase/analytics';
-import {ENV} from 'react-native-dotenv';
-import {useEventQueue} from '../../../../hooks/useEventQueue';
-import {speak} from 'expo-speech';
-import Sound from 'react-native-sound';
-import useStoredState from '../../../../hooks/useAsyncStorage';
 
 const speakP = (message: string) => {
   return new Promise(resolve => {
@@ -173,7 +171,7 @@ const GameScreen: FC<IGameScreenProps> = props => {
 
   const onPressLeave = () => {
     const leave = () => {
-      if (ENV === 'production') analytics().logEvent('leave_game');
+      // if (ENV === 'production') analytics().logEvent('leave_game');
       navigation.dispatch(StackActions.popToTop());
     };
     Alert.alert('Confirmation', 'Are you sure you want to leave the game?', [

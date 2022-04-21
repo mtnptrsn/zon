@@ -137,7 +137,7 @@ const ReplayScreen: FC = () => {
   });
 
   useEffect(() => {
-    if (ENV === 'production') analytics().logEvent('open_replay');
+    // if (ENV === 'production') analytics().logEvent('open_replay');
   }, []);
 
   useEffect(() => {

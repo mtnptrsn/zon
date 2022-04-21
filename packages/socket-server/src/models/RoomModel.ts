@@ -56,6 +56,12 @@ const CaptureSchema: Schema = new Schema(
       type: String,
       required: true,
     },
+    flags: {
+      type: Map,
+      of: { type: Boolean },
+      default: {},
+      required: true,
+    },
   },
   { timestamps: true, id: true }
 );
@@ -77,12 +83,6 @@ const PointSchema: Schema = new Schema(
     weight: {
       type: Number,
       default: null,
-    },
-    flags: {
-      type: Map,
-      of: { type: Boolean },
-      default: {},
-      required: true,
     },
   },
   { id: true }
@@ -118,6 +118,13 @@ const RoomSchema: Schema = new Schema(
     },
     startedAt: {
       type: Date,
+    },
+    challengeRoom: {
+      type: this,
+    },
+    duration: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true }

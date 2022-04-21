@@ -1,8 +1,8 @@
-import { Server } from "socket.io";
-import { RoomModel } from "./models/RoomModel";
-import { add, differenceInMilliseconds, sub } from "date-fns";
-import { PlayerPositionModel } from "./models/PlayerPositionModel";
+import { add, differenceInMilliseconds } from "date-fns";
 import { getDistance } from "geolib";
+import { Server } from "socket.io";
+import { PlayerPositionModel } from "./models/PlayerPositionModel";
+import { RoomModel } from "./models/RoomModel";
 
 const onFinish = async (io: Server, room: any) => {
   if (process.env.LOGS) console.time("ticker:onFinish");
@@ -54,11 +54,6 @@ const onFinish = async (io: Server, room: any) => {
   });
   await room.save();
 
-  // io.emit(`room:${room._id}:onEvent`, {
-  //   message: "The game is over",
-  //   type: "info",
-  // });
-
   io.emit(`room:${room._id}:onUpdate`, {
     ...room.toObject(),
     playerPositions: playerPositions,
@@ -88,6 +83,61 @@ const onTimeAnnouncenment = async (io: Server, room: any) => {
   });
 };
 
+function onSimulateChallengeGame(io: Server, room: any) {
+  const elapsedTime = differenceInMilliseconds(new Date(), room.startedAt);
+  const challengeRoomDate = add(room.challengeRoom.startedAt, {
+    seconds: elapsedTime / 1000,
+  });
+  room.challengeRoom.map.points.forEach((point: any) => {
+    point.captures.forEach((capture: any) => {
+      if (point.captures?.length === 0) return;
+      const hasPassed = challengeRoomDate > new Date(capture.createdAt);
+      const hasSimulated = room.flags.get(`SIMULATED_${capture._id}`);
+
+      if (!hasPassed || hasSimulated) return;
+
+      const player = room.challengeRoom.players.find(
+        (player: any) => player._id === capture.playerId
+      );
+
+      const playerScore = room.challengeRoom.map.points.reduce(
+        (acc: any, point: any) => {
+          if (point.captures.length === 0) return acc;
+          const captures = point.captures.filter(
+            (capture: any) => new Date(capture.createdAt) < challengeRoomDate
+          );
+
+          const scoreFromAllCaptures = captures.reduce(
+            (acc: number, capture: any) => {
+              if (capture.playerId === player._id) return acc + point.weight;
+              return acc;
+            },
+            0
+          );
+
+          return acc + scoreFromAllCaptures;
+        },
+        0
+      );
+
+      room.flags.set(`SIMULATED_${capture._id}`, true);
+
+      io.emit(`room:${room._id}:onEvent`, {
+        message: `Ghost ${player.name} captured a zone worth ${point.weight} ${
+          point.weight === 1 ? "point" : "points"
+        } and has a total of ${playerScore}.`,
+        type: "capture",
+        player: { ...player, score: playerScore },
+        sound: "alert",
+        vibrate: "short",
+        zone: point,
+      });
+    });
+  });
+
+  return room.save();
+}
+
 export const ticker = async (io: Server) => {
   const rooms = await RoomModel.find({
     status: { $in: ["PLAYING", "COUNTDOWN"] },
@@ -112,5 +162,7 @@ export const ticker = async (io: Server) => {
       room.status === "PLAYING"
     )
       return onTimeAnnouncenment(io, room);
+    if (room.status === "PLAYING" && Boolean(room.challengeRoom))
+      return onSimulateChallengeGame(io, room);
   });
 };

@@ -1,8 +1,9 @@
 import {GeolocationResponse} from '@react-native-community/geolocation';
 import MapBoxGL from '@react-native-mapbox-gl/maps';
+import useInterval from '@use-it/interval';
 import {differenceInMilliseconds} from 'date-fns';
 import {getDistance} from 'geolib';
-import React, {FC, useMemo, useRef} from 'react';
+import React, {FC, useMemo, useRef, useState} from 'react';
 import {StyleSheet} from 'react-native';
 import {Colors, View} from 'react-native-ui-lib';
 import TinyColor from 'tinycolor2';
@@ -23,10 +24,10 @@ interface IMapScreenProps {
   onPressMap: (coordinate: [number, number]) => void;
 }
 
-// const useForceUpdate = () => {
-//   const [_, setValue] = useState(0); // integer state
-//   return () => setValue(value => value + 1); // update the state to force render
-// };
+const useForceUpdate = () => {
+  const [_, setValue] = useState(0); // integer state
+  return () => setValue(value => value + 1); // update the state to force render
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -87,12 +88,12 @@ const getPointColor = (point: any, players: any[]) => {
 const MapScreen: FC<IMapScreenProps> = props => {
   const cameraRef = useRef(null);
   const isHardMode = 'HARDMODE' in props.room.flags;
-  // const update = useForceUpdate();
+  const update = useForceUpdate();
 
   // // TODO: Remove this after db refactor
-  // useInterval(() => {
-  //   update();
-  // }, 3000);
+  useInterval(() => {
+    update();
+  }, 3000);
 
   const zoneScore = useMemo(() => {
     return props.room.status === 'FINISHED'

@@ -1,4 +1,4 @@
-import {useNavigation, useRoute} from '@react-navigation/core';
+import {StackActions, useNavigation, useRoute} from '@react-navigation/core';
 import React, {FC, useEffect, useState} from 'react';
 import subscribeToRoom from '../../socket/subscribeToRoom';
 import CancelledScreen from './screens/CancelledScreen';
@@ -25,9 +25,13 @@ const RoomScreen: FC = () => {
   const [mockPosition, setMockPosition] = useState(getInitialPosition());
 
   const onClickAndroidArrowBack = () => {
+    const leave = () => {
+      navigation.dispatch(StackActions.popToTop());
+    };
+
     Alert.alert('Confirmation', 'Are you sure you want to leave the game?', [
       {text: 'No', onPress: () => {}},
-      {text: 'Yes', onPress: () => navigation.goBack()},
+      {text: 'Yes', onPress: leave},
     ]);
   };
 

@@ -31,6 +31,10 @@ export const routes = (
     RoomController.positionUpdateLobby(data, cb, socket, io)
   );
 
+  socket.on("rooms:get", (data, cb) =>
+    RoomController.getMyRooms(data, cb, socket, io)
+  );
+
   // TODO: Extract this to controller
   socket.on("version:get", (data, cb) => {
     cb(packageJson.version);

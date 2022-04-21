@@ -1,10 +1,8 @@
 import {GeolocationResponse} from '@react-native-community/geolocation';
-import analytics from '@react-native-firebase/analytics';
 import {StackActions, useNavigation} from '@react-navigation/core';
 import React, {FC, useContext, useEffect, useState} from 'react';
 import {Alert} from 'react-native';
 import {getUniqueId} from 'react-native-device-info';
-import {ENV} from 'react-native-dotenv';
 import {
   Button,
   Checkbox,
@@ -24,7 +22,9 @@ interface ILobbyScreenProps {
 
 const LobbyScreen: FC<ILobbyScreenProps> = props => {
   const [isLoading, setIsLoading] = useState(false);
-  const [hardmode, setHardMode] = useState(false);
+  const [hardmode, setHardMode] = useState(
+    props.room.challengeRoom?.flags?.HARDMODE || false,
+  );
   const [tutorial, setTutorial] = useStoredState('tutorial', true);
   const navigation = useNavigation();
   const socket = useContext(SocketContext);
@@ -35,8 +35,8 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
     (player: any) => player._id === userId,
   );
   const [settings, setSettings] = useState({
-    duration: 35,
-    radius: 1500,
+    duration: props.room.challengeRoom?.duration / 60 / 1000 || 30,
+    radius: props.room.challengeRoom?.map?.radius || 1500,
   });
   const hasAccuratePositon =
     props.position.coords.latitude !== 0 &&
@@ -73,7 +73,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
     if (!hasAccuratePositon)
       return Alert.alert('Error', `Couldn't get your location.`);
 
-    if (ENV === 'production') analytics().logEvent('start_game');
+    // if (ENV === 'production') analytics().logEvent('start_game');
 
     socket!.emit(
       'room:update:start',
@@ -88,11 +88,22 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
   };
 
   const renderPlayers = () => {
-    return props.room.players.map((player: any) => {
+    const ghosts =
+      props.room.challengeRoom?.players?.map((player: any) => {
+        return {
+          ...player,
+          name: `Ghost ${player.name}`,
+          isGhost: true,
+        };
+      }) || [];
+
+    return [...props.room.players, ...ghosts].map((player: any) => {
       const isCurrentPlayer = player._id === getUniqueId();
 
+      const key = `${player._id}-${player.isGhost ? '_ghost' : ''}`;
+
       return (
-        <View key={player._id} marginB-6>
+        <View key={key} marginB-6>
           <View row centerV>
             <View
               center
@@ -112,7 +123,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
               </Text>
             </View>
             <Text text70L marginL-8>
-              {isCurrentPlayer ? 'You' : player.name}
+              {isCurrentPlayer && !player.isGhost ? 'You' : player.name}
             </Text>
           </View>
         </View>
@@ -142,6 +153,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
                 Duration
               </Text>
               <Slider
+                disabled={Boolean(props.room.challengeRoom)}
                 value={settings.duration}
                 onValueChange={(value: any) => {
                   setSettings(settings => ({...settings, duration: value}));
@@ -156,6 +168,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
                 Map Size
               </Text>
               <Slider
+                disabled={Boolean(props.room.challengeRoom)}
                 step={1}
                 minimumValue={1000}
                 maximumValue={2000}
@@ -169,6 +182,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
               <View marginT-16 />
 
               <Checkbox
+                disabled={Boolean(props.room.challengeRoom)}
                 value={hardmode}
                 onValueChange={setHardMode}
                 label={'Hardmode'}

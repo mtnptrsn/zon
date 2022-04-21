@@ -10,9 +10,9 @@ import {io, Socket} from 'socket.io-client';
 //@ts-ignore
 import packageJson from './package.json';
 import ConnectionWarning from './src/components/ConnectionWarning';
-import CreateMapScreen from './src/screens/CreateMapScreen/CreateMapScreen';
-import EnterCodeScreen from './src/screens/EnterCodeScreen/EnterCodeScreen';
+import EnterTextScreen from './src/screens/EnterTextScreen/EnterTextScreen';
 import IndexScreen from './src/screens/Index/IndexScreen';
+import MyGamesScreen from './src/screens/MyGamesScreen/MyGamesScreen';
 import ReplayScreen from './src/screens/ReplayScreen/ReplayScreen';
 import RoomScreen from './src/screens/Room/RoomScreen';
 import ScanQRScreen from './src/screens/ScanQR/ScanQRScreen';
@@ -86,9 +86,9 @@ const App: FC = () => {
                 component={ScanQRScreen}
               />
               <Stack.Screen
-                options={{headerTitle: 'Enter Code', headerBackTitle: 'Back'}}
-                name="EnterCode"
-                component={EnterCodeScreen}
+                options={{headerBackTitle: 'Back'}}
+                name="EnterText"
+                component={EnterTextScreen}
               />
               <Stack.Screen
                 options={{headerShown: false}}
@@ -97,14 +97,14 @@ const App: FC = () => {
               />
               <Stack.Screen name="ShowQR" component={ShowQRScreen} />
               <Stack.Screen
-                options={{headerTitle: 'Create Custom Map'}}
-                name="CreateMap"
-                component={CreateMapScreen}
-              />
-              <Stack.Screen
                 options={{headerTitle: 'Replay'}}
                 name="Replay"
                 component={ReplayScreen}
+              />
+              <Stack.Screen
+                options={{headerTitle: 'My Games'}}
+                name="MyGames"
+                component={MyGamesScreen}
               />
             </Stack.Navigator>
           </NavigationContainer>

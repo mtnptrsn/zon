@@ -13,6 +13,7 @@ import {DefaultEventsMap} from 'socket.io-client/build/typed-events';
 import packageJson from '../../../package.json';
 import useStoredState from '../../hooks/useAsyncStorage';
 import {SocketContext} from '../../socket/context';
+import {IEnterTextScreenParams} from '../EnterTextScreen/EnterTextScreen';
 
 const findOngoingRoom = async (
   socket: Socket<DefaultEventsMap, DefaultEventsMap>,
@@ -63,7 +64,7 @@ const IndexScreen: FC = () => {
             'Invalid code / QR',
             'The codde / QR code you scanned is invalid.',
           );
-        if (ENV === 'production') analytics().logEvent('join_room');
+        // if (ENV === 'production') analytics().logEvent('join_room');
         AsyncStorage.setItem('roomId', room._id);
         navigation.navigate('Room', {roomId: room._id});
       },
@@ -82,9 +83,13 @@ const IndexScreen: FC = () => {
       {
         text: 'Enter Code',
         onPress: () => {
-          navigation.navigate('EnterCode', {
+          navigation.navigate('EnterText', {
             onSubmit: (code: string) => joinRoom(code),
-          });
+            buttonLabel: 'Join',
+            headerTitle: 'Enter Code',
+            inputPlaceholder: 'Enter your code',
+            inputTitle: 'Code',
+          } as IEnterTextScreenParams);
         },
       },
       {
@@ -96,14 +101,27 @@ const IndexScreen: FC = () => {
     ]);
   };
 
-  const onPressCreateGame = () => {
+  const onPressMyGames = () => {
+    // navigation.navigate('EnterText', {
+    //   buttonLabel: 'Create Game',
+    //   headerTitle: 'Challenge Game',
+    //   inputPlaceholder: 'Enter room ID',
+    //   inputTitle: 'Room ID',
+    //   onSubmit: challengeOldGame,
+    // } as IEnterTextScreenParams);
+
+    navigation.navigate('MyGames');
+  };
+
+  const createRoom = (challengeRoomId?: string) => {
     if (!name)
       return Alert.alert('Empty field', 'You must enter a name to continue.');
-    if (ENV === 'production') analytics().logEvent('create_room');
+    // if (ENV === 'production') analytics().logEvent('create_room');
     socket!.emit(
       'room:create',
       {
-        player: {id: DeviceInfo.getUniqueId(), name: name},
+        player: {id: DeviceInfo.getUniqueId(), name},
+        challengeRoomId,
       } as RoomController.ICreate,
       (room: any) => {
         AsyncStorage.setItem('roomId', room._id);
@@ -129,8 +147,9 @@ const IndexScreen: FC = () => {
             title="Name"
           />
         </View>
-        <Button label="Create Game" marginB-6 onPress={onPressCreateGame} />
-        <Button label="Join Game" onPress={onPressJoinGame} />
+        <Button label="Create Game" marginB-6 onPress={() => createRoom()} />
+        <Button label="Join Game" marginB-6 onPress={onPressJoinGame} />
+        <Button label="My Games" outline onPress={onPressMyGames} />
       </View>
     </View>
   );

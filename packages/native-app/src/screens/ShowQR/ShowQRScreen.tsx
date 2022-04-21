@@ -27,7 +27,7 @@ const ShowQRScreen: FC = () => {
 
   const share = () => {
     Share.share({
-      message: `Join my game on Zon with code: ${data}`,
+      message: data,
     });
   };
 

@@ -15,6 +15,7 @@ export namespace RoomController {
       id: string;
       name: string;
     };
+    challengeRoomId?: any;
   }
   export interface IJoin {
     roomId: string;
@@ -26,6 +27,11 @@ export namespace RoomController {
 
   export interface IGet {
     roomId: string;
+  }
+
+  export interface IGetMyRooms {
+    playerId: string;
+    status: string;
   }
   export interface ILeave {
     userId: string;
@@ -107,6 +113,14 @@ export class RoomController {
     data,
     callback
   ) => {
+    let challengeRoom = null;
+
+    if (data.challengeRoomId) {
+      challengeRoom = await RoomModel.findOne({
+        shortId: data.challengeRoomId,
+      });
+    }
+
     const room = new RoomModel({
       status: "ARRANGING",
       players: [
@@ -117,6 +131,7 @@ export class RoomController {
           color: getRandomPlayerColor([]),
         },
       ],
+      challengeRoom,
     });
     await room.save();
     callback?.(room);
@@ -184,6 +199,24 @@ export class RoomController {
     });
   };
 
+  static getMyRooms: IController<RoomController.IGetMyRooms> = async (
+    data,
+    callback
+  ) => {
+    const rooms = await RoomModel.find({
+      players: {
+        $elemMatch: {
+          _id: data.playerId,
+        },
+      },
+      status: data.status,
+    })
+      .sort({ createdAt: -1 })
+      .limit(10);
+
+    callback?.(rooms);
+  };
+
   static start: IController<RoomController.IStart> = async (
     data,
     callback,
@@ -238,6 +271,7 @@ export class RoomController {
     room.finishedAt = add(new Date(), {
       seconds: (data.duration + gameConfig.durations.start) / 1000,
     });
+    room.duration = data.duration;
     await room.save();
     io.emit(`room:${room._id}:onUpdate`, room);
     callback?.(room);
