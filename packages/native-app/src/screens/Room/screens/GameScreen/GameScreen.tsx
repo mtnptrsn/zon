@@ -79,8 +79,9 @@ const GameScreen: FC<IGameScreenProps> = props => {
   const onEvent = (event: any) => {
     addToQueue(event, () => speakP(event.message));
     const isCurrentPlayer = player._id === event.player?._id;
+    const isGhost = event.player?.isGhost;
 
-    if (tutorial && isCurrentPlayer) {
+    if (tutorial && isCurrentPlayer && !isGhost) {
       const isFirstZone = Boolean(
         event.type === 'capture' && tutorialNotifications === 0,
       );

@@ -20,15 +20,17 @@ const Player: FC<{player: any}> = props => {
     <View row centerV>
       <View
         marginR-6
-        height={25}
-        width={25}
+        height={30}
+        width={30}
         backgroundColor={props.player.color}
         style={{borderRadius: 99}}
         center>
-        <Text white>{props.player.name.substring(0, 1)}</Text>
+        <Text text90L white>
+          {props.player.score}
+        </Text>
       </View>
 
-      <Text>{props.player.name}</Text>
+      <Text text80L>{props.player.name}</Text>
     </View>
   );
 };

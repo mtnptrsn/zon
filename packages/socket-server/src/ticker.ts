@@ -127,7 +127,7 @@ function onSimulateChallengeGame(io: Server, room: any) {
           point.weight === 1 ? "point" : "points"
         } and has a total of ${playerScore}.`,
         type: "capture",
-        player: { ...player, score: playerScore },
+        player: { ...player, score: playerScore, isGhost: true },
         sound: "alert",
         vibrate: "short",
         zone: point,
