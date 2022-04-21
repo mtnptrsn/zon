@@ -105,6 +105,12 @@ const MyGamesScreen: FC = () => {
   };
 
   if (!rooms) return <LoadingScreen />;
+  if (rooms.length === 0)
+    return (
+      <View center flex>
+        <Text>No games yet.</Text>
+      </View>
+    );
 
   return (
     <ScrollView>

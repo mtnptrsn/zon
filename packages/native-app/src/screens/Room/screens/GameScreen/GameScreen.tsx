@@ -101,7 +101,7 @@ const GameScreen: FC<IGameScreenProps> = props => {
       }
 
       if (isSecondZone) {
-        const message = `You are getting good at this! The further away a zone is from your home, the more points it will give.`;
+        const message = `The further away a zone is from your home, the more points it will give.`;
         addToQueue({message, type: 'info'}, () => speakP(message));
         setTutorialNotifications(x => x + 1);
       }
