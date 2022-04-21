@@ -136,7 +136,7 @@ const StatsScreen: FC<IStatsScreenProps> = props => {
               </Text>
             </View>
             <View marginL-46 style={{marginTop: -3}}>
-              {props.room.status === 'FINISHED' && !player.isGhost && (
+              {props.room.status === 'FINISHED' && (
                 <>
                   <Text grey30>
                     Distance: {Math.round((distance / 1000) * 10) / 10} km

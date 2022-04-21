@@ -188,10 +188,10 @@ export class RoomController {
   static get: IController<RoomController.IGet> = async (data, callback) => {
     if (!isValidObjectId(data.roomId)) return callback?.(null);
 
-    const room: Document<any> = await RoomModel.findById(data.roomId);
+    const room = await RoomModel.findById(data.roomId);
     if (!room) return callback?.(null);
     const playerPositions = await PlayerPositionModel.find({
-      roomId: data.roomId,
+      $or: [{ roomId: room._id }, { roomId: room.challengeRoom?._id }],
     });
     callback?.({
       ...room.toObject(),
@@ -332,16 +332,12 @@ export class RoomController {
     room.status = "FINISHED";
     await room.save();
     const playerPositions = await PlayerPositionModel.find({
-      roomId: room._id,
+      $or: [{ roomId: room._id }, { roomId: room.challengeRoom?._id }],
     });
     io.emit(`room:${room._id}:onUpdate`, {
       ...room.toObject(),
       playerPositions,
     });
-    // io.emit(`room:${room._id}:onEvent`, {
-    //   message: `The host ended the game`,
-    //   type: "info",
-    // });
     callback?.(room);
   };
 
