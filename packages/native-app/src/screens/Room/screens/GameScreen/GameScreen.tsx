@@ -37,6 +37,13 @@ interface IGameScreenProps {
   onPressMap: (coordinate: [number, number]) => void;
 }
 
+const tutorialAnnouncements = [
+  `You captured your first zone. When a zone is captured, it will be locked for one minute. After that, other players can steal it.`,
+  `The further away a zone is from your home, the more points it will give.`,
+  `You earn points by capturing zones, and at the end of the game you also earn points for each zone you own.`,
+  `The closer you are to your home when the game ends, the more points each zone will give.`,
+];
+
 const GameScreen: FC<IGameScreenProps> = props => {
   const [event, setEvent] = useState<any>(null);
   const [tutorialNotifications, setTutorialNotifications] = useState(0);
@@ -81,33 +88,10 @@ const GameScreen: FC<IGameScreenProps> = props => {
     const isCurrentPlayer = player._id === event.player?._id;
     const isGhost = event.player?.isGhost;
 
-    if (tutorial && isCurrentPlayer && !isGhost) {
-      const isFirstZone = Boolean(
-        event.type === 'capture' && tutorialNotifications === 0,
-      );
+    if (tutorial && isCurrentPlayer && !isGhost && event.type === 'capture') {
+      const message = tutorialAnnouncements[tutorialNotifications];
 
-      const isSecondZone = Boolean(
-        event.type === 'capture' && tutorialNotifications === 1,
-      );
-
-      const isThirdZone = Boolean(
-        event.type === 'capture' && tutorialNotifications === 2,
-      );
-
-      if (isFirstZone) {
-        const message = `Well done! You captured your first zone. When a zone is captured, it will be locked for one minute. After that, other players can steal it.`;
-        addToQueue({message, type: 'info'}, () => speakP(message));
-        setTutorialNotifications(x => x + 1);
-      }
-
-      if (isSecondZone) {
-        const message = `The further away a zone is from your home, the more points it will give.`;
-        addToQueue({message, type: 'info'}, () => speakP(message));
-        setTutorialNotifications(x => x + 1);
-      }
-
-      if (isThirdZone) {
-        const message = `You earn points for capturing zones, and at the end of the game you also earn points for each zone you own. The closer you are to your home when the game ends, the more points each zone will give.`;
+      if (message) {
         addToQueue({message, type: 'info'}, () => speakP(message));
         setTutorialNotifications(x => x + 1);
       }
