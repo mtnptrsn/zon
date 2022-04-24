@@ -13,7 +13,7 @@ import HomeIndicator from '../../components/HomeIndicator';
 import Score from '../../components/Score';
 import TimeLeft from '../../components/TimeLeft';
 
-const minZoomLevel = 13;
+const minZoomLevel = 11;
 const maxZoomLevel = 19;
 
 interface IMapScreenProps {
@@ -149,8 +149,8 @@ const MapScreen: FC<IMapScreenProps> = props => {
         const text = isHome ? '' : isLocked ? 'L' : point.weight;
 
         const textSizes = {
-          min: 14,
-          max: 110,
+          min: 11,
+          max: 200,
         };
 
         return {
@@ -167,7 +167,7 @@ const MapScreen: FC<IMapScreenProps> = props => {
                 minZoomLevel,
                 isHome ? gameConfig.hitbox.home : gameConfig.hitbox.point,
               ),
-              12,
+              7,
             ),
             maxSize: getPointRadius(
               props.position.coords.latitude,
