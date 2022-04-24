@@ -45,10 +45,10 @@ const Room: FC<{room: any}> = props => {
       <View row marginT-6>
         <View flexG>
           {props.room.players.map((player: any) => (
-            <>
+            <View key={player._id}>
               <Player key={player._id} player={player} />
               <View marginB-6 />
-            </>
+            </View>
           ))}
         </View>
         <View flexG>
