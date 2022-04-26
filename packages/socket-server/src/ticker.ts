@@ -39,7 +39,7 @@ const onFinish = async (io: Server, room: any) => {
     );
     room.players[playerIndex].score += scoreToAdd;
 
-    io.emit(`player:${player._id}:onEvent`, {
+    io.emit(`player:${player._id}:${room._id}:onEvent`, {
       message: `The game is over! You earned ${scoreToAdd} extra points. Well played!`,
     });
   });

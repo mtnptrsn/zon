@@ -323,7 +323,7 @@ export class RoomController {
 
       room.players[playerIndex].score += scoreToAdd;
 
-      io.emit(`player:${player._id}:onEvent`, {
+      io.emit(`player:${player._id}:${room._id}:onEvent`, {
         message: `The host ended the game. You earned ${scoreToAdd} extra points. Well played!`,
       });
     });
@@ -459,7 +459,7 @@ export class RoomController {
     await room.save();
 
     events.forEach((event: any) =>
-      io.emit(`player:${event.to}:onEvent`, event)
+      io.emit(`player:${event.to}:${room._id}:onEvent`, event)
     );
     io.emit(`room:${room._id}:onUpdate`, room);
     callback?.(room);

@@ -12,11 +12,11 @@ const subscribeToEvents = (
 
   useEffect(() => {
     socket!.on(`room:${roomId}:onEvent`, onNewEvent);
-    socket!.on(`player:${playerId}:onEvent`, onNewEvent);
+    socket!.on(`player:${playerId}:${roomId}:onEvent`, onNewEvent);
 
     return () => {
       socket!.off(`room:${roomId}:onEvent`, onNewEvent);
-      socket!.off(`player:${playerId}:onEvent`, onNewEvent);
+      socket!.off(`player:${playerId}:${roomId}:onEvent`, onNewEvent);
     };
   }, deps || []);
 
