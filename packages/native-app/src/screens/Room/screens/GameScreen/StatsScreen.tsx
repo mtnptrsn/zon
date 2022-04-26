@@ -102,7 +102,9 @@ const StatsScreen: FC<IStatsScreenProps> = props => {
       .sort((a: any, b: any) => b.score - a.score)
       .map((player: any) => {
         const playerPositions = (props.room.playerPositions || []).filter(
-          (pp: any) => pp.playerId === player._id,
+          (pp: any) =>
+            pp.playerId === player._id &&
+            Boolean(pp.isGhost) === Boolean(player.isGhost),
         );
         const isCurrentPlayer = player._id === getUniqueId && !player.isGhost;
         const distance = getDistanceTravelled(

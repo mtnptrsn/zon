@@ -46,13 +46,22 @@ const onFinish = async (io: Server, room: any) => {
 
   room.status = "FINISHED";
   const playerPositions = await PlayerPositionModel.find({
-    $or: [{ roomId: room._id }, { roomId: room.challengeRoom?._id }],
+    roomId: room._id,
+  });
+  const ghostPlayerPosition = await PlayerPositionModel.find({
+    roomId: room.challengeRoom?._id,
   });
   await room.save();
 
   io.emit(`room:${room._id}:onUpdate`, {
     ...room.toObject(),
-    playerPositions: playerPositions,
+    playerPositions: [
+      ...playerPositions,
+      ...(ghostPlayerPosition || []).map((pp: any) => ({
+        ...pp.toObject(),
+        isGhost: true,
+      })),
+    ],
   });
 
   if (process.env.LOGS) console.timeEnd("ticker:onFinish");

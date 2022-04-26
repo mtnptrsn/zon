@@ -332,11 +332,21 @@ export class RoomController {
     room.status = "FINISHED";
     await room.save();
     const playerPositions = await PlayerPositionModel.find({
-      $or: [{ roomId: room._id }, { roomId: room.challengeRoom?._id }],
+      roomId: room._id,
+    });
+
+    const ghostPlayerPosition = await PlayerPositionModel.find({
+      roomId: room.challengeRoom?._id,
     });
     io.emit(`room:${room._id}:onUpdate`, {
       ...room.toObject(),
-      playerPositions,
+      playerPositions: [
+        ...playerPositions,
+        ...(ghostPlayerPosition || []).map((pp: any) => ({
+          ...pp.toObject(),
+          isGhost: true,
+        })),
+      ],
     });
     callback?.(room);
   };
