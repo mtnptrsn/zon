@@ -42,7 +42,7 @@
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Orient will use your location when playing.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>8</string>
+	<string>9</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Feather.ttf</string>
