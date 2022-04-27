@@ -6,7 +6,7 @@ import {add} from 'date-fns';
 import differenceInMilliseconds from 'date-fns/differenceInMilliseconds';
 import React, {FC, useEffect, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
-import {ENV} from 'react-native-dotenv';
+import {MAP_TILES_TOKEN} from 'react-native-dotenv';
 import {useTheme} from 'react-native-elements';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 // @ts-ignore
@@ -21,7 +21,7 @@ import {getPointRadius} from '../../utils/map';
 import TimeLeft from '../Room/components/TimeLeft';
 import {Coordinate, IPoint} from '../Room/types';
 
-const minZoomLevel = 13;
+const minZoomLevel = 0;
 const maxZoomLevel = 19;
 
 const getPointColor = (point: any, time: Date, players: any[]) => {
@@ -230,6 +230,7 @@ const ReplayScreen: FC = () => {
   return (
     <View style={styles.container}>
       <MapBoxGL.MapView
+        styleURL={`https://api.maptiler.com/maps/2859be49-5e41-4173-9bfe-9fa85ea4bb1d/style.json?key=${MAP_TILES_TOKEN}`}
         logoEnabled={false}
         style={{flex: 1}}
         pitchEnabled={false}
