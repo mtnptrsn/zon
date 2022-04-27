@@ -200,7 +200,13 @@ const MapScreen: FC<IMapScreenProps> = props => {
           followUserLocation
           minZoomLevel={minZoomLevel}
           maxZoomLevel={maxZoomLevel}
-          zoomLevel={14}
+          defaultSettings={{
+            zoomLevel: 14,
+            centerCoordinate: [
+              props.position.coords.longitude,
+              props.position.coords.latitude,
+            ],
+          }}
           followZoomLevel={14}
           animationDuration={0}
         />
