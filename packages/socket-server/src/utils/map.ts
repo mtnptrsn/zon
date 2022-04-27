@@ -7,7 +7,7 @@ export const generateMap = (
   exlusionCoordinates: [number, number][]
 ): [number, number][] => {
   const margin = gameConfig.hitbox.point * 2 + 80;
-  const amountOfPoints = Math.ceil((Math.PI * Math.pow(radius, 2)) / 130000);
+  const amountOfPoints = Math.ceil(Math.PI * Math.pow(radius / 1000, 2) * 7.5);
 
   let points: [number, number][] = [];
 
