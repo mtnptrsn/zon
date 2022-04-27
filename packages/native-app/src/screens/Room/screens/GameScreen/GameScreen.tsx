@@ -20,7 +20,7 @@ import StatsScreen from './StatsScreen';
 
 const speakP = (message: string) => {
   return new Promise(resolve => {
-    speak(message, {onDone: () => resolve(true)});
+    speak(message, {onDone: () => resolve(true), language: 'en'});
   });
 };
 

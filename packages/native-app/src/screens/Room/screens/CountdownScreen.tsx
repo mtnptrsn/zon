@@ -27,7 +27,7 @@ const CountdownScreen: FC = () => {
   }, 1000);
 
   useEffect(() => {
-    speak(text);
+    speak(text, {language: 'en'});
   }, [text]);
 
   return (
