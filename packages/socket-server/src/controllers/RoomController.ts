@@ -1,13 +1,13 @@
-import { IController } from "../types/controller";
-import { RoomModel } from "../models/RoomModel";
+import { add, differenceInMilliseconds } from "date-fns";
 import { getDistance } from "geolib";
-import { getRandomPlayerColor } from "../utils/color";
-import { add, differenceInMilliseconds, isValid } from "date-fns";
-import { generateMap } from "../utils/map";
-import { PlayerPositionModel } from "../models/PlayerPositionModel";
 import { Document, isValidObjectId } from "mongoose";
-import { getStreetCoordinates } from "../utils/osm";
+import shortId from "shortid";
 import { gameConfig } from "../config/game";
+import { PlayerPositionModel } from "../models/PlayerPositionModel";
+import { RoomModel } from "../models/RoomModel";
+import { IController } from "../types/controller";
+import { getRandomPlayerColor } from "../utils/color";
+import { getMap } from "./generateMap";
 
 export namespace RoomController {
   export interface ICreate {
@@ -15,6 +15,7 @@ export namespace RoomController {
       id: string;
       name: string;
     };
+    challengeRoomId?: any;
   }
   export interface IJoin {
     roomId: string;
@@ -27,13 +28,17 @@ export namespace RoomController {
   export interface IGet {
     roomId: string;
   }
+
+  export interface IGetMyRooms {
+    playerId: string;
+    status: string;
+  }
   export interface ILeave {
     userId: string;
     roomId: string;
   }
   export interface IStart {
     roomId: string;
-    hostLocation: [number, number];
     duration: number;
     radius: number;
     control: boolean;
@@ -45,6 +50,12 @@ export namespace RoomController {
   }
 
   export interface IPositionUpdate {
+    roomId: string;
+    playerId: string;
+    coordinate: [number, number];
+  }
+
+  export interface IPositionLobbyUpdate {
     roomId: string;
     playerId: string;
     coordinate: [number, number];
@@ -75,45 +86,24 @@ const checkPointCollected = (
   point: any,
   player: any,
   playerCoordinate: [number, number],
-  hitbox: number,
-  flags: string[]
+  hitbox: number
 ) => {
-  const isControl = flags.includes("CONTROL");
-  const [longitude, latitude] = point.location.coordinates;
-  const distance = getDistance(
-    { lng: longitude, lat: latitude },
-    { lng: playerCoordinate[0], lat: playerCoordinate[1] }
-  );
+  const lastCapture = point.captures?.[point.captures.length - 1];
+  const distance = getDistance(point.location.coordinates, playerCoordinate);
   const isWithinHitbox = distance < hitbox;
   const timeSinceCollected = differenceInMilliseconds(
     new Date(),
-    new Date(point.collectedAt)
+    new Date(lastCapture?.createdAt)
   );
 
   if (!isWithinHitbox) return false;
-  if (point.collectedBy?._id === player._id) return false;
 
-  // TODO: Refactor this
-  if (!isControl) {
-    if (!player.hasTakenFirstPoint && point.belongsTo?.id !== player._id)
-      return false;
-    if (Boolean(point.belongsTo) && point.belongsTo?.id !== player._id)
-      return false;
-    if (Boolean(point.collectedAt)) return false;
-  }
-
-  if (isControl) {
-    if (!player.hasTakenFirstPoint && point.belongsTo?.id !== player._id)
-      return false;
-    if (
-      point.belongsTo?.id !== player._id &&
-      Boolean(point.belongsTo) &&
-      !Boolean(point.collectedBy)
-    )
-      return false;
-    if (Boolean(point.collectedAt) && timeSinceCollected < 1000 * 60 * 3)
-      return false;
-  }
+  if (lastCapture?.playerId === player._id) return false;
+  if (
+    Boolean(lastCapture?.createdAt) &&
+    timeSinceCollected < gameConfig.durations.zoneLockedAfterCapture
+  )
+    return false;
 
   return true;
 };
@@ -123,6 +113,14 @@ export class RoomController {
     data,
     callback
   ) => {
+    let challengeRoom = null;
+
+    if (data.challengeRoomId) {
+      challengeRoom = await RoomModel.findOne({
+        shortId: data.challengeRoomId,
+      });
+    }
+
     const room = new RoomModel({
       status: "ARRANGING",
       players: [
@@ -133,6 +131,7 @@ export class RoomController {
           color: getRandomPlayerColor([]),
         },
       ],
+      challengeRoom,
     });
     await room.save();
     callback?.(room);
@@ -144,9 +143,10 @@ export class RoomController {
     socket,
     io
   ) => {
-    if (!isValidObjectId(data.roomId)) return callback?.(null);
+    if (!shortId.isValid(data.roomId)) return callback?.(null);
 
-    const room = await RoomModel.findById(data.roomId);
+    const room = await RoomModel.findOne({ shortId: data.roomId });
+
     const takenColors = room.players.map((player: any) => player.color);
 
     room.players = [
@@ -188,15 +188,33 @@ export class RoomController {
   static get: IController<RoomController.IGet> = async (data, callback) => {
     if (!isValidObjectId(data.roomId)) return callback?.(null);
 
-    const room: Document<any> = await RoomModel.findById(data.roomId);
+    const room = await RoomModel.findById(data.roomId);
     if (!room) return callback?.(null);
     const playerPositions = await PlayerPositionModel.find({
-      roomId: data.roomId,
+      $or: [{ roomId: room._id }, { roomId: room.challengeRoom?._id }],
     });
     callback?.({
       ...room.toObject(),
       playerPositions,
     });
+  };
+
+  static getMyRooms: IController<RoomController.IGetMyRooms> = async (
+    data,
+    callback
+  ) => {
+    const rooms = await RoomModel.find({
+      players: {
+        $elemMatch: {
+          _id: data.playerId,
+        },
+      },
+      status: data.status,
+    })
+      .sort({ createdAt: -1 })
+      .limit(10);
+
+    callback?.(rooms);
   };
 
   static start: IController<RoomController.IStart> = async (
@@ -208,90 +226,52 @@ export class RoomController {
     if (process.env.LOGS) console.time("RoomController:start");
     const room = await RoomModel.findById(data.roomId);
 
-    room.status = "COUNTDOWN";
-    if (data.control) room.flags = ["CONTROL"];
-    if (data.hardmode) room.flags = [...room.flags, "HARDMODE"];
-
-    const streetCoordinates = await getStreetCoordinates(
-      data.hostLocation,
-      data.radius
+    // TODO: Add error handling here, if player location isn't set
+    const playerLocations = room.players.map(
+      (player: any) => player.startLocation.coordinates
     );
 
-    const points = generateMap(shuffle(streetCoordinates!), data.radius, [
-      data.hostLocation,
-    ]);
+    // TODO: Add error handling
+    // if (playerLocations[0] === 0) return callback?.(null);
 
-    const longestDistancePoint = points.reduce(
-      (acc: number, coordinate: [number, number]) => {
-        const distance = getDistance(
-          { longitude: coordinate[0], latitude: coordinate[1] },
-          { longitude: data.hostLocation[0], latitude: data.hostLocation[1] }
-        );
-        if (distance > acc) return distance;
-        return acc;
-      },
-      0
-    );
+    let homes: [number, number][] = [playerLocations[0]];
 
-    const map = points.map((coordinate) => {
-      const distance = getDistance(
-        { longitude: data.hostLocation[0], latitude: data.hostLocation[1] },
-        { longitude: coordinate[0], latitude: coordinate[1] }
+    playerLocations.slice(1).forEach((playerLocation: [number, number]) => {
+      const closestHome = homes.reduce(
+        (acc, current) => {
+          const previousDistance = acc[1];
+          const currentDistance = getDistance(playerLocation, current);
+          if (currentDistance < previousDistance)
+            return [current, currentDistance];
+          return acc;
+        },
+        [homes[0], getDistance(playerLocation, homes[0])]
       );
+      if (closestHome[1] > data.radius * 2) homes = [...homes, playerLocation];
+    });
 
-      // TODO: Refactor
-      // TODO: Improve this
-      const max = 3;
-      const dp = distance / longestDistancePoint;
-      const randAdd = Math.pow(Math.random(), 2) * dp * max;
-      const weight = Math.max(1, Math.floor(dp * max + randAdd));
+    room.status = "COUNTDOWN";
+    if (data.hardmode) room.flags.set("HARDMODE", true);
 
+    const map = await getMap(homes, data.radius);
+    room.map.points = map;
+    room.map.radius = data.radius;
+    room.map.homes = homes.map((home) => {
       return {
         location: {
           type: "Point",
-          coordinates: coordinate,
+          coordinates: home,
         },
-        weight,
-        belongsTo: null,
       };
     });
 
-    const pointsInDistanceOrder = points.sort((a, b) => {
-      const bDistance = getDistance(
-        { lng: b[0], lat: b[1] },
-        { lng: data.hostLocation[0], lat: data.hostLocation[1] }
-      );
-      const aDistance = getDistance(
-        { lng: a[0], lat: a[1] },
-        { lng: data.hostLocation[0], lat: data.hostLocation[1] }
-      );
-      return aDistance - bDistance;
-    });
-
-    shuffle(room.players).forEach((player: any, index: number) => {
-      const mapIndex = map.findIndex(
-        (point) =>
-          pointsInDistanceOrder[index].join("") ===
-          point.location.coordinates.join("")
-      );
-      map[mapIndex].belongsTo = player;
-    });
-    room.map.points = map;
-    room.map.start = {
-      location: {
-        type: "Point",
-        coordinates: data.hostLocation,
-      },
-    };
     room.startedAt = add(new Date(), {
-      seconds: gameConfig.durations.start,
-    });
-    room.scoreDistributedAt = add(new Date(), {
-      seconds: gameConfig.durations.start,
+      seconds: gameConfig.durations.start / 1000,
     });
     room.finishedAt = add(new Date(), {
-      seconds: data.duration / 1000 + gameConfig.durations.start,
+      seconds: (data.duration + gameConfig.durations.start) / 1000,
     });
+    room.duration = data.duration;
     await room.save();
     io.emit(`room:${room._id}:onUpdate`, room);
     callback?.(room);
@@ -305,19 +285,68 @@ export class RoomController {
     io
   ) => {
     const room = await RoomModel.findById(data.roomId);
+
+    room.players.forEach((player: any, playerIndex: number) => {
+      const playerLocation = player.location.coordinates;
+      const homes = room.map.homes.map(
+        (home: any) => home.location.coordinates
+      );
+
+      const closestHome = homes.reduce(
+        (acc: any, current: any) => {
+          const previousDistance = acc[1];
+          const currentDistance = getDistance(playerLocation, current);
+          if (currentDistance < previousDistance)
+            return [current, currentDistance];
+          return acc;
+        },
+        [homes[0], getDistance(playerLocation, homes[0])]
+      );
+
+      const distanceFromHome = closestHome[1];
+
+      const endPointMultiplier = Math.max(
+        0,
+        1 - distanceFromHome / room.map.radius
+      );
+
+      const points = room.map.points.filter((point: any) => {
+        const lastCapture = point.captures?.[point.captures.length - 1];
+
+        return lastCapture?.playerId === player._id;
+      });
+
+      const scoreToAdd = Math.ceil(
+        points.reduce((acc: number, point: any) => acc + point.weight, 0) *
+          endPointMultiplier
+      );
+
+      room.players[playerIndex].score += scoreToAdd;
+
+      io.emit(`player:${player._id}:${room._id}:onEvent`, {
+        message: `The host ended the game. You earned ${scoreToAdd} extra points. Well played!`,
+      });
+    });
+
     room.finishedAt = new Date();
     room.status = "FINISHED";
     await room.save();
     const playerPositions = await PlayerPositionModel.find({
       roomId: room._id,
     });
+
+    const ghostPlayerPosition = await PlayerPositionModel.find({
+      roomId: room.challengeRoom?._id,
+    });
     io.emit(`room:${room._id}:onUpdate`, {
       ...room.toObject(),
-      playerPositions,
-    });
-    io.emit(`room:${room._id}:onEvent`, {
-      message: `The host ended the game`,
-      type: "info",
+      playerPositions: [
+        ...playerPositions,
+        ...(ghostPlayerPosition || []).map((pp: any) => ({
+          ...pp.toObject(),
+          isGhost: true,
+        })),
+      ],
     });
     callback?.(room);
   };
@@ -328,6 +357,7 @@ export class RoomController {
     socket,
     io
   ) => {
+    // rework this?
     PlayerPositionModel.create({
       roomId: data.roomId,
       playerId: data.playerId,
@@ -337,36 +367,44 @@ export class RoomController {
       },
     });
 
-    let didUpdate = false;
-    // TODO: Add support for multiple events
-    let event = null;
-    // How will this work when there are multiple clients calling this simultaneously?
-    // TODO: Figure this out.
+    let events: any[] = [];
     const room = await RoomModel.findById(data.roomId);
     const playerIndex = room.players.findIndex(
       (player: any) => player._id === data.playerId
     );
     const player = room.players[playerIndex];
-    const isControl = room.flags.includes("CONTROL");
 
-    const playerIsWithinHome =
-      getDistance(
-        { lng: data.coordinate[0], lat: data.coordinate[1] },
-        {
-          lng: room.map.start.location.coordinates[0],
-          lat: room.map.start.location.coordinates[1],
-        }
-      ) < gameConfig.hitbox.home;
+    room.players[playerIndex].location = {
+      type: "Point",
+      coordinates: data.coordinate,
+    };
+
+    const playerIsWithinHome = room.map.homes.some((home: any) => {
+      return (
+        getDistance(data.coordinate, home.location.coordinates) <
+        gameConfig.hitbox.home
+      );
+    });
+
     if (playerIsWithinHome !== player.isWithinHome) {
       room.players[playerIndex].isWithinHome = playerIsWithinHome;
-      if (playerIsWithinHome)
-        event = {
-          message: `{player} arrived back home`,
-          type: "info-player",
-          player,
-          icon: "home",
-        };
-      didUpdate = true;
+      if (playerIsWithinHome) {
+        events = [
+          ...events,
+          ...room.players.map((_player: any) => {
+            const isCurrentPlayer = _player._id === player._id;
+
+            return {
+              to: _player._id,
+              message: `${
+                isCurrentPlayer ? "You" : player.name
+              } arrived back home.`,
+              type: "info",
+              vibrate: isCurrentPlayer ? "long" : "short",
+            };
+          }),
+        ];
+      }
     }
     room.map.points.forEach((point: any, index: number) => {
       if (
@@ -374,29 +412,81 @@ export class RoomController {
           point,
           player,
           data.coordinate,
-          gameConfig.hitbox.point,
-          room.flags
+          gameConfig.hitbox.point
         )
       )
         return;
-      if (!player.hasTakenFirstPoint)
-        room.players[playerIndex].hasTakenFirstPoint = true;
-      didUpdate = true;
-      const previousCaptor = point.collectedBy;
-      point.collectedBy = player;
-      point.collectedAt = new Date();
-      if (!isControl) room.players[playerIndex].score += point.weight;
-      event = {
-        victim: previousCaptor,
-        player: player,
-        type: "capture",
-        mode: isControl ? "CONTROL" : "NORMAL",
-        weight: point.weight,
-      };
+
+      const previousOwnerId =
+        point.captures?.[point.captures.length - 1]?.playerId;
+      const previousOwner = room.players.find(
+        (player: any) => player._id === previousOwnerId
+      );
+
+      point.captures = [
+        ...point.captures,
+        {
+          playerId: player._id,
+        },
+      ];
+
+      room.players[playerIndex].score += point.weight;
+
+      events = [
+        ...events,
+        ...room.players.map((_player: any) => {
+          const isCurrentPlayer = _player._id === player._id;
+          const isPreviousOwner = _player._id === previousOwner?._id;
+
+          const previous = isPreviousOwner ? "you" : previousOwner?.name;
+          const current = isCurrentPlayer ? "You" : player.name;
+
+          const hasHave = isCurrentPlayer ? "have" : "has";
+
+          let message = `${current} captured a zone worth ${point.weight} ${
+            point.weight > 1 ? "points" : "point"
+          } and now ${hasHave} a total of ${player.score}.`;
+
+          if (previousOwner)
+            message = `${current} stole a zone from ${previous} worth ${
+              point.weight
+            } ${
+              point.weight > 1 ? "points" : "point"
+            } and now ${hasHave} a total of ${player.score}.`;
+
+          return {
+            to: _player._id,
+            message,
+            type: "capture",
+            player,
+            sound: isCurrentPlayer ? "success" : "alert",
+            vibrate: isCurrentPlayer ? "long" : "short",
+            zone: point,
+          };
+        }),
+      ];
     });
     await room.save();
-    if (event) io.emit(`room:${room._id}:onEvent`, event);
-    if (didUpdate) io.emit(`room:${room._id}:onUpdate`, room);
+
+    events.forEach((event: any) =>
+      io.emit(`player:${event.to}:${room._id}:onEvent`, event)
+    );
+    io.emit(`room:${room._id}:onUpdate`, room);
     callback?.(room);
   };
+
+  static positionUpdateLobby: IController<RoomController.IPositionLobbyUpdate> =
+    async (data, callback, socket, io) => {
+      const room = await RoomModel.findById(data.roomId);
+      const playerIndex = room.players.findIndex(
+        (player: any) => player._id === data.playerId
+      );
+      room.players[playerIndex].startLocation = {
+        type: "Point",
+        coordinates: data.coordinate,
+      };
+      await room.save();
+      io.emit(`room:${room._id}:onUpdate`, room);
+      callback?.(room);
+    };
 }

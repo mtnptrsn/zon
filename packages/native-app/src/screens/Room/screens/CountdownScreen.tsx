@@ -7,6 +7,7 @@ import {GeolocationResponse} from '@react-native-community/geolocation';
 import {vibrationDurations} from '../../../utils/vibration';
 import {gameConfig} from '../../../config/game';
 import {View, Text} from 'react-native-ui-lib';
+import {speak} from 'expo-speech';
 
 const useForceUpdate = () => {
   const [_, setValue] = useState(0); // integer state
@@ -14,8 +15,10 @@ const useForceUpdate = () => {
 };
 
 const CountdownScreen: FC = () => {
-  const [timeLeft, setTime] = useState(gameConfig.durations.start);
+  const [timeLeft, setTime] = useState(gameConfig.durations.start / 1000);
   useEffect(() => Vibration.vibrate(vibrationDurations.short), []);
+
+  const text = String(timeLeft || 'Starting');
 
   const forceUpdate = useForceUpdate();
   useInterval(() => {
@@ -23,10 +26,14 @@ const CountdownScreen: FC = () => {
     setTime(Math.max(0, timeLeft - 1));
   }, 1000);
 
+  useEffect(() => {
+    speak(text, {language: 'en'});
+  }, [text]);
+
   return (
     <View flex center>
       <Text primary textColor text20>
-        {timeLeft || 'Starting'}
+        {text}
       </Text>
     </View>
   );

@@ -5,8 +5,6 @@ import {View, Text, Colors} from 'react-native-ui-lib';
 import {speak} from 'expo-speech';
 import Sound from 'react-native-sound';
 
-const infoSound = new Sound(require('../../../assets/sounds/info.mp3'));
-
 interface INotificationInfoProps {
   message: string;
   color?: string;
@@ -23,18 +21,17 @@ const styles = StyleSheet.create({
 });
 
 const NotificationInfo: FC<INotificationInfoProps> = props => {
-  useEffect(() => {
-    infoSound.play();
-    speak(props.message);
-  }, []);
-
   return (
     <View backgroundColor="white" centerV br10 row style={styles.container}>
-      <View padding-10 backgroundColor={props.color || Colors.primary}>
+      <View
+        height={'100%'}
+        padding-10
+        backgroundColor={props.color || Colors.primary}
+        center>
         <Feather color="white" size={30} name={props.icon || 'info'} />
       </View>
 
-      <Text marginL-16 text65L>
+      <Text marginH-16 marginV-8 text65L style={{flex: 1}}>
         {props.message}
       </Text>
     </View>

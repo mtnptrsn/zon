@@ -3,7 +3,9 @@ import {getDistance} from 'geolib';
 import React, {FC} from 'react';
 import {getUniqueId} from 'react-native-device-info';
 import {IPoint} from '../../types';
-import {View, Text, Button} from 'react-native-ui-lib';
+import {View, Text, Button, Colors} from 'react-native-ui-lib';
+import {add} from 'date-fns';
+import TinyColor from 'tinycolor2';
 
 interface IStatsScreenProps {
   room: any;
@@ -51,28 +53,68 @@ const StatsScreen: FC<IStatsScreenProps> = props => {
   );
 
   const renderPlayers = () => {
-    return props.room.players
+    const ghosts = props.room.challengeRoom?.players?.map?.((player: any) => {
+      const elapsedTime = differenceInMilliseconds(
+        new Date(),
+        new Date(props.room.startedAt),
+      );
+
+      const challengeRoomDate = add(
+        new Date(props.room.challengeRoom.startedAt),
+        {
+          seconds: elapsedTime / 1000,
+        },
+      );
+      const playerScore =
+        props.room.status === 'FINISHED'
+          ? player.score
+          : props.room.challengeRoom.map.points.reduce(
+              (acc: any, point: any) => {
+                if (point.captures.length === 0) return acc;
+                const captures = point.captures.filter(
+                  (capture: any) =>
+                    new Date(capture.createdAt) < challengeRoomDate,
+                );
+
+                const scoreFromAllCaptures = captures.reduce(
+                  (acc: number, capture: any) => {
+                    if (capture.playerId === player._id)
+                      return acc + point.weight;
+                    return acc;
+                  },
+                  0,
+                );
+
+                return acc + scoreFromAllCaptures;
+              },
+              0,
+            );
+
+      return {
+        ...player,
+        score: playerScore,
+        name: `Ghost ${player.name}`,
+        isGhost: true,
+      };
+    });
+
+    return [...(ghosts || []), ...props.room.players]
       .sort((a: any, b: any) => b.score - a.score)
       .map((player: any) => {
         const playerPositions = (props.room.playerPositions || []).filter(
-          (pp: any) => pp.playerId === player._id,
+          (pp: any) =>
+            pp.playerId === player._id &&
+            Boolean(pp.isGhost) === Boolean(player.isGhost),
         );
-        const isCurrentPlayer = player._id === getUniqueId();
+        const isCurrentPlayer = player._id === getUniqueId && !player.isGhost;
         const distance = getDistanceTravelled(
           playerPositions.map((pp: any) => pp.location.coordinates),
         );
         const pace = getPace(duration, distance);
-        const scorePerMinute = props.room.map.points.reduce(
-          (acc: number, point: any) => {
-            return point.collectedBy?._id === player._id
-              ? acc + point.weight
-              : acc;
-          },
-          0,
-        );
+        const key = `${player._id}${player.isGhost ? '_ghost' : ''}`;
 
         return (
-          <View key={player._id} marginB-6>
+          <View key={key} marginB-8>
             <View row centerV>
               <View
                 center
@@ -93,16 +135,9 @@ const StatsScreen: FC<IStatsScreenProps> = props => {
               </View>
               <Text text65L marginL-8>
                 {isCurrentPlayer ? 'You' : player.name}
-                {!player.isWithinHome && props.room.status === 'FINISHED'
-                  ? ' (disqualified)'
-                  : ''}
               </Text>
             </View>
             <View marginL-46 style={{marginTop: -3}}>
-              {Boolean(
-                props.room.flags.includes('CONTROL') &&
-                  props.room.status === 'PLAYING',
-              ) && <Text grey30>Score/min: {scorePerMinute}</Text>}
               {props.room.status === 'FINISHED' && (
                 <>
                   <Text grey30>

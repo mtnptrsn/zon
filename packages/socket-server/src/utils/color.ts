@@ -16,7 +16,5 @@ export const getRandomPlayerColor = (exclude: string[]) => {
   );
   const color = availableColors[getRandomNumber(0, availableColors.length - 1)];
 
-  console.log({ color });
-
   return color;
 };

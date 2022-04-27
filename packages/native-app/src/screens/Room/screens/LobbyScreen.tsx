@@ -1,21 +1,19 @@
+import {GeolocationResponse} from '@react-native-community/geolocation';
 import {StackActions, useNavigation} from '@react-navigation/core';
-import React, {FC, useContext, useState} from 'react';
+import React, {FC, useContext, useEffect, useState} from 'react';
 import {Alert} from 'react-native';
 import {getUniqueId} from 'react-native-device-info';
 import {
-  Text,
-  Slider,
-  View,
   Button,
-  LoaderScreen,
-  Picker,
-  Colors,
   Checkbox,
+  KeyboardAwareScrollView,
+  LoaderScreen,
+  Slider,
+  Text,
+  View,
 } from 'react-native-ui-lib';
+import useStoredState from '../../../hooks/useAsyncStorage';
 import {SocketContext} from '../../../socket/context';
-import {GeolocationResponse} from '@react-native-community/geolocation';
-import analytics from '@react-native-firebase/analytics';
-import {ENV} from 'react-native-dotenv';
 
 interface ILobbyScreenProps {
   room: any;
@@ -24,23 +22,41 @@ interface ILobbyScreenProps {
 
 const LobbyScreen: FC<ILobbyScreenProps> = props => {
   const [isLoading, setIsLoading] = useState(false);
-  const [gameMode, setGameMode] = useState('normal');
-  const [hardmode, setHardMode] = useState(false);
+  const [hardmode, setHardMode] = useState(
+    props.room.challengeRoom?.flags?.HARDMODE || false,
+  );
+  const [tutorial, setTutorial] = useStoredState('tutorial', true);
   const navigation = useNavigation();
   const socket = useContext(SocketContext);
   const userId = getUniqueId();
   const roomHost = props.room.players.find((player: any) => player.isHost);
   const isHost = userId === roomHost._id;
+  const player = props.room.players.find(
+    (player: any) => player._id === userId,
+  );
   const [settings, setSettings] = useState({
-    duration: 35,
-    radius: 1500,
+    duration: props.room.challengeRoom?.duration / 60 / 1000 || 30,
+    radius: props.room.challengeRoom?.map?.radius || 1500,
   });
   const hasAccuratePositon =
     props.position.coords.latitude !== 0 &&
     props.position.coords.longitude !== 0;
 
+  useEffect(() => {
+    if (hasAccuratePositon) {
+      socket!.emit('user:updatePosition:lobby', {
+        roomId: props.room._id,
+        playerId: player._id,
+        coordinate: [
+          props.position.coords.longitude,
+          props.position.coords.latitude,
+        ],
+      });
+    }
+  }, [props.position.coords]);
+
   const onPressInvite = () => {
-    navigation.navigate('ShowQR', {data: props.room._id, title: 'Invite'});
+    navigation.navigate('ShowQR', {data: props.room.shortId, title: 'Invite'});
   };
 
   const onPressLeave = () => {
@@ -57,7 +73,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
     if (!hasAccuratePositon)
       return Alert.alert('Error', `Couldn't get your location.`);
 
-    if (ENV === 'production') analytics().logEvent('start_game');
+    // if (ENV === 'production') analytics().logEvent('start_game');
 
     socket!.emit(
       'room:update:start',
@@ -65,23 +81,29 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
         roomId: props.room._id,
         duration: 1000 * 60 * settings.duration,
         radius: settings.radius,
-        control: gameMode === 'control',
         hardmode,
-        hostLocation: [
-          props.position.coords.longitude,
-          props.position.coords.latitude,
-        ],
       },
       () => {},
     );
   };
 
   const renderPlayers = () => {
-    return props.room.players.map((player: any) => {
+    const ghosts =
+      props.room.challengeRoom?.players?.map((player: any) => {
+        return {
+          ...player,
+          name: `Ghost ${player.name}`,
+          isGhost: true,
+        };
+      }) || [];
+
+    return [...props.room.players, ...ghosts].map((player: any) => {
       const isCurrentPlayer = player._id === getUniqueId();
 
+      const key = `${player._id}-${player.isGhost ? '_ghost' : ''}`;
+
       return (
-        <View key={player._id} marginB-6>
+        <View key={key} marginB-6>
           <View row centerV>
             <View
               center
@@ -101,7 +123,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
               </Text>
             </View>
             <Text text70L marginL-8>
-              {isCurrentPlayer ? 'You' : player.name}
+              {isCurrentPlayer && !player.isGhost ? 'You' : player.name}
             </Text>
           </View>
         </View>
@@ -113,93 +135,92 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
   if (isLoading) return <LoaderScreen message="Creating map" />;
 
   return (
-    <View padding-12 flex>
-      <View flex>
-        <Text text50L>Players</Text>
-        <View marginB-24 marginT-12>
-          {renderPlayers()}
+    <KeyboardAwareScrollView>
+      <View padding-12>
+        <View>
+          <Text text60L>Players</Text>
+          <View marginT-6 height={1} width="100%" backgroundColor="#e3e3e3" />
+          <View marginT-12>{renderPlayers()}</View>
+
+          <Text text60L marginT-16>
+            Settings
+          </Text>
+          <View marginT-6 height={1} width="100%" backgroundColor="#e3e3e3" />
+
+          {isHost && (
+            <View>
+              <Text text80 marginT-12>
+                Duration
+              </Text>
+              <Slider
+                disabled={Boolean(props.room.challengeRoom)}
+                value={settings.duration}
+                onValueChange={(value: any) => {
+                  setSettings(settings => ({...settings, duration: value}));
+                }}
+                maximumValue={60}
+                minimumValue={1}
+                step={1}
+              />
+              <Text grey30>{settings.duration} minutes</Text>
+
+              <Text text80 marginT-12>
+                Map Size
+              </Text>
+              <Slider
+                disabled={Boolean(props.room.challengeRoom)}
+                step={1}
+                minimumValue={1000}
+                maximumValue={2000}
+                value={settings.radius}
+                onValueChange={(value: any) => {
+                  setSettings(settings => ({...settings, radius: value}));
+                }}
+              />
+              <Text grey30>{settings.radius} meters in radius</Text>
+
+              <View marginT-16 />
+
+              <Checkbox
+                disabled={Boolean(props.room.challengeRoom)}
+                value={hardmode}
+                onValueChange={setHardMode}
+                label={'Hardmode'}
+              />
+              <Text grey30 marginT-6>
+                In hardmode you can't see your current position. Only suitable
+                for experienced players.
+              </Text>
+            </View>
+          )}
+
+          <View marginT-12 />
+
+          <Checkbox
+            value={tutorial}
+            onValueChange={setTutorial}
+            label={'Tutorial'}
+          />
+          <Text grey30 marginT-6>
+            The rules will be explained while you play. Make sure to have sound
+            turned on for better convinience.
+          </Text>
         </View>
 
-        {isHost && (
-          <View>
-            <Text text50L>Settings</Text>
-            <Text text70 marginT-12>
-              Duration
-            </Text>
-            <Slider
-              value={settings.duration}
-              onValueChange={(value: any) => {
-                setSettings(settings => ({...settings, duration: value}));
-              }}
-              maximumValue={60}
-              minimumValue={10}
-              step={1}
-            />
-            <Text grey30>{settings.duration} minutes</Text>
-
-            <Text text70 marginT-12>
-              Map Size
-            </Text>
-            <Slider
-              step={1}
-              minimumValue={1000}
-              maximumValue={2000}
-              value={settings.radius}
-              onValueChange={(value: any) => {
-                setSettings(settings => ({...settings, radius: value}));
-              }}
-            />
-            <Text grey30>{settings.radius} meters in radius</Text>
-
-            <Picker
-              marginT-12
-              placeholder="Game Mode"
-              floatingPlaceholder
-              value={gameMode}
-              enableModalBlur={false}
-              onChange={(item: any) => setGameMode(item.value)}
-              topBarProps={{title: 'Game Modes'}}
-              style={{color: Colors.primary}}>
-              {[
-                {label: 'Normal', value: 'normal'},
-                {label: 'Control', value: 'control'},
-              ].map(gameMode => {
-                return (
-                  <Picker.Item
-                    label={gameMode.label}
-                    key={gameMode.value}
-                    value={gameMode.value}
-                  />
-                );
-              })}
-            </Picker>
-
-            <Checkbox
-              value={hardmode}
-              onValueChange={setHardMode}
-              label={'Hardmode'}
-            />
-            <Text grey30 marginT-12>
-              In hardmode you can't see your current position. Only suitable for
-              experienced players.
-            </Text>
-          </View>
-        )}
+        <View marginT-24>
+          <Button outline onPress={onPressLeave} label="Leave" />
+          <Button marginT-6 outline label="Invite" onPress={onPressInvite} />
+          {isHost && (
+            <Button
+              marginT-6
+              disabled={!hasAccuratePositon}
+              onPress={onPressStart}
+              label="Start"
+              loading={!hasAccuratePositon || isLoading}></Button>
+          )}
+        </View>
       </View>
-
-      <View>
-        <Button outline onPress={onPressLeave} label="Leave" />
-        <Button marginT-6 outline label="Invite" onPress={onPressInvite} />
-        {isHost && (
-          <Button
-            marginT-6
-            disabled={!hasAccuratePositon}
-            onPress={onPressStart}
-            label="Start"
-            loading={!hasAccuratePositon || isLoading}></Button>
-        )}
-      </View>
-    </View>
+    </KeyboardAwareScrollView>
   );
 };
 

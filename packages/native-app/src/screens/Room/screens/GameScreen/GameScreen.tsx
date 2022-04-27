@@ -1,39 +1,53 @@
+import {GeolocationResponse} from '@react-native-community/geolocation';
+import {StackActions, useNavigation} from '@react-navigation/native';
+import {speak} from 'expo-speech';
 import React, {FC, useContext, useEffect, useState} from 'react';
 import {Alert, Vibration} from 'react-native';
-import {SocketContext} from '../../../../socket/context';
 import {getUniqueId} from 'react-native-device-info';
+import Sound from 'react-native-sound';
+import {TabBar, View} from 'react-native-ui-lib';
+import Notification from '../../../../components/Notification/Notification';
+import NotificationInfo from '../../../../components/Notification/NotificationInfo';
+import NotificationScore from '../../../../components/Notification/NotificationScore';
+import useStoredState from '../../../../hooks/useAsyncStorage';
+import {useEventQueue} from '../../../../hooks/useEventQueue';
+import {SocketContext} from '../../../../socket/context';
 import subscribeToEvents from '../../../../socket/subscribeToEvents';
+import {getSpacing} from '../../../../theme/utils';
 import {vibrationDurations} from '../../../../utils/vibration';
-import {GeolocationResponse} from '@react-native-community/geolocation';
 import MapScreen from './MapScreen';
 import StatsScreen from './StatsScreen';
-import {TabBar, View} from 'react-native-ui-lib';
-import {getSpacing} from '../../../../theme/utils';
-import {StackActions, useNavigation} from '@react-navigation/native';
-import Notification from '../../../../components/Notification/Notification';
-import NotificationScore from '../../../../components/Notification/NotificationScore';
-import NotificationInfo from '../../../../components/Notification/NotificationInfo';
-import analytics from '@react-native-firebase/analytics';
-import {ENV} from 'react-native-dotenv';
 
-const translateEventMessage = (
-  translateMap: {[key: string]: string},
-  message: string,
-) => {
-  return Object.entries(translateMap).reduce((acc, [key, value]) => {
-    const keyFound = acc.includes(`{${key}}`);
-    if (keyFound) return acc.replace(`{${key}}`, value);
-    return acc;
-  }, message);
+const speakP = (message: string) => {
+  return new Promise(resolve => {
+    speak(message, {onDone: () => resolve(true), language: 'en'});
+  });
+};
+
+const sounds: any = {
+  success: new Sound(require('../../../../../assets/sounds/success.mp3')),
+  alert: new Sound(require('../../../../../assets/sounds/alert.mp3')),
+  info: new Sound(require('../../../../../assets/sounds/info.mp3')),
 };
 
 interface IGameScreenProps {
   room: any;
   position: GeolocationResponse;
+
+  onPressMap: (coordinate: [number, number]) => void;
 }
+
+const tutorialAnnouncements = [
+  `You captured your first zone. When a zone is captured, it will be locked for one minute. After that, other players can steal it.`,
+  `The further away a zone is from your home, the more points it will give.`,
+  `You earn points by capturing zones, and at the end of the game you also earn points for each zone you own.`,
+  `The closer you are to your home when the game ends, the more points each zone will give.`,
+];
 
 const GameScreen: FC<IGameScreenProps> = props => {
   const [event, setEvent] = useState<any>(null);
+  const [tutorialNotifications, setTutorialNotifications] = useState(0);
+  const [tutorial, _, tutorialHydrated] = useStoredState('tutorial', true);
   const navigation = useNavigation();
   const [activeScreen, setActiveScreen] = useState(0);
   const socket = useContext(SocketContext);
@@ -41,26 +55,76 @@ const GameScreen: FC<IGameScreenProps> = props => {
     (player: any) => player._id === getUniqueId(),
   );
 
-  const onEvent = (event: any) => {
-    const eventBelongsToCurrentPlayer = event.player?._id === getUniqueId();
-    const vibrateDuration = eventBelongsToCurrentPlayer
-      ? vibrationDurations.long
-      : vibrationDurations.short;
-    Vibration.vibrate(vibrateDuration);
+  const notify = (event: any) => {
+    const {payload} = event;
 
-    // TODO: Create queue
+    if (payload.vibrate) {
+      Vibration.vibrate(
+        payload.vibrate === 'long'
+          ? vibrationDurations.long
+          : vibrationDurations.short,
+      );
+    }
+    if (payload.sound && sounds[payload.sound]) sounds[payload.sound].play();
+    if (!payload.sound) sounds.info.play();
+
     setEvent(null);
     setEvent(event);
   };
 
-  subscribeToEvents(props.room._id, onEvent);
+  const onEventEnd = (_event: any) => {
+    setEvent((event: any) => {
+      if (event?.nonce === _event.nonce) {
+        return null;
+      }
+      return event;
+    });
+  };
 
-  useEffect(() => Vibration.vibrate(vibrationDurations.long), []);
+  const addToQueue = useEventQueue(notify, onEventEnd);
+
+  const onEvent = (event: any) => {
+    addToQueue(event, () => speakP(event.message));
+    const isCurrentPlayer = player._id === event.player?._id;
+    const isGhost = event.player?.isGhost;
+
+    if (tutorial && isCurrentPlayer && !isGhost && event.type === 'capture') {
+      const message = tutorialAnnouncements[tutorialNotifications];
+
+      if (message) {
+        addToQueue({message, type: 'info'}, () => speakP(message));
+        setTutorialNotifications(x => x + 1);
+      }
+    }
+  };
+
+  subscribeToEvents(props.room._id, player._id, onEvent, [
+    tutorialNotifications,
+    tutorial,
+  ]);
+
+  useEffect(() => {
+    if (player.score === 0 && tutorial && tutorialHydrated) {
+      const message = 'The game has started. Go capture your first zone!';
+      addToQueue(
+        {
+          message,
+          type: 'info',
+        },
+        () => speakP(message),
+      );
+    }
+  }, [tutorialHydrated]);
+
+  useEffect(() => {
+    Vibration.vibrate(vibrationDurations.long);
+  }, []);
 
   useEffect(() => {
     if (props.room.status !== 'PLAYING') return;
     const {longitude, latitude} = props.position.coords;
     if (longitude === 0 && latitude === 0) return;
+
     socket!.emit(
       'user:updatePosition',
       {
@@ -74,79 +138,25 @@ const GameScreen: FC<IGameScreenProps> = props => {
 
   const renderNotification = () => {
     if (!event) return null;
-    const currentIsPlayer = event?.player?._id === getUniqueId();
-    const currentIsVictim = event?.victim?._id === getUniqueId();
+    const {payload} = event;
 
-    const scoreGrowth = props.room.map.points.reduce(
-      (acc: number, point: any) => {
-        return point.collectedBy?._id === player._id ? acc + point.weight : acc;
-      },
-      0,
-    );
-
-    if (event?.type === 'scoreDistribution' && scoreGrowth > 0) {
+    if (payload.type === 'capture') {
       return (
         <NotificationScore
-          isVictim={false}
-          score={player.score}
-          scoreGrowth={scoreGrowth}
-          color={player.color}
-          message={`You gained ${scoreGrowth} ${
-            scoreGrowth > 1 ? 'points' : 'point'
-          }`}
+          color={payload.player.color}
+          message={payload.message}
+          score={payload.player.score}
+          sound="success"
         />
       );
     }
 
-    if (event.type === 'capture' && event.mode === 'NORMAL') {
-      return (
-        <NotificationScore
-          isVictim={!currentIsPlayer}
-          score={event.player.score}
-          message={`${
-            currentIsPlayer ? 'You' : event.player.name
-          } captured a zone`}
-          color={event.player.color}
-        />
-      );
-    }
-    if (event.type === 'capture' && event.mode === 'CONTROL') {
-      const message = Boolean(event.victim)
-        ? `${currentIsPlayer ? 'You' : event.player.name} stole a zone from ${
-            currentIsVictim ? 'you' : event.victim.name
-          } worth ${event.weight} ${event.weight > 1 ? 'points' : 'point'}`
-        : `${
-            currentIsPlayer ? 'You' : event.player.name
-          } captured a zone worth ${event.weight} ${
-            event.weight > 1 ? 'points' : 'point'
-          }`;
-      return (
-        <NotificationScore
-          isVictim={!currentIsPlayer}
-          scoreGrowth={scoreGrowth}
-          score={event.player.score}
-          message={message}
-          color={event.player.color}
-        />
-      );
-    }
-    if (event.type === 'info-player')
-      return (
-        <NotificationInfo
-          icon={event.icon}
-          message={translateEventMessage(
-            {player: currentIsPlayer ? 'You' : event.player.name},
-            event.message,
-          )}
-        />
-      );
-
-    return <NotificationInfo message={event.message} />;
+    return <NotificationInfo message={payload.message} />;
   };
 
   const onPressLeave = () => {
     const leave = () => {
-      if (ENV === 'production') analytics().logEvent('leave_game');
+      // if (ENV === 'production') analytics().logEvent('leave_game');
       navigation.dispatch(StackActions.popToTop());
     };
     Alert.alert('Confirmation', 'Are you sure you want to leave the game?', [
@@ -158,6 +168,7 @@ const GameScreen: FC<IGameScreenProps> = props => {
   const onPressReplay = () => {
     navigation.navigate('Replay', {
       room: props.room,
+      player,
     });
   };
 
@@ -172,7 +183,12 @@ const GameScreen: FC<IGameScreenProps> = props => {
 
   return (
     <View flex>
-      <MapScreen room={props.room} player={player} position={props.position} />
+      <MapScreen
+        onPressMap={props.onPressMap}
+        room={props.room}
+        player={player}
+        position={props.position}
+      />
       {activeScreen === 1 && (
         <StatsScreen
           player={player}
@@ -194,11 +210,11 @@ const GameScreen: FC<IGameScreenProps> = props => {
           label="Stats"></TabBar.Item>
       </TabBar>
 
-      {Boolean(event) && (
-        <Notification top={getSpacing(activeScreen === 0 ? 5.5 : 1)}>
-          {renderNotification()}
-        </Notification>
-      )}
+      <Notification
+        isVisible={Boolean(event)}
+        top={getSpacing(activeScreen === 0 ? 5.5 : 1)}>
+        {renderNotification()}
+      </Notification>
     </View>
   );
 };

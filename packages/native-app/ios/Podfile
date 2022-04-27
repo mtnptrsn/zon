@@ -2,6 +2,8 @@ require_relative '../node_modules/react-native/scripts/react_native_pods'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 require_relative '../node_modules/react-native-unimodules/cocoapods.rb'
 
+$RNMapboxMapsImpl = 'maplibre' # optional as this is the default
+
 platform :ios, '11.0'
 
 target 'orient' do
@@ -35,12 +37,12 @@ target 'orient' do
   # use_flipper!()
 
   pre_install do |installer|
-    $RNMBGL.pre_install(installer)
+    $RNMapboxMaps.pre_install(installer)
   end
 
   post_install do |installer|
+    $RNMapboxMaps.post_install(installer)
     react_native_post_install(installer)
-    $RNMBGL.post_install(installer)
   end
   
 end

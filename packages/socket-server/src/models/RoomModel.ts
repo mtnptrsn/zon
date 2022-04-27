@@ -1,4 +1,5 @@
 import { model, Schema, Model } from "mongoose";
+import shortId from "shortid";
 
 const PlayerSchema: Schema = new Schema({
   _id: {
@@ -21,48 +22,78 @@ const PlayerSchema: Schema = new Schema({
     type: Boolean,
     default: true,
   },
-  hasTakenFirstPoint: {
-    type: Boolean,
-    default: false,
-  },
   score: {
     type: Number,
     default: 0,
   },
-});
-
-const PointSchema: Schema = new Schema({
   location: {
     type: {
       type: String,
+      default: "Point",
       enum: ["Point"],
-      required: true,
     },
     coordinates: {
       type: [Number],
-      required: true,
+      default: [0, 0],
     },
   },
-  collectedBy: {
-    type: PlayerSchema,
-    defalt: null,
-  },
-  collectedAt: {
-    type: Date,
-    default: null,
-  },
-  weight: {
-    type: Number,
-    default: null,
-  },
-  belongsTo: {
-    type: PlayerSchema,
-    default: null,
+  startLocation: {
+    type: {
+      type: String,
+      default: "Point",
+      enum: ["Point"],
+    },
+    coordinates: {
+      type: [Number],
+      default: () => [0, 0],
+    },
   },
 });
 
+const CaptureSchema: Schema = new Schema(
+  {
+    playerId: {
+      type: String,
+      required: true,
+    },
+    flags: {
+      type: Map,
+      of: { type: Boolean },
+      default: {},
+      required: true,
+    },
+  },
+  { timestamps: true, id: true }
+);
+
+const PointSchema: Schema = new Schema(
+  {
+    location: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        required: true,
+      },
+      coordinates: {
+        type: [Number],
+        required: true,
+      },
+    },
+    captures: [CaptureSchema],
+    weight: {
+      type: Number,
+      default: null,
+    },
+  },
+  { id: true }
+);
+
 const RoomSchema: Schema = new Schema(
   {
+    shortId: {
+      type: String,
+      default: shortId.generate,
+    },
     players: [PlayerSchema],
     status: {
       type: String,
@@ -70,15 +101,17 @@ const RoomSchema: Schema = new Schema(
     },
     map: {
       points: [PointSchema],
-      start: PointSchema,
-    },
-    alerts: {
-      type: [String],
-      default: [],
+      homes: [PointSchema],
+      radius: {
+        type: Number,
+        default: 0,
+      },
     },
     flags: {
-      type: [String],
-      default: [],
+      type: Map,
+      of: { type: Boolean },
+      default: {},
+      required: true,
     },
     finishedAt: {
       type: Date,
@@ -86,9 +119,12 @@ const RoomSchema: Schema = new Schema(
     startedAt: {
       type: Date,
     },
-    scoreDistributedAt: {
-      type: Date,
-      default: null,
+    challengeRoom: {
+      type: this,
+    },
+    duration: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true }
