@@ -10,7 +10,6 @@ import {Colors, View} from 'react-native-ui-lib';
 import TinyColor from 'tinycolor2';
 import {gameConfig} from '../../../../config/game';
 import {getPointRadius} from '../../../../utils/map';
-import HomeIndicator from '../../components/HomeIndicator';
 import Score from '../../components/Score';
 import TimeLeft from '../../components/TimeLeft';
 
@@ -227,7 +226,6 @@ const MapScreen: FC<IMapScreenProps> = props => {
 
       <TimeLeft finishedAt={new Date(props.room.finishedAt)} />
       <Score zoneScore={zoneScore} score={props.player.score} />
-      {props.player.isWithinHome && <HomeIndicator />}
     </View>
   );
 };
