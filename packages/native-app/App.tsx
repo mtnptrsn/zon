@@ -1,4 +1,4 @@
-import MapboxGL from '@react-native-mapbox-gl/maps';
+import MapboxGL from '@rnmapbox/maps';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import React, {FC, useEffect, useState} from 'react';
@@ -22,8 +22,8 @@ import {SocketContext} from './src/socket/context';
 import {requestLocationPermission} from './src/utils/location';
 const clientVersion = packageJson.version;
 
-MapboxGL.setAccessToken(MAPBOX_ACCESS_TOKEN);
-
+// have to set is a empty string otherwise getting "Using Mapview required calling Mapbox.getInstance" on Android
+MapboxGL.setAccessToken('');
 const Stack = createStackNavigator();
 
 const App: FC = () => {

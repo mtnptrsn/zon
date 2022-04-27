@@ -1,5 +1,5 @@
 import React, {FC, useEffect, useState} from 'react';
-import MapBoxGL from '@react-native-mapbox-gl/maps';
+import MapBoxGL from '@rnmapbox/maps';
 import {useNavigation, useRoute} from '@react-navigation/core';
 import {StyleSheet, View} from 'react-native';
 import {Text, Button} from 'react-native-elements';

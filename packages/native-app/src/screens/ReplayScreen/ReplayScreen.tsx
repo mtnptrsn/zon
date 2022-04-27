@@ -1,5 +1,5 @@
 import analytics from '@react-native-firebase/analytics';
-import MapBoxGL from '@react-native-mapbox-gl/maps';
+import MapBoxGL from '@rnmapbox/maps';
 import {useRoute} from '@react-navigation/core';
 import useInterval from '@use-it/interval';
 import {add} from 'date-fns';

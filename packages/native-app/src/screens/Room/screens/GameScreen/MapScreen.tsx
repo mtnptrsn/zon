@@ -1,10 +1,11 @@
 import {GeolocationResponse} from '@react-native-community/geolocation';
-import MapBoxGL from '@react-native-mapbox-gl/maps';
+import MapBoxGL from '@rnmapbox/maps';
 import useInterval from '@use-it/interval';
 import {differenceInMilliseconds} from 'date-fns';
 import {getDistance} from 'geolib';
 import React, {FC, useMemo, useRef, useState} from 'react';
 import {StyleSheet} from 'react-native';
+import {MAP_TILES_TOKEN} from 'react-native-dotenv';
 import {Colors, View} from 'react-native-ui-lib';
 import TinyColor from 'tinycolor2';
 import {gameConfig} from '../../../../config/game';
@@ -86,7 +87,6 @@ const getPointColor = (point: any, players: any[]) => {
 };
 
 const MapScreen: FC<IMapScreenProps> = props => {
-  const cameraRef = useRef(null);
   const isHardMode = 'HARDMODE' in props.room.flags;
   const update = useForceUpdate();
 
@@ -189,6 +189,7 @@ const MapScreen: FC<IMapScreenProps> = props => {
   return (
     <View style={styles.container}>
       <MapBoxGL.MapView
+        styleURL={`https://api.maptiler.com/maps/2859be49-5e41-4173-9bfe-9fa85ea4bb1d/style.json?key=${MAP_TILES_TOKEN}`}
         onPress={e => props.onPressMap(e.geometry.coordinates)}
         style={{flex: 1}}
         logoEnabled={false}
@@ -196,11 +197,11 @@ const MapScreen: FC<IMapScreenProps> = props => {
         rotateEnabled={false}
         scrollEnabled={isHardMode}>
         <MapBoxGL.Camera
-          followUserLocation={!isHardMode}
+          followUserLocation
           minZoomLevel={minZoomLevel}
           maxZoomLevel={maxZoomLevel}
-          ref={cameraRef}
           zoomLevel={14}
+          followZoomLevel={14}
           animationDuration={0}
         />
         <MapBoxGL.ShapeSource shape={points} id="points">

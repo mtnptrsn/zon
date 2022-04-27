@@ -1,4 +1,4 @@
-import MapboxGL from '@react-native-mapbox-gl/maps';
+import MapboxGL from '@rnmapbox/maps';
 import {useRoute} from '@react-navigation/core';
 import React, {FC, useState} from 'react';
 import {Dimensions, ScrollView} from 'react-native';
