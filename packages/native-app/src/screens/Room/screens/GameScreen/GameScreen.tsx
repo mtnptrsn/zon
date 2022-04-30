@@ -38,10 +38,9 @@ interface IGameScreenProps {
 }
 
 const tutorialAnnouncements = [
-  `You captured your first zone. When a zone is captured, it will be locked for one minute. After that, other players can steal it.`,
-  `The further away a zone is from your home, the more points it will give.`,
-  `You earn points by capturing zones, and at the end of the game you also earn points for each zone you own.`,
-  `The closer you are to your home when the game ends, the more points each zone will give.`,
+  `You captured your first zone! A zone is marked with a number which tells you how many points you earn for capturing it. The further away a zone is from the starting zone, the more valuable it tends to be.`,
+  `You can see your total score in the top left corner. The negative number is your current distance penalty. The further away you are from the starting zone when the game ends, the higher the penalty.`,
+  `When you capture a zone it's locked for 3 minutes. After that, it's open for anyone to capture.`,
 ];
 
 const GameScreen: FC<IGameScreenProps> = props => {
@@ -184,6 +183,8 @@ const GameScreen: FC<IGameScreenProps> = props => {
   return (
     <View flex>
       <MapScreen
+        zoomEnabled
+        usePositionAsCenter={false}
         onPressMap={props.onPressMap}
         room={props.room}
         player={player}

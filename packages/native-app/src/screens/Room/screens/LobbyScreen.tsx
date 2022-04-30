@@ -123,7 +123,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
               </Text>
             </View>
             <Text text70L marginL-8>
-              {isCurrentPlayer && !player.isGhost ? 'You' : player.name}
+              {player.name}
             </Text>
           </View>
         </View>
@@ -188,8 +188,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
                 label={'Hardmode'}
               />
               <Text grey30 marginT-6>
-                In hardmode you can't see your current position. Only suitable
-                for experienced players.
+                In hardmode you can't see your current position.
               </Text>
             </View>
           )}
@@ -202,8 +201,8 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
             label={'Tutorial'}
           />
           <Text grey30 marginT-6>
-            The rules will be explained while you play. Make sure to have sound
-            turned on for better convinience.
+            The rules will be explained to you while you play. Recommended for
+            new players.
           </Text>
         </View>
 

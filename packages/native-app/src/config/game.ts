@@ -8,6 +8,6 @@ export const gameConfig = {
   durations: {
     start: ms('5s'),
     promptEnd: ms('5s'),
-    zoneLockedAfterCapture: ms('1m'),
+    zoneLockedAfterCapture: ms('3m'),
   },
 };

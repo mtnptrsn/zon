@@ -106,7 +106,6 @@ const StatsScreen: FC<IStatsScreenProps> = props => {
             pp.playerId === player._id &&
             Boolean(pp.isGhost) === Boolean(player.isGhost),
         );
-        const isCurrentPlayer = player._id === getUniqueId && !player.isGhost;
         const distance = getDistanceTravelled(
           playerPositions.map((pp: any) => pp.location.coordinates),
         );
@@ -134,7 +133,7 @@ const StatsScreen: FC<IStatsScreenProps> = props => {
                 </Text>
               </View>
               <Text text65L marginL-8>
-                {isCurrentPlayer ? 'You' : player.name}
+                {player.name}
               </Text>
             </View>
             <View marginL-46 style={{marginTop: -3}}>

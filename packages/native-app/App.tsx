@@ -1,9 +1,9 @@
 import MapboxGL from '@rnmapbox/maps';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
-import React, {FC, useEffect, useState} from 'react';
+import React, {FC, useEffect, useRef, useState} from 'react';
 import {SafeAreaView} from 'react-native';
-import {MAPBOX_ACCESS_TOKEN, SERVER_URL} from 'react-native-dotenv';
+import {SERVER_URL} from 'react-native-dotenv';
 import {LoaderScreen, View} from 'react-native-ui-lib';
 import {satisfies} from 'semver';
 import {io, Socket} from 'socket.io-client';
@@ -20,6 +20,9 @@ import ShowQRScreen from './src/screens/ShowQR/ShowQRScreen';
 import UpdateScreen from './src/screens/UpdateScreen';
 import {SocketContext} from './src/socket/context';
 import {requestLocationPermission} from './src/utils/location';
+import TutorialScreen from './src/screens/TutorialScreen/TutorialScreen';
+import WelcomePrompt from './src/screens/WelcomePrompt/WelcomePrompt';
+import useStoredState from './src/hooks/useAsyncStorage';
 const clientVersion = packageJson.version;
 
 // have to set is a empty string otherwise getting "Using Mapview required calling Mapbox.getInstance" on Android
@@ -30,14 +33,14 @@ const App: FC = () => {
   const [serverVersion, setServerVersion] = useState<string | null>(null);
   const [socket, setSocket] = useState<null | Socket>(null);
   const [connectionStatus, setConnectionStatus] = useState('CONNECTING');
-  // const [walkthroughIsVisible, setWalkthroughIsVisible] = useState(false);
+  const [
+    welcomeIsVisible,
+    setWelcomeIsVisible,
+    welcomeIsHydrated,
+  ] = useStoredState('welcomeIsVisible@1', true);
+  const navigationRef = useRef(null);
 
   const onMount = async () => {
-    // Check if the user has already seen the walkthrough
-    // const hasSeenWalkthrough = await AsyncStorage.getItem('hasSeenTutorial@1');
-    // Show the user the walkthrough if they haven't
-    // if (!hasSeenWalkthrough) setWalkthroughIsVisible(true);
-
     requestLocationPermission();
     const socket = io(SERVER_URL, {transports: ['websocket']});
     setSocket(socket);
@@ -49,16 +52,24 @@ const App: FC = () => {
     socket.on('connect_error', () => setConnectionStatus('ERROR_CONNECTING'));
   };
 
-  // const onPressCloseWalkthrough = async () => {
-  //   await AsyncStorage.setItem('hasSeenTutorial@1', '1');
-  //   setWalkthroughIsVisible(false);
-  // };
+  const closeWelcomePrompt = async () => {
+    setWelcomeIsVisible(false);
+  };
+
+  const showTutorial = () => {
+    (navigationRef.current as any)?.navigate('Tutorial');
+  };
+
+  const onPressTutorial = () => {
+    closeWelcomePrompt();
+    showTutorial();
+  };
 
   useEffect(() => {
     onMount();
   }, []);
 
-  if (!socket) return <LoaderScreen />;
+  if (!socket || !welcomeIsHydrated) return <LoaderScreen />;
   if (connectionStatus === 'CONNECTING')
     return <LoaderScreen message="Connecting to server" />;
   const versionIsAllowed = satisfies(serverVersion || '', `~${clientVersion}`);
@@ -66,14 +77,12 @@ const App: FC = () => {
     return (
       <UpdateScreen version={clientVersion} latestVersion={serverVersion} />
     );
-  // if (walkthroughIsVisible)
-  //   return <Walkthrough showPrompt onPressClose={onPressCloseWalkthrough} />;
   return (
     <View flex>
       {connectionStatus !== 'CONNECTED' && <ConnectionWarning />}
       <SocketContext.Provider value={socket}>
         <SafeAreaView style={{flex: 1}}>
-          <NavigationContainer>
+          <NavigationContainer ref={navigationRef as any}>
             <Stack.Navigator screenOptions={{gestureEnabled: false}}>
               <Stack.Screen
                 options={{headerShown: false}}
@@ -106,10 +115,21 @@ const App: FC = () => {
                 name="MyGames"
                 component={MyGamesScreen}
               />
+              <Stack.Screen name="Tutorial" component={TutorialScreen} />
             </Stack.Navigator>
           </NavigationContainer>
         </SafeAreaView>
       </SocketContext.Provider>
+
+      {welcomeIsVisible && (
+        <View
+          style={{position: 'absolute', top: 0, right: 0, left: 0, bottom: 0}}>
+          <WelcomePrompt
+            onPressClose={closeWelcomePrompt}
+            onPressTutorial={onPressTutorial}
+          />
+        </View>
+      )}
     </View>
   );
 };

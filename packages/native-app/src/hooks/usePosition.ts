@@ -6,14 +6,14 @@ import Geolocation, {
 
 let watchId = 0;
 
-export const getInitialPosition = () => ({
+export const getInitialPosition = (coordinates?: [number, number]) => ({
   coords: {
     accuracy: 0,
     altitude: 0,
     altitudeAccuracy: 0,
     heading: 0,
-    latitude: 0,
-    longitude: 0,
+    latitude: coordinates?.[1] || 0,
+    longitude: coordinates?.[0] || 0,
     speed: 0,
   },
   timestamp: 0,

@@ -10,6 +10,7 @@ import {Colors, View} from 'react-native-ui-lib';
 import TinyColor from 'tinycolor2';
 import {gameConfig} from '../../../../config/game';
 import {getPointRadius} from '../../../../utils/map';
+import MockUserLocation from '../../../TutorialScreen/MockUserLocation';
 import Score from '../../components/Score';
 import TimeLeft from '../../components/TimeLeft';
 
@@ -22,6 +23,9 @@ interface IMapScreenProps {
   player: any;
 
   onPressMap: (coordinate: [number, number]) => void;
+
+  zoomEnabled: boolean;
+  usePositionAsCenter: boolean;
 }
 
 const useForceUpdate = () => {
@@ -40,13 +44,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const getZoneScore = (room: any, player: any) => {
-  const points = room.map.points.filter((point: any) => {
-    const lastCapture = point.captures?.[point.captures.length - 1];
-
-    return lastCapture?.playerId === player._id;
-  });
-
+const getPenalty = (player: any, room: any) => {
   const playerLocation = player.location.coordinates;
   const homes = room.map.homes.map((home: any) => home.location.coordinates);
 
@@ -61,17 +59,11 @@ const getZoneScore = (room: any, player: any) => {
   );
 
   const distanceFromHome = closestHome[1];
-  const endPointMultiplier = Math.max(
-    0,
-    1 - distanceFromHome / room.map.radius,
-  );
 
-  const scoreToAdd = Math.ceil(
-    points.reduce((acc: number, point: any) => acc + point.weight, 0) *
-      endPointMultiplier,
+  return Math.min(
+    player.score,
+    Math.round(player.score * (distanceFromHome / room.map.radius)),
   );
-
-  return scoreToAdd;
 };
 
 const getPointColor = (point: any, players: any[]) => {
@@ -94,11 +86,7 @@ const MapScreen: FC<IMapScreenProps> = props => {
     update();
   }, 3000);
 
-  const zoneScore = useMemo(() => {
-    return props.room.status === 'FINISHED'
-      ? undefined
-      : getZoneScore(props.room, props.player);
-  }, [props.room, props.player]);
+  const penalty = getPenalty(props.player, props.room);
 
   const mapStyles = {
     pointCircle: {
@@ -194,11 +182,20 @@ const MapScreen: FC<IMapScreenProps> = props => {
         logoEnabled={false}
         pitchEnabled={false}
         rotateEnabled={false}
-        scrollEnabled={isHardMode}>
+        scrollEnabled={isHardMode}
+        zoomEnabled={props.zoomEnabled}>
         <MapBoxGL.Camera
-          followUserLocation
+          followUserLocation={!props.usePositionAsCenter}
           minZoomLevel={minZoomLevel}
           maxZoomLevel={maxZoomLevel}
+          centerCoordinate={
+            props.usePositionAsCenter
+              ? [
+                  props.position.coords.longitude,
+                  props.position.coords.latitude,
+                ]
+              : null
+          }
           defaultSettings={{
             zoomLevel: 14,
             centerCoordinate: [
@@ -207,7 +204,7 @@ const MapScreen: FC<IMapScreenProps> = props => {
             ],
           }}
           followZoomLevel={14}
-          animationDuration={0}
+          animationDuration={200}
         />
         <MapBoxGL.ShapeSource shape={points} id="points">
           <MapBoxGL.CircleLayer
@@ -221,11 +218,26 @@ const MapScreen: FC<IMapScreenProps> = props => {
             style={mapStyles.pointText as any}
           />
         </MapBoxGL.ShapeSource>
-        <MapBoxGL.UserLocation visible={!isHardMode} />
+        {props.usePositionAsCenter && (
+          <MockUserLocation
+            position={[
+              props.position.coords.longitude,
+              props.position.coords.latitude,
+            ]}
+          />
+        )}
+        <MapBoxGL.UserLocation
+          visible={!isHardMode && !props.usePositionAsCenter}
+        />
       </MapBoxGL.MapView>
 
       <TimeLeft finishedAt={new Date(props.room.finishedAt)} />
-      <Score zoneScore={zoneScore} score={props.player.score} />
+      <Score
+        penalty={
+          penalty > 0 && props.room.status !== 'FINISHED' ? penalty : undefined
+        }
+        score={props.player.score}
+      />
     </View>
   );
 };

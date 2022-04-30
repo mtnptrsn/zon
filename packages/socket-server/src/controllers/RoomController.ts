@@ -1,8 +1,9 @@
 import { add, differenceInMilliseconds } from "date-fns";
 import { getDistance } from "geolib";
-import { Document, isValidObjectId } from "mongoose";
+import { isValidObjectId } from "mongoose";
 import shortId from "shortid";
 import { gameConfig } from "../config/game";
+import { getPenalty } from "../lib/score/getPenalty";
 import { PlayerPositionModel } from "../models/PlayerPositionModel";
 import { RoomModel } from "../models/RoomModel";
 import { IController } from "../types/controller";
@@ -267,44 +268,20 @@ export class RoomController {
     const room = await RoomModel.findById(data.roomId);
 
     room.players.forEach((player: any, playerIndex: number) => {
-      const playerLocation = player.location.coordinates;
-      const homes = room.map.homes.map(
-        (home: any) => home.location.coordinates
-      );
+      const penalty = getPenalty(player, room);
 
-      const closestHome = homes.reduce(
-        (acc: any, current: any) => {
-          const previousDistance = acc[1];
-          const currentDistance = getDistance(playerLocation, current);
-          if (currentDistance < previousDistance)
-            return [current, currentDistance];
-          return acc;
-        },
-        [homes[0], getDistance(playerLocation, homes[0])]
-      );
+      room.players[playerIndex].score -= penalty;
 
-      const distanceFromHome = closestHome[1];
+      const wereWas = penalty > 1 ? "were" : "was";
+      const pointPoints = penalty > 1 ? "points" : "point";
 
-      const endPointMultiplier = Math.max(
-        0,
-        1 - distanceFromHome / room.map.radius
-      );
-
-      const points = room.map.points.filter((point: any) => {
-        const lastCapture = point.captures?.[point.captures.length - 1];
-
-        return lastCapture?.playerId === player._id;
-      });
-
-      const scoreToAdd = Math.ceil(
-        points.reduce((acc: number, point: any) => acc + point.weight, 0) *
-          endPointMultiplier
-      );
-
-      room.players[playerIndex].score += scoreToAdd;
+      const message =
+        penalty > 0
+          ? `The host ended the game. ${penalty} ${pointPoints} ${wereWas} taken from you since you weren't back home.`
+          : `The host ended the game. Well done!`;
 
       io.emit(`player:${player._id}:${room._id}:onEvent`, {
-        message: `The host ended the game. You earned ${scoreToAdd} extra points. Well played!`,
+        message,
       });
     });
 
@@ -368,24 +345,8 @@ export class RoomController {
 
     if (playerIsWithinHome !== player.isWithinHome) {
       room.players[playerIndex].isWithinHome = playerIsWithinHome;
-      if (playerIsWithinHome) {
-        events = [
-          ...events,
-          ...room.players.map((_player: any) => {
-            const isCurrentPlayer = _player._id === player._id;
-
-            return {
-              to: _player._id,
-              message: `${
-                isCurrentPlayer ? "You" : player.name
-              } arrived back home.`,
-              type: "info",
-              vibrate: isCurrentPlayer ? "long" : "short",
-            };
-          }),
-        ];
-      }
     }
+
     room.map.points.forEach((point: any, index: number) => {
       if (
         !checkPointCollected(
@@ -399,9 +360,10 @@ export class RoomController {
 
       const previousOwnerId =
         point.captures?.[point.captures.length - 1]?.playerId;
-      const previousOwner = room.players.find(
+      const previousOwnerIndex = room.players.findIndex(
         (player: any) => player._id === previousOwnerId
       );
+      const previousOwner = room.players[previousOwnerIndex];
 
       point.captures = [
         ...point.captures,
@@ -410,7 +372,9 @@ export class RoomController {
         },
       ];
 
+      // rework this.
       room.players[playerIndex].score += point.weight;
+      if (previousOwner) room.players[previousOwnerIndex].score -= point.weight;
 
       events = [
         ...events,

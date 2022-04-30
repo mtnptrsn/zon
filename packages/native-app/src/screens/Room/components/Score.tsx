@@ -6,7 +6,7 @@ import {getSpacing} from '../../../theme/utils';
 
 interface IScoreProps {
   score: number;
-  zoneScore?: number;
+  penalty?: number;
 }
 
 const styles = StyleSheet.create({
@@ -36,9 +36,9 @@ const Score: FC<IScoreProps> = props => {
           alignItems: 'flex-end',
         }}>
         <Text text50L>{props.score}</Text>
-        {typeof props.zoneScore === 'number' && (
-          <Text text65L marginB-2 grey30 marginL-3>
-            (+{props.zoneScore})
+        {typeof props.penalty === 'number' && (
+          <Text text65L marginB-2 red10 marginL-3>
+            (-{props.penalty})
           </Text>
         )}
       </View>
