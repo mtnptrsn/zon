@@ -204,7 +204,7 @@ const MapScreen: FC<IMapScreenProps> = props => {
             ],
           }}
           followZoomLevel={14}
-          animationDuration={200}
+          animationDuration={50}
         />
         <MapBoxGL.ShapeSource shape={points} id="points">
           <MapBoxGL.CircleLayer

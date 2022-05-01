@@ -272,13 +272,12 @@ export class RoomController {
 
       room.players[playerIndex].score -= penalty;
 
-      const wereWas = penalty > 1 ? "were" : "was";
       const pointPoints = penalty > 1 ? "points" : "point";
 
       const message =
         penalty > 0
-          ? `The host ended the game. ${penalty} ${pointPoints} ${wereWas} taken from you since you weren't back home.`
-          : `The host ended the game. Well done!`;
+          ? `The host ended the game. Since you wasn't back in time, you have been penalized ${penalty} ${pointPoints}.`
+          : `The host ended the game. Well played!`;
 
       io.emit(`player:${player._id}:${room._id}:onEvent`, {
         message,

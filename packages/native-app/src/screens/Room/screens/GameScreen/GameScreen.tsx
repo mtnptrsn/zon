@@ -46,7 +46,7 @@ const tutorialAnnouncements = [
 const GameScreen: FC<IGameScreenProps> = props => {
   const [event, setEvent] = useState<any>(null);
   const [tutorialNotifications, setTutorialNotifications] = useState(0);
-  const [tutorial, _, tutorialHydrated] = useStoredState('tutorial', true);
+  const [tutorial, _, tutorialHydrated] = useStoredState('tutorial', false);
   const navigation = useNavigation();
   const [activeScreen, setActiveScreen] = useState(0);
   const socket = useContext(SocketContext);

@@ -1,10 +1,10 @@
 import MapboxGL from '@rnmapbox/maps';
-import {NavigationContainer} from '@react-navigation/native';
+import {DefaultTheme, NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import React, {FC, useEffect, useRef, useState} from 'react';
 import {SafeAreaView} from 'react-native';
 import {SERVER_URL} from 'react-native-dotenv';
-import {LoaderScreen, View} from 'react-native-ui-lib';
+import {Colors, LoaderScreen, View} from 'react-native-ui-lib';
 import {satisfies} from 'semver';
 import {io, Socket} from 'socket.io-client';
 //@ts-ignore
@@ -23,7 +23,16 @@ import {requestLocationPermission} from './src/utils/location';
 import TutorialScreen from './src/screens/TutorialScreen/TutorialScreen';
 import WelcomePrompt from './src/screens/WelcomePrompt/WelcomePrompt';
 import useStoredState from './src/hooks/useAsyncStorage';
+// import {Colors} from 'react-native-ui-lib/typings';
 const clientVersion = packageJson.version;
+
+const navigationTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: Colors.white,
+  },
+};
 
 // have to set is a empty string otherwise getting "Using Mapview required calling Mapbox.getInstance" on Android
 MapboxGL.setAccessToken('');
@@ -78,27 +87,26 @@ const App: FC = () => {
       <UpdateScreen version={clientVersion} latestVersion={serverVersion} />
     );
   return (
-    <View flex>
-      {connectionStatus !== 'CONNECTED' && <ConnectionWarning />}
+    <View flex backgroundColor={Colors.grey80}>
       <SocketContext.Provider value={socket}>
         <SafeAreaView style={{flex: 1}}>
-          <NavigationContainer ref={navigationRef as any}>
-            <Stack.Navigator screenOptions={{gestureEnabled: false}}>
+          {connectionStatus !== 'CONNECTED' && <ConnectionWarning />}
+          <NavigationContainer
+            theme={navigationTheme}
+            ref={navigationRef as any}>
+            <Stack.Navigator
+              screenOptions={{gestureEnabled: false, headerBackTitle: 'Back'}}>
               <Stack.Screen
                 options={{headerShown: false}}
                 name="Index"
                 component={IndexScreen}
               />
               <Stack.Screen
-                options={{headerTitle: 'Scan QR', headerBackTitle: 'Back'}}
+                options={{headerTitle: 'Scan QR'}}
                 name="ScanQR"
                 component={ScanQRScreen}
               />
-              <Stack.Screen
-                options={{headerBackTitle: 'Back'}}
-                name="EnterText"
-                component={EnterTextScreen}
-              />
+              <Stack.Screen name="EnterText" component={EnterTextScreen} />
               <Stack.Screen
                 options={{headerShown: false}}
                 name="Room"

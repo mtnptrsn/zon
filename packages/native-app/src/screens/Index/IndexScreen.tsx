@@ -131,7 +131,7 @@ const IndexScreen: FC = () => {
   };
 
   const content = (
-    <View flex height={Dimensions.get('screen').height}>
+    <View flex>
       <View center flex>
         <Text text20 center>
           Zon

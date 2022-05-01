@@ -195,7 +195,7 @@ export const getTutorialRoom = () => ({
   createdAt: '2022-04-29T07:44:07.353Z',
   updatedAt: '2022-04-29T07:44:29.150Z',
   __v: 1,
-  finishedAt: add(new Date(), {seconds: 66}),
+  finishedAt: add(new Date(), {seconds: 68}),
   startedAt: '2022-04-29T07:44:28.019Z',
 });
 

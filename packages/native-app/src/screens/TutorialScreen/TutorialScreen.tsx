@@ -101,7 +101,7 @@ const chapters = [
     type: 'event',
     payload: {
       type: 'info',
-      message: `Welcome to Zon! Let's learn how to play.`,
+      message: `Welcome to Zon! This is a quick tutorial where I'll show you the basics.`,
     },
   },
   {
@@ -143,7 +143,14 @@ const chapters = [
     type: 'event',
     payload: {
       type: 'info',
-      message: `A zone is marked with a number which tells you how many points you earn for capturing it. The further away a zone is from the starting zone, the more valuable it tends to be.`,
+      message: `A zone is marked with a number which tells you how many points you earn for capturing it.`,
+    },
+  },
+  {
+    type: 'event',
+    payload: {
+      type: 'info',
+      message: `The further away a zone is from the starting zone, the more valuable it tends to be.`,
     },
   },
   {
@@ -169,7 +176,14 @@ const chapters = [
     type: 'event',
     payload: {
       type: 'info',
-      message: `You can see your total score in the top left corner. The negative number is your current distance penalty. The further away you are from the starting zone when the game ends, the higher the penalty.`,
+      message: `You can see your total score in the top left corner.`,
+    },
+  },
+  {
+    type: 'event',
+    payload: {
+      type: 'info',
+      message: `The number in parenthesis is your current distance penalty. The further away you are from the starting zone when the game ends, the higher the penalty.`,
     },
   },
   {
@@ -208,7 +222,7 @@ const chapters = [
     type: 'event',
     payload: {
       type: 'info',
-      message: `The game has ended and you got no distance penalty since you were back in time.`,
+      message: `The game is over. You got 3 points.`,
     },
   },
   {
@@ -309,7 +323,7 @@ const TutorialScreen: FC = () => {
 
     setCurrentLocation(currentPath[frame.current]);
     frame.current++;
-  }, 10);
+  }, 20);
 
   const renderNotification = () => {
     if (!event) return null;

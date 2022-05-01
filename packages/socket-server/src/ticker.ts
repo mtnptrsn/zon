@@ -12,13 +12,12 @@ const onFinish = async (io: Server, room: any) => {
 
     room.players[playerIndex].score -= penalty;
 
-    const wereWas = penalty > 1 ? "were" : "was";
     const pointPoints = penalty > 1 ? "points" : "point";
 
     const message =
       penalty > 0
-        ? `The game is over! ${penalty} ${pointPoints} ${wereWas} taken from you since you weren't back home.`
-        : `The game is over! Well done!`;
+        ? `The game is over. Since you wasn't back in time, you have been penalized ${penalty} ${pointPoints}.`
+        : `The game is over. Well played!`;
 
     io.emit(`player:${player._id}:${room._id}:onEvent`, {
       message,
@@ -62,7 +61,7 @@ const onTimeAnnouncenment = async (io: Server, room: any) => {
   await room.save();
 
   io.emit(`room:${room._id}:onEvent`, {
-    message: `It's only 10 minutes left. Make sure to be as close to your home as possible for maximum points.`,
+    message: `It's only 10 minutes left! Make sure to be back in time to avoid penalties.`,
     type: "info",
     sound: "alert",
     vibrate: "long",
@@ -89,19 +88,18 @@ function onSimulateChallengeGame(io: Server, room: any) {
       const playerScore = room.challengeRoom.map.points.reduce(
         (acc: any, point: any) => {
           if (point.captures.length === 0) return acc;
+
           const captures = point.captures.filter(
             (capture: any) => new Date(capture.createdAt) < challengeRoomDate
           );
 
-          const scoreFromAllCaptures = captures.reduce(
-            (acc: number, capture: any) => {
-              if (capture.playerId === player._id) return acc + point.weight;
-              return acc;
-            },
-            0
-          );
+          const lastCapture = captures[captures.length - 1];
 
-          return acc + scoreFromAllCaptures;
+          if (lastCapture?.playerId === player._id) {
+            return acc + point.weight;
+          }
+
+          return acc;
         },
         0
       );

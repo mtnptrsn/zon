@@ -25,7 +25,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
   const [hardmode, setHardMode] = useState(
     props.room.challengeRoom?.flags?.HARDMODE || false,
   );
-  const [tutorial, setTutorial] = useStoredState('tutorial', true);
+  const [tutorial, setTutorial] = useStoredState('tutorial', false);
   const navigation = useNavigation();
   const socket = useContext(SocketContext);
   const userId = getUniqueId();
@@ -142,13 +142,18 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
           <View marginT-6 height={1} width="100%" backgroundColor="#e3e3e3" />
           <View marginT-12>{renderPlayers()}</View>
 
-          <Text text60L marginT-16>
-            Settings
-          </Text>
-          <View marginT-6 height={1} width="100%" backgroundColor="#e3e3e3" />
-
           {isHost && (
             <View>
+              <Text text60L marginT-16>
+                Settings
+              </Text>
+              <View
+                marginT-6
+                height={1}
+                width="100%"
+                backgroundColor="#e3e3e3"
+              />
+
               <Text text80 marginT-12>
                 Duration
               </Text>
@@ -193,9 +198,9 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
             </View>
           )}
 
-          <View marginT-12 />
+          {/* <View marginT-12 /> */}
 
-          <Checkbox
+          {/* <Checkbox
             value={tutorial}
             onValueChange={setTutorial}
             label={'Tutorial'}
@@ -203,7 +208,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
           <Text grey30 marginT-6>
             The rules will be explained to you while you play. Recommended for
             new players.
-          </Text>
+          </Text> */}
         </View>
 
         <View marginT-24>

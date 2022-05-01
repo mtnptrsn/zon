@@ -37,7 +37,7 @@ const Score: FC<IScoreProps> = props => {
         }}>
         <Text text50L>{props.score}</Text>
         {typeof props.penalty === 'number' && (
-          <Text text65L marginB-2 red10 marginL-3>
+          <Text text65L marginB-2 grey30 marginL-3>
             (-{props.penalty})
           </Text>
         )}

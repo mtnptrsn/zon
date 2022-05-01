@@ -71,21 +71,19 @@ const StatsScreen: FC<IStatsScreenProps> = props => {
           : props.room.challengeRoom.map.points.reduce(
               (acc: any, point: any) => {
                 if (point.captures.length === 0) return acc;
+
                 const captures = point.captures.filter(
                   (capture: any) =>
                     new Date(capture.createdAt) < challengeRoomDate,
                 );
 
-                const scoreFromAllCaptures = captures.reduce(
-                  (acc: number, capture: any) => {
-                    if (capture.playerId === player._id)
-                      return acc + point.weight;
-                    return acc;
-                  },
-                  0,
-                );
+                const lastCapture = captures[captures.length - 1];
 
-                return acc + scoreFromAllCaptures;
+                if (lastCapture?.playerId === player._id) {
+                  return acc + point.weight;
+                }
+
+                return acc;
               },
               0,
             );
