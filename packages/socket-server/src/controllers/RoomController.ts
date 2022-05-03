@@ -172,11 +172,20 @@ export class RoomController {
     const room = await RoomModel.findById(data.roomId);
     if (!room) return callback?.(null);
     const playerPositions = await PlayerPositionModel.find({
-      $or: [{ roomId: room._id }, { roomId: room.challengeRoom?._id }],
+      roomId: room._id,
+    });
+    const ghostPlayerPosition = await PlayerPositionModel.find({
+      roomId: room.challengeRoom?._id,
     });
     callback?.({
       ...room.toObject(),
-      playerPositions,
+      playerPositions: [
+        ...playerPositions,
+        ...(ghostPlayerPosition || []).map((pp: any) => ({
+          ...pp.toObject(),
+          isGhost: true,
+        })),
+      ],
     });
   };
 
