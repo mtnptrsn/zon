@@ -35,13 +35,13 @@ const getDistanceTravelled = (coordinates: [number, number][]) => {
   ).sum;
 };
 
-const addTrailingZero = (string: string) =>
-  string.length === 1 ? `${string}0` : string;
+const addLeadingZero = (string: string) =>
+  string.length === 1 ? `0${string}` : string;
 
 const getPace = (duration: number, distance: number) => {
   if (!distance || !duration) return `0:00`;
   const minutes = duration / 60 / 1000 / (distance / 1000);
-  return `${Math.floor(minutes)}:${addTrailingZero(
+  return `${Math.floor(minutes)}:${addLeadingZero(
     String(Math.round((minutes % 1) * 60)),
   )}`;
 };
@@ -138,7 +138,7 @@ const StatsScreen: FC<IStatsScreenProps> = props => {
               {props.room.status === 'FINISHED' && (
                 <>
                   <Text grey30>
-                    Distance: {Math.round((distance / 1000) * 10) / 10} km
+                    Distance: {Math.round((distance / 1000) * 100) / 100} km
                   </Text>
                   <Text grey30>Pace: {pace} min/km</Text>
                 </>
@@ -151,7 +151,8 @@ const StatsScreen: FC<IStatsScreenProps> = props => {
 
   return (
     <View paddingB-56 flex absF backgroundColor="white" padding-12>
-      <Text text50L>Players</Text>
+      <Text text60L>Players</Text>
+      <View marginT-6 height={1} width="100%" backgroundColor="#e3e3e3" />
       <View marginT-12 flex>
         {renderPlayers()}
       </View>
