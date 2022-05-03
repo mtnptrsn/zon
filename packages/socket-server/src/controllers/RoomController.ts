@@ -325,6 +325,9 @@ export class RoomController {
 
     let events: any[] = [];
     const room = await RoomModel.findById(data.roomId);
+
+    if (room.status !== "PLAYING") return;
+
     const playerIndex = room.players.findIndex(
       (player: any) => player._id === data.playerId
     );
