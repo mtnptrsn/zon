@@ -9,7 +9,7 @@ import {
 const getOverpassQuery = (coordinate: [number, number], radius: number) => {
   return `
     [out:json][timeout:25];
-    way[highway](around:${radius},${coordinate[1]},${coordinate[0]});
+    way["highway"]["highway"!="motorway"](around:${radius},${coordinate[1]},${coordinate[0]});
     out skel qt; 
     >;
     out skel qt;
