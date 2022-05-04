@@ -12,22 +12,30 @@ const Needle = require('../../../../assets/images/needle.png');
 
 const styles = StyleSheet.create({
   container: {
+    justifyContent: 'center',
+    alignItems: 'center',
     position: 'absolute',
-    right: getSpacing(1),
-    top: getSpacing(1),
-    borderWidth: 1,
-    borderStyle: 'solid',
-    borderColor: 'rgba(0,0,0,.1)',
+    right: getSpacing(2),
+    top: getSpacing(2),
     alignSelf: 'center',
+    maxWidth: 60,
+    maxHeight: 60,
+    borderRadius: 99,
+    borderWidth: 12,
+    borderColor: 'rgba(255,255,255,.9)',
   },
 });
 
-const needleSize = 50;
+const needleSize = 70;
 
 const Compass: FC = () => {
-  const heading = useHeading();
+  const offset = useSharedValue(0);
 
-  const offset = useSharedValue(heading);
+  const onChange = (heading: number) => {
+    offset.value = heading;
+  };
+
+  useHeading(onChange);
 
   const animatedStyles = useAnimatedStyle(() => {
     return {
@@ -36,15 +44,9 @@ const Compass: FC = () => {
   });
 
   return (
-    <View
-      backgroundColor="white"
-      height={46}
-      paddingH-16
-      center
-      br10
-      style={styles.container}>
+    <View style={styles.container}>
       <Animated.Image
-        style={{transform: [{rotate: `${heading}deg`}]}}
+        style={animatedStyles}
         width={needleSize}
         height={needleSize}
         source={Needle}

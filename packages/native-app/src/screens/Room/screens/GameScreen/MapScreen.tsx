@@ -163,7 +163,7 @@ const MapScreen: FC<IMapScreenProps> = props => {
   return (
     <View style={styles.container}>
       <MapBoxGL.MapView
-        styleURL={`https://api.maptiler.com/maps/2859be49-5e41-4173-9bfe-9fa85ea4bb1d/style.json?key=${MAP_TILES_TOKEN}`}
+        styleURL={`https://api.maptiler.com/maps/0c149c96-2597-47b5-8065-770ff902adcb/style.json?key=${MAP_TILES_TOKEN}`}
         onPress={e => props.onPressMap(e.geometry.coordinates)}
         style={{flex: 1}}
         logoEnabled={false}
