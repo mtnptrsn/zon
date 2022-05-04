@@ -11,6 +11,7 @@ import TinyColor from 'tinycolor2';
 import {gameConfig} from '../../../../config/game';
 import {getPointRadius} from '../../../../utils/map';
 import MockUserLocation from '../../../TutorialScreen/MockUserLocation';
+import Compass from '../../components/Compass';
 import Score from '../../components/Score';
 import TimeLeft from '../../components/TimeLeft';
 
@@ -103,19 +104,6 @@ const MapScreen: FC<IMapScreenProps> = props => {
       circleStrokeWidth: 2,
       circleStrokeColor: 'white',
     },
-    pointText: {
-      textField: ['get', 'text'],
-      textColor: 'white',
-      textSize: [
-        'interpolate',
-        ['exponential', 2],
-        ['zoom'],
-        minZoomLevel,
-        ['get', 'textSizeMin'],
-        maxZoomLevel,
-        ['get', 'textSizeMax'],
-      ],
-    },
   };
 
   const points = {
@@ -133,7 +121,7 @@ const MapScreen: FC<IMapScreenProps> = props => {
             new Date(lastCapture?.createdAt),
           ) < gameConfig.durations.zoneLockedAfterCapture;
 
-        const text = isHome ? '' : isLocked ? 'L' : point.weight;
+        // const text = isHome ? '' : isLocked ? 'L' : point.weight;
 
         const textSizes = {
           min: 11,
@@ -147,7 +135,6 @@ const MapScreen: FC<IMapScreenProps> = props => {
             color: isHome
               ? new TinyColor(Colors.blue30).setAlpha(0.4).toRgbString()
               : getPointColor(point, props.room.players),
-            text,
             minSize: Math.max(
               getPointRadius(
                 props.position.coords.latitude,
@@ -182,20 +169,11 @@ const MapScreen: FC<IMapScreenProps> = props => {
         logoEnabled={false}
         pitchEnabled={false}
         rotateEnabled={false}
-        scrollEnabled={isHardMode}
         zoomEnabled={props.zoomEnabled}>
         <MapBoxGL.Camera
-          followUserLocation={!props.usePositionAsCenter}
+          // followUserLocation={!props.usePositionAsCenter}
           minZoomLevel={minZoomLevel}
           maxZoomLevel={maxZoomLevel}
-          centerCoordinate={
-            props.usePositionAsCenter
-              ? [
-                  props.position.coords.longitude,
-                  props.position.coords.latitude,
-                ]
-              : null
-          }
           defaultSettings={{
             zoomLevel: 14,
             centerCoordinate: [
@@ -212,32 +190,12 @@ const MapScreen: FC<IMapScreenProps> = props => {
             sourceLayerID="circleRadius"
             style={mapStyles.pointCircle as any}
           />
-          <MapBoxGL.SymbolLayer
-            id="pointText"
-            sourceLayerID="pointText"
-            style={mapStyles.pointText as any}
-          />
         </MapBoxGL.ShapeSource>
-        {props.usePositionAsCenter && (
-          <MockUserLocation
-            position={[
-              props.position.coords.longitude,
-              props.position.coords.latitude,
-            ]}
-          />
-        )}
-        <MapBoxGL.UserLocation
-          visible={!isHardMode && !props.usePositionAsCenter}
-        />
       </MapBoxGL.MapView>
 
-      <TimeLeft finishedAt={new Date(props.room.finishedAt)} />
-      <Score
-        penalty={
-          penalty > 0 && props.room.status !== 'FINISHED' ? penalty : undefined
-        }
-        score={props.player.score}
-      />
+      {/* <TimeLeft finishedAt={new Date(props.room.finishedAt)} /> */}
+
+      <Compass />
     </View>
   );
 };

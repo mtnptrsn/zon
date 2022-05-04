@@ -38,16 +38,7 @@ const getPointColor = (point: any, time: Date, players: any[]) => {
 };
 
 const getPointText = (point: any, time: Date, players: any[]) => {
-  const captures = point.captures.filter(
-    (capture: any) => new Date(capture.createdAt) < time,
-  );
-  if (captures.length === 0) return point.weight;
-
-  const lastCapture = captures[captures.length - 1];
-  const player = players.find(
-    (player: any) => player._id === lastCapture.playerId,
-  );
-  return player.name.substring(0, 1).toUpperCase();
+  return '';
 };
 
 const styles = StyleSheet.create({
@@ -195,7 +186,7 @@ const ReplayScreen: FC = () => {
   const points = {
     type: 'FeatureCollection',
     features: [...room.map.homes, ...room.map.points].map((point: any) => {
-      const isHome = !point.weight;
+      // const isHome = !point.weight;
 
       return {
         type: 'Feature',

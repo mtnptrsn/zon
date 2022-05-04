@@ -44,6 +44,7 @@ export namespace RoomController {
     radius: number;
     control: boolean;
     hardmode: boolean;
+    controls: number;
   }
 
   export interface IEnd {
@@ -224,36 +225,47 @@ export class RoomController {
     // TODO: Add error handling
     // if (playerLocations[0] === 0) return callback?.(null);
 
-    let homes: [number, number][] = [playerLocations[0]];
+    // let homes: [number, number][] = [playerLocations[0]];
+    const home = playerLocations[0];
 
-    playerLocations.slice(1).forEach((playerLocation: [number, number]) => {
-      const closestHome = homes.reduce(
-        (acc, current) => {
-          const previousDistance = acc[1];
-          const currentDistance = getDistance(playerLocation, current);
-          if (currentDistance < previousDistance)
-            return [current, currentDistance];
-          return acc;
-        },
-        [homes[0], getDistance(playerLocation, homes[0])]
-      );
-      if (closestHome[1] > data.radius * 2) homes = [...homes, playerLocation];
-    });
+    // playerLocations.slice(1).forEach((playerLocation: [number, number]) => {
+    //   const closestHome = homes.reduce(
+    //     (acc, current) => {
+    //       const previousDistance = acc[1];
+    //       const currentDistance = getDistance(playerLocation, current);
+    //       if (currentDistance < previousDistance)
+    //         return [current, currentDistance];
+    //       return acc;
+    //     },
+    //     [homes[0], getDistance(playerLocation, homes[0])]
+    //   );
+    //   if (closestHome[1] > data.radius * 2) homes = [...homes, playerLocation];
+    // });
 
     room.status = "COUNTDOWN";
     if (data.hardmode) room.flags.set("HARDMODE", true);
 
-    const map = await getMap(homes, data.radius);
+    const map = await getMap([home], data.radius, data.controls);
     room.map.points = map;
     room.map.radius = data.radius;
-    room.map.homes = homes.map((home) => {
-      return {
+
+    room.map.homes = [
+      {
         location: {
           type: "Point",
           coordinates: home,
         },
-      };
-    });
+      },
+    ];
+
+    // room.map.homes = homes.map((home) => {
+    //   return {
+    //     location: {
+    //       type: "Point",
+    //       coordinates: home,
+    //     },
+    //   };
+    // });
 
     room.startedAt = add(new Date(), {
       seconds: gameConfig.durations.start / 1000,
@@ -347,17 +359,6 @@ export class RoomController {
       coordinates: data.coordinate,
     };
 
-    const playerIsWithinHome = room.map.homes.some((home: any) => {
-      return (
-        getDistance(data.coordinate, home.location.coordinates) <
-        gameConfig.hitbox.home
-      );
-    });
-
-    if (playerIsWithinHome !== player.isWithinHome) {
-      room.players[playerIndex].isWithinHome = playerIsWithinHome;
-    }
-
     room.map.points.forEach((point: any, index: number) => {
       if (
         !checkPointCollected(
@@ -369,13 +370,6 @@ export class RoomController {
       )
         return;
 
-      const previousOwnerId =
-        point.captures?.[point.captures.length - 1]?.playerId;
-      const previousOwnerIndex = room.players.findIndex(
-        (player: any) => player._id === previousOwnerId
-      );
-      const previousOwner = room.players[previousOwnerIndex];
-
       point.captures = [
         ...point.captures,
         {
@@ -383,35 +377,16 @@ export class RoomController {
         },
       ];
 
-      // rework this.
-      room.players[playerIndex].score += point.weight;
-      if (previousOwner) room.players[previousOwnerIndex].score -= point.weight;
+      room.players[playerIndex].score += 1;
 
       events = [
         ...events,
         ...room.players.map((_player: any) => {
           const isCurrentPlayer = _player._id === player._id;
-          const isPreviousOwner = _player._id === previousOwner?._id;
-
-          const previous = isPreviousOwner ? "you" : previousOwner?.name;
-          const current = isCurrentPlayer ? "You" : player.name;
-
-          const hasHave = isCurrentPlayer ? "have" : "has";
-
-          let message = `${current} captured a zone worth ${point.weight} ${
-            point.weight > 1 ? "points" : "point"
-          } and now ${hasHave} a total of ${player.score}.`;
-
-          if (previousOwner)
-            message = `${current} stole a zone from ${previous} worth ${
-              point.weight
-            } ${
-              point.weight > 1 ? "points" : "point"
-            } and now ${hasHave} a total of ${player.score}.`;
 
           return {
             to: _player._id,
-            message,
+            message: "You captured a point!",
             type: "capture",
             player,
             sound: isCurrentPlayer ? "success" : "alert",

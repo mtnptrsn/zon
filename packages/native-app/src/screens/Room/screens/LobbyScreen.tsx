@@ -37,6 +37,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
   const [settings, setSettings] = useState({
     duration: props.room.challengeRoom?.duration / 60 / 1000 || 30,
     radius: props.room.challengeRoom?.map?.radius || 1500,
+    controls: 5,
   });
   const hasAccuratePositon =
     props.position.coords.latitude !== 0 &&
@@ -82,6 +83,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
         duration: 1000 * 60 * settings.duration,
         radius: settings.radius,
         hardmode,
+        controls: settings.controls,
       },
       () => {},
     );
@@ -154,7 +156,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
                 backgroundColor="#e3e3e3"
               />
 
-              <Text text80 marginT-12>
+              {/* <Text text80 marginT-12>
                 Duration
               </Text>
               <Slider
@@ -166,8 +168,22 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
                 maximumValue={60}
                 minimumValue={1}
                 step={1}
+              /> */}
+              {/* <Text grey30>{settings.duration} minutes</Text> */}
+              <Text text80 marginT-12>
+                Number of Controls
+              </Text>
+              <Slider
+                disabled={Boolean(props.room.challengeRoom)}
+                step={1}
+                minimumValue={1}
+                maximumValue={20}
+                value={settings.controls}
+                onValueChange={(value: any) => {
+                  setSettings(settings => ({...settings, controls: value}));
+                }}
               />
-              <Text grey30>{settings.duration} minutes</Text>
+              <Text grey30>{settings.controls} controls</Text>
 
               <Text text80 marginT-12>
                 Map Size
@@ -175,7 +191,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
               <Slider
                 disabled={Boolean(props.room.challengeRoom)}
                 step={1}
-                minimumValue={1000}
+                minimumValue={500}
                 maximumValue={2000}
                 value={settings.radius}
                 onValueChange={(value: any) => {
@@ -184,17 +200,17 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
               />
               <Text grey30>{settings.radius} meters in radius</Text>
 
-              <View marginT-16 />
+              {/* <View marginT-16 /> */}
 
-              <Checkbox
+              {/* <Checkbox
                 disabled={Boolean(props.room.challengeRoom)}
                 value={hardmode}
                 onValueChange={setHardMode}
                 label={'Hardmode'}
-              />
-              <Text grey30 marginT-6>
+              /> */}
+              {/* <Text grey30 marginT-6>
                 In hardmode you can't see your current position.
-              </Text>
+              </Text> */}
             </View>
           )}
 

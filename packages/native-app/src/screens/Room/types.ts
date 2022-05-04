@@ -12,5 +12,4 @@ export interface IPoint {
     type: 'Point';
     coordinates: Coordinate;
   };
-  weight: number;
 }

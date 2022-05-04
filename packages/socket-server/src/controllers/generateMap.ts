@@ -3,12 +3,21 @@ import { shuffle } from "../lib/shuffle";
 import { generateMap } from "../utils/map";
 import { getStreetCoordinates } from "../utils/osm";
 
-export const getMap = async (homes: [number, number][], radius: number) => {
+export const getMap = async (
+  homes: [number, number][],
+  radius: number,
+  controls: number
+) => {
   return (
     await Promise.all(
       homes.map(async (home) => {
         const streetCoordinates = await getStreetCoordinates(home, radius);
-        const points = generateMap(shuffle(streetCoordinates!), radius, [home]);
+        const points = generateMap(
+          shuffle(streetCoordinates!),
+          radius,
+          [home],
+          controls
+        );
 
         const map = points.map((coordinate) => {
           const distance = getDistance(home, coordinate);

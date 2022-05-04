@@ -55,18 +55,18 @@ const onStart = async (io: Server, room: any) => {
   if (process.env.LOGS) console.timeEnd("ticker:onStart");
 };
 
-const onTimeAnnouncenment = async (io: Server, room: any) => {
-  room.flags.set("10_MINUTES_LEFT_ANNOUNCEMENT", true);
+// const onTimeAnnouncenment = async (io: Server, room: any) => {
+//   room.flags.set("10_MINUTES_LEFT_ANNOUNCEMENT", true);
 
-  await room.save();
+//   await room.save();
 
-  io.emit(`room:${room._id}:onEvent`, {
-    message: `It's only 10 minutes left! Make sure to be back in time to avoid penalties.`,
-    type: "info",
-    sound: "alert",
-    vibrate: "long",
-  });
-};
+//   io.emit(`room:${room._id}:onEvent`, {
+//     message: `It's only 10 minutes left! Make sure to be back in time to avoid penalties.`,
+//     type: "info",
+//     sound: "alert",
+//     vibrate: "long",
+//   });
+// };
 
 function onSimulateChallengeGame(io: Server, room: any) {
   const elapsedTime = differenceInMilliseconds(new Date(), room.startedAt);
@@ -139,14 +139,14 @@ export const ticker = async (io: Server) => {
 
     if (timeUntil.start <= 0 && room.status === "COUNTDOWN")
       return onStart(io, room);
-    if (timeUntil.finish <= 0) return onFinish(io, room);
-    if (
-      timeUntil.timeLeftAnnouncement <= 0 &&
-      !room.flags.get("10_MINUTES_LEFT_ANNOUNCEMENT") &&
-      room.status === "PLAYING"
-    )
-      return onTimeAnnouncenment(io, room);
-    if (room.status === "PLAYING" && Boolean(room.challengeRoom))
-      return onSimulateChallengeGame(io, room);
+    // if (timeUntil.finish <= 0) return onFinish(io, room);
+    // if (
+    //   timeUntil.timeLeftAnnouncement <= 0 &&
+    //   !room.flags.get("10_MINUTES_LEFT_ANNOUNCEMENT") &&
+    //   room.status === "PLAYING"
+    // )
+    //   return onTimeAnnouncenment(io, room);
+    // if (room.status === "PLAYING" && Boolean(room.challengeRoom))
+    //   return onSimulateChallengeGame(io, room);
   });
 };
