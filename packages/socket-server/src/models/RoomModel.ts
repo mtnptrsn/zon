@@ -18,74 +18,28 @@ const PlayerSchema: Schema = new Schema({
     type: String,
     required: true,
   },
-  isWithinHome: {
-    type: Boolean,
-    default: true,
-  },
   score: {
     type: Number,
     default: 0,
   },
-  location: {
-    type: {
-      type: String,
-      default: "Point",
-      enum: ["Point"],
-    },
-    coordinates: {
-      type: [Number],
-      default: [0, 0],
-    },
-  },
-  startLocation: {
-    type: {
-      type: String,
-      default: "Point",
-      enum: ["Point"],
-    },
-    coordinates: {
-      type: [Number],
-      default: () => [0, 0],
-    },
-  },
 });
-
-const CaptureSchema: Schema = new Schema(
-  {
-    playerId: {
-      type: String,
-      required: true,
-    },
-    flags: {
-      type: Map,
-      of: { type: Boolean },
-      default: {},
-      required: true,
-    },
-  },
-  { timestamps: true, id: true }
-);
 
 const PointSchema: Schema = new Schema(
   {
     location: {
       type: {
         type: String,
+        default: "Point",
         enum: ["Point"],
-        required: true,
       },
       coordinates: {
         type: [Number],
-        required: true,
+        default: [0, 0],
       },
     },
-    captures: [CaptureSchema],
-    weight: {
-      type: Number,
-      default: null,
-    },
+    capturedBy: PlayerSchema,
   },
-  { id: true }
+  { timestamps: true, id: true }
 );
 
 const RoomSchema: Schema = new Schema(
@@ -99,32 +53,15 @@ const RoomSchema: Schema = new Schema(
       type: String,
       enum: ["ARRANGING", "COUNTDOWN", "PLAYING", "FINISHED", "CANCELLED"],
     },
-    map: {
-      points: [PointSchema],
-      homes: [PointSchema],
-      radius: {
-        type: Number,
-        default: 0,
-      },
-    },
+    points: [PointSchema],
     flags: {
       type: Map,
       of: { type: Boolean },
       default: {},
       required: true,
     },
-    finishedAt: {
-      type: Date,
-    },
     startedAt: {
       type: Date,
-    },
-    challengeRoom: {
-      type: this,
-    },
-    duration: {
-      type: Number,
-      default: 0,
     },
   },
   { timestamps: true }

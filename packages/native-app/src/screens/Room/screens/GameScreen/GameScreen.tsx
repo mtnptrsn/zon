@@ -1,11 +1,12 @@
 import {GeolocationResponse} from '@react-native-community/geolocation';
 import {StackActions, useNavigation} from '@react-navigation/native';
 import {speak} from 'expo-speech';
-import React, {FC, useContext, useEffect, useState} from 'react';
+import {getDistance} from 'geolib';
+import React, {FC, useContext, useEffect, useMemo, useState} from 'react';
 import {Alert, Vibration} from 'react-native';
 import {getUniqueId} from 'react-native-device-info';
 import Sound from 'react-native-sound';
-import {TabBar, View} from 'react-native-ui-lib';
+import {TabBar, View, Text} from 'react-native-ui-lib';
 import Notification from '../../../../components/Notification/Notification';
 import NotificationInfo from '../../../../components/Notification/NotificationInfo';
 import NotificationScore from '../../../../components/Notification/NotificationScore';
@@ -15,8 +16,11 @@ import {SocketContext} from '../../../../socket/context';
 import subscribeToEvents from '../../../../socket/subscribeToEvents';
 import {getSpacing} from '../../../../theme/utils';
 import {vibrationDurations} from '../../../../utils/vibration';
+import MainGameScreen from './MainGameScreen';
 import MapScreen from './MapScreen';
 import StatsScreen from './StatsScreen';
+import {useUpdateEffect} from 'react-use';
+import {current} from 'immer';
 
 const speakP = (message: string) => {
   return new Promise(resolve => {
@@ -53,6 +57,36 @@ const GameScreen: FC<IGameScreenProps> = props => {
   const player = props.room.players.find(
     (player: any) => player._id === getUniqueId(),
   );
+  const currentPosition: [number, number] = [
+    props.position.coords.longitude,
+    props.position.coords.latitude,
+  ];
+
+  const pointPosition: [number, number] =
+    props.room.points[0].location.coordinates;
+
+  const currentDistance = useMemo(
+    () => getDistance(currentPosition, pointPosition),
+    [currentPosition, pointPosition],
+  );
+
+  const [renderDistance, setRenderDistance] = useState(currentDistance);
+
+  useUpdateEffect(() => {
+    const distanceFilter = 25;
+
+    const isHigher = currentDistance - distanceFilter > renderDistance;
+    const isLower = currentDistance + distanceFilter < renderDistance;
+
+    if (isHigher || isLower) {
+      const message = `You are ${currentDistance} meters away.`;
+      Vibration.vibrate(400);
+      if (isHigher) sounds.alert.play();
+      else sounds.info.play();
+      speakP(message);
+      setRenderDistance(currentDistance);
+    }
+  }, [currentDistance, renderDistance]);
 
   const notify = (event: any) => {
     const {payload} = event;
@@ -104,14 +138,14 @@ const GameScreen: FC<IGameScreenProps> = props => {
 
   useEffect(() => {
     if (player.score === 0 && tutorial && tutorialHydrated) {
-      const message = 'The game has started. Go capture your first zone!';
-      addToQueue(
-        {
-          message,
-          type: 'info',
-        },
-        () => speakP(message),
-      );
+      // const message = 'The game has started. Go capture your first zone!';
+      // addToQueue(
+      //   {
+      //     message,
+      //     type: 'info',
+      //   },
+      //   () => speakP(message),
+      // );
     }
   }, [tutorialHydrated]);
 
@@ -182,13 +216,11 @@ const GameScreen: FC<IGameScreenProps> = props => {
 
   return (
     <View flex>
-      <MapScreen
-        zoomEnabled
-        usePositionAsCenter={false}
-        onPressMap={props.onPressMap}
+      <MainGameScreen
         room={props.room}
         player={player}
         position={props.position}
+        distance={renderDistance}
       />
       {activeScreen === 1 && (
         <StatsScreen
@@ -204,7 +236,7 @@ const GameScreen: FC<IGameScreenProps> = props => {
         <TabBar.Item
           key={0}
           onPress={() => setActiveScreen(0)}
-          label="Map"></TabBar.Item>
+          label="Game"></TabBar.Item>
         <TabBar.Item
           key={1}
           onPress={() => setActiveScreen(1)}

@@ -82,6 +82,10 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
         duration: 1000 * 60 * settings.duration,
         radius: settings.radius,
         hardmode,
+        hostLocation: [
+          props.position.coords.longitude,
+          props.position.coords.latitude,
+        ],
       },
       () => {},
     );
@@ -154,7 +158,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
                 backgroundColor="#e3e3e3"
               />
 
-              <Text text80 marginT-12>
+              {/* <Text text80 marginT-12>
                 Duration
               </Text>
               <Slider
@@ -167,10 +171,10 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
                 minimumValue={1}
                 step={1}
               />
-              <Text grey30>{settings.duration} minutes</Text>
+              <Text grey30>{settings.duration} minutes</Text> */}
 
               <Text text80 marginT-12>
-                Map Size
+                Distance
               </Text>
               <Slider
                 disabled={Boolean(props.room.challengeRoom)}
@@ -182,9 +186,9 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
                   setSettings(settings => ({...settings, radius: value}));
                 }}
               />
-              <Text grey30>{settings.radius} meters in radius</Text>
+              <Text grey30>{settings.radius} meters</Text>
 
-              <View marginT-16 />
+              {/* <View marginT-16 />
 
               <Checkbox
                 disabled={Boolean(props.room.challengeRoom)}
@@ -194,7 +198,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
               />
               <Text grey30 marginT-6>
                 In hardmode you can't see your current position.
-              </Text>
+              </Text> */}
             </View>
           )}
 

@@ -53,7 +53,7 @@ const generateNodesBetween = (way: [number, number][], margin: number) => {
 export const getStreetCoordinates = async (
   center: [number, number],
   radius: number
-) => {
+): Promise<[number, number][] | null> => {
   // console.time("gsc:fetch");
   const [err, response] = await to(
     axios.post(

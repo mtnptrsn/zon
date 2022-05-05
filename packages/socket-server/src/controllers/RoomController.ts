@@ -9,6 +9,7 @@ import { RoomModel } from "../models/RoomModel";
 import { IController } from "../types/controller";
 import { getRandomPlayerColor } from "../utils/color";
 import { getMap } from "./generateMap";
+import { generatePoint } from "./generatePoint";
 
 export namespace RoomController {
   export interface ICreate {
@@ -44,6 +45,7 @@ export namespace RoomController {
     radius: number;
     control: boolean;
     hardmode: boolean;
+    hostLocation: [number, number];
   }
 
   export interface IEnd {
@@ -216,52 +218,26 @@ export class RoomController {
     if (process.env.LOGS) console.time("RoomController:start");
     const room = await RoomModel.findById(data.roomId);
 
-    // TODO: Add error handling here, if player location isn't set
-    const playerLocations = room.players.map(
-      (player: any) => player.startLocation.coordinates
-    );
-
-    // TODO: Add error handling
-    // if (playerLocations[0] === 0) return callback?.(null);
-
-    let homes: [number, number][] = [playerLocations[0]];
-
-    playerLocations.slice(1).forEach((playerLocation: [number, number]) => {
-      const closestHome = homes.reduce(
-        (acc, current) => {
-          const previousDistance = acc[1];
-          const currentDistance = getDistance(playerLocation, current);
-          if (currentDistance < previousDistance)
-            return [current, currentDistance];
-          return acc;
-        },
-        [homes[0], getDistance(playerLocation, homes[0])]
-      );
-      if (closestHome[1] > data.radius * 2) homes = [...homes, playerLocation];
-    });
-
     room.status = "COUNTDOWN";
-    if (data.hardmode) room.flags.set("HARDMODE", true);
-
-    const map = await getMap(homes, data.radius);
-    room.map.points = map;
-    room.map.radius = data.radius;
-    room.map.homes = homes.map((home) => {
-      return {
-        location: {
-          type: "Point",
-          coordinates: home,
-        },
-      };
-    });
 
     room.startedAt = add(new Date(), {
       seconds: gameConfig.durations.start / 1000,
     });
-    room.finishedAt = add(new Date(), {
-      seconds: (data.duration + gameConfig.durations.start) / 1000,
-    });
-    room.duration = data.duration;
+
+    const point = await generatePoint(data.hostLocation, data.radius);
+
+    console.log({ point });
+
+    room.points = [
+      {
+        location: {
+          coordinates: point,
+          type: "Point",
+        },
+        capturedBy: null,
+      },
+    ];
+
     await room.save();
     io.emit(`room:${room._id}:onUpdate`, room);
     callback?.(room);
@@ -332,7 +308,6 @@ export class RoomController {
       },
     });
 
-    let events: any[] = [];
     const room = await RoomModel.findById(data.roomId);
 
     if (room.status !== "PLAYING") return;
@@ -347,85 +322,31 @@ export class RoomController {
       coordinates: data.coordinate,
     };
 
-    const playerIsWithinHome = room.map.homes.some((home: any) => {
-      return (
-        getDistance(data.coordinate, home.location.coordinates) <
-        gameConfig.hitbox.home
-      );
-    });
+    const pointCapturedBy = room.points[0].capturedBy;
+    const distanceFromPoint = getDistance(
+      data.coordinate,
+      room.points[0].location.coordinates
+    );
+    const isWithinPoint = distanceFromPoint <= gameConfig.hitbox.point;
 
-    if (playerIsWithinHome !== player.isWithinHome) {
-      room.players[playerIndex].isWithinHome = playerIsWithinHome;
+    const wasCaptured = !pointCapturedBy && isWithinPoint;
+
+    if (isWithinPoint) {
+      room.points[0].capturedBy = player;
     }
 
-    room.map.points.forEach((point: any, index: number) => {
-      if (
-        !checkPointCollected(
-          point,
-          player,
-          data.coordinate,
-          gameConfig.hitbox.point
-        )
-      )
-        return;
-
-      const previousOwnerId =
-        point.captures?.[point.captures.length - 1]?.playerId;
-      const previousOwnerIndex = room.players.findIndex(
-        (player: any) => player._id === previousOwnerId
-      );
-      const previousOwner = room.players[previousOwnerIndex];
-
-      point.captures = [
-        ...point.captures,
-        {
-          playerId: player._id,
-        },
-      ];
-
-      // rework this.
-      room.players[playerIndex].score += point.weight;
-      if (previousOwner) room.players[previousOwnerIndex].score -= point.weight;
-
-      events = [
-        ...events,
-        ...room.players.map((_player: any) => {
-          const isCurrentPlayer = _player._id === player._id;
-          const isPreviousOwner = _player._id === previousOwner?._id;
-
-          const previous = isPreviousOwner ? "you" : previousOwner?.name;
-          const current = isCurrentPlayer ? "You" : player.name;
-
-          const hasHave = isCurrentPlayer ? "have" : "has";
-
-          let message = `${current} captured a zone worth ${point.weight} ${
-            point.weight > 1 ? "points" : "point"
-          } and now ${hasHave} a total of ${player.score}.`;
-
-          if (previousOwner)
-            message = `${current} stole a zone from ${previous} worth ${
-              point.weight
-            } ${
-              point.weight > 1 ? "points" : "point"
-            } and now ${hasHave} a total of ${player.score}.`;
-
-          return {
-            to: _player._id,
-            message,
-            type: "capture",
-            player,
-            sound: isCurrentPlayer ? "success" : "alert",
-            vibrate: isCurrentPlayer ? "long" : "short",
-            zone: point,
-          };
-        }),
-      ];
-    });
     await room.save();
 
-    events.forEach((event: any) =>
-      io.emit(`player:${event.to}:${room._id}:onEvent`, event)
-    );
+    if (wasCaptured) {
+      room.players.forEach((_player: any) => {
+        const isCurrent = _player._id === player._id;
+
+        io.emit(`player:${player._id}:${room._id}:onEvent`, {
+          message: `${isCurrent ? "You" : player.name} captured the point!`,
+        });
+      });
+    }
+
     io.emit(`room:${room._id}:onUpdate`, room);
     callback?.(room);
   };

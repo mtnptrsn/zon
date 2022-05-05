@@ -23,6 +23,7 @@
     "@react-navigation/stack": "^5.14.4",
     "@rnmapbox/maps": "rnmapbox/maps#main",
     "@use-it/interval": "^1.0.0",
+    "add": "^2.0.6",
     "date-fns": "^2.21.1",
     "expo-keep-awake": "^9.1.2",
     "expo-speech": "^9.x.x",
@@ -35,6 +36,7 @@
     "react-native-animated-number": "^1.1.1",
     "react-native-animated-numbers": "^0.2.0",
     "react-native-camera": "^3.43.5",
+    "react-native-compass-heading": "^1.4.0",
     "react-native-device-info": "^8.1.2",
     "react-native-dotenv": "^2.5.5",
     "react-native-dropdown-picker": "^4.0.9",
@@ -53,9 +55,11 @@
     "react-native-ui-lib": "^5.23.3",
     "react-native-unimodules": "^0.13.3",
     "react-native-vector-icons": "^8.1.0",
+    "react-use": "^17.3.2",
     "semver": "^7.3.5",
     "socket.io-client": "^4.0.1",
-    "tinycolor2": "^1.4.2"
+    "tinycolor2": "^1.4.2",
+    "yarn": "^1.22.18"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
