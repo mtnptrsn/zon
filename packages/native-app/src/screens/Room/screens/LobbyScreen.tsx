@@ -212,16 +212,15 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
         </View>
 
         <View marginT-24>
-          <Button outline onPress={onPressLeave} label="Leave" />
-          <Button marginT-6 outline label="Invite" onPress={onPressInvite} />
           {isHost && (
             <Button
-              marginT-6
               disabled={!hasAccuratePositon}
               onPress={onPressStart}
               label="Start"
               loading={!hasAccuratePositon || isLoading}></Button>
           )}
+          <Button marginT-6 outline label="Invite" onPress={onPressInvite} />
+          <Button marginT-6 outline onPress={onPressLeave} label="Leave" />
         </View>
       </View>
     </KeyboardAwareScrollView>
