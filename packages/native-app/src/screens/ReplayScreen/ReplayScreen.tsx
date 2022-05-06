@@ -37,19 +37,6 @@ const getPointColor = (point: any, time: Date, players: any[]) => {
   return player.color;
 };
 
-const getPointText = (point: any, time: Date, players: any[]) => {
-  const captures = point.captures.filter(
-    (capture: any) => new Date(capture.createdAt) < time,
-  );
-  if (captures.length === 0) return point.weight;
-
-  const lastCapture = captures[captures.length - 1];
-  const player = players.find(
-    (player: any) => player._id === lastCapture.playerId,
-  );
-  return player.name.substring(0, 1).toUpperCase();
-};
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -204,7 +191,7 @@ const ReplayScreen: FC = () => {
           color: isHome
             ? new TinyColor(Colors.blue30).setAlpha(0.4).toRgbString()
             : getPointColor(point, time, room.players),
-          text: isHome ? '' : getPointText(point, time, room.players),
+          text: isHome ? '' : point.weight,
           minSize: Math.max(
             getPointRadius(
               player.startLocation.coordinates[1],
@@ -257,16 +244,24 @@ const ReplayScreen: FC = () => {
             style={mapStyles.pointText as any}
           />
         </MapBoxGL.ShapeSource>
-
         {playersWithCoordinate.map(({player, coordinate}: any) => {
+          const score = room.map.points.reduce((acc: any, point: any) => {
+            const captures = point.captures.filter(
+              (capture: any) => new Date(capture.createdAt) < time,
+            );
+            const lastCapture = captures[captures.length - 1];
+            if (lastCapture?.playerId === player._id) return acc + point.weight;
+            return acc;
+          }, 0);
+
           return (
             <MapBoxGL.MarkerView
               id={coordinateToString(coordinate)}
               key={coordinateToString(coordinate)}
               coordinate={coordinate}>
-              <Marker size={28} color={player.color}>
+              <Marker size={30} color={player.color}>
                 <Text style={styles.markerText} text70 center white>
-                  {player.name.substring(0, 1).toUpperCase()}
+                  {score}
                 </Text>
               </Marker>
             </MapBoxGL.MarkerView>
