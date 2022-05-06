@@ -3,12 +3,13 @@ import MapBoxGL from '@rnmapbox/maps';
 import useInterval from '@use-it/interval';
 import {differenceInMilliseconds} from 'date-fns';
 import {getDistance} from 'geolib';
-import React, {FC, useMemo, useRef, useState} from 'react';
+import React, {FC, useState} from 'react';
 import {StyleSheet} from 'react-native';
 import {MAP_TILES_TOKEN} from 'react-native-dotenv';
-import {Colors, View} from 'react-native-ui-lib';
+import {Button, Colors, View} from 'react-native-ui-lib';
 import TinyColor from 'tinycolor2';
 import {gameConfig} from '../../../../config/game';
+import {getSpacing} from '../../../../theme/utils';
 import {getPointRadius} from '../../../../utils/map';
 import MockUserLocation from '../../../TutorialScreen/MockUserLocation';
 import Score from '../../components/Score';
@@ -78,6 +79,7 @@ const getPointColor = (point: any, players: any[]) => {
 };
 
 const MapScreen: FC<IMapScreenProps> = props => {
+  const [isLocked, setIsLocked] = useState(false);
   const isHardMode = 'HARDMODE' in props.room.flags;
   const update = useForceUpdate();
 
@@ -85,6 +87,10 @@ const MapScreen: FC<IMapScreenProps> = props => {
   useInterval(() => {
     update();
   }, 3000);
+
+  const onPressLock = () => {
+    setIsLocked(x => !x);
+  };
 
   const penalty = getPenalty(props.player, props.room);
 
@@ -175,61 +181,65 @@ const MapScreen: FC<IMapScreenProps> = props => {
 
   return (
     <View style={styles.container}>
-      <MapBoxGL.MapView
-        styleURL={`https://api.maptiler.com/maps/2859be49-5e41-4173-9bfe-9fa85ea4bb1d/style.json?key=${MAP_TILES_TOKEN}`}
-        onPress={e => props.onPressMap(e.geometry.coordinates)}
-        style={{flex: 1}}
-        logoEnabled={false}
-        pitchEnabled={false}
-        rotateEnabled={false}
-        scrollEnabled={isHardMode}
-        zoomEnabled={props.zoomEnabled}>
-        <MapBoxGL.Camera
-          followUserLocation={!props.usePositionAsCenter}
-          minZoomLevel={minZoomLevel}
-          maxZoomLevel={maxZoomLevel}
-          centerCoordinate={
-            props.usePositionAsCenter
-              ? [
-                  props.position.coords.longitude,
-                  props.position.coords.latitude,
-                ]
-              : null
-          }
-          defaultSettings={{
-            zoomLevel: 14,
-            centerCoordinate: [
-              props.position.coords.longitude,
-              props.position.coords.latitude,
-            ],
-          }}
-          followZoomLevel={14}
-          animationDuration={50}
-        />
-        <MapBoxGL.ShapeSource shape={points} id="points">
-          <MapBoxGL.CircleLayer
-            id="circleRadius"
-            sourceLayerID="circleRadius"
-            style={mapStyles.pointCircle as any}
+      {!isLocked ? (
+        <MapBoxGL.MapView
+          styleURL={`https://api.maptiler.com/maps/2859be49-5e41-4173-9bfe-9fa85ea4bb1d/style.json?key=${MAP_TILES_TOKEN}`}
+          onPress={e => props.onPressMap(e.geometry.coordinates)}
+          style={{flex: 1}}
+          logoEnabled={false}
+          pitchEnabled={false}
+          rotateEnabled={false}
+          scrollEnabled={isHardMode}
+          zoomEnabled={props.zoomEnabled}>
+          <MapBoxGL.Camera
+            followUserLocation={!props.usePositionAsCenter}
+            minZoomLevel={minZoomLevel}
+            maxZoomLevel={maxZoomLevel}
+            centerCoordinate={
+              props.usePositionAsCenter
+                ? [
+                    props.position.coords.longitude,
+                    props.position.coords.latitude,
+                  ]
+                : null
+            }
+            defaultSettings={{
+              zoomLevel: 14,
+              centerCoordinate: [
+                props.position.coords.longitude,
+                props.position.coords.latitude,
+              ],
+            }}
+            followZoomLevel={14}
+            animationDuration={50}
           />
-          <MapBoxGL.SymbolLayer
-            id="pointText"
-            sourceLayerID="pointText"
-            style={mapStyles.pointText as any}
+          <MapBoxGL.ShapeSource shape={points} id="points">
+            <MapBoxGL.CircleLayer
+              id="circleRadius"
+              sourceLayerID="circleRadius"
+              style={mapStyles.pointCircle as any}
+            />
+            <MapBoxGL.SymbolLayer
+              id="pointText"
+              sourceLayerID="pointText"
+              style={mapStyles.pointText as any}
+            />
+          </MapBoxGL.ShapeSource>
+          {props.usePositionAsCenter && (
+            <MockUserLocation
+              position={[
+                props.position.coords.longitude,
+                props.position.coords.latitude,
+              ]}
+            />
+          )}
+          <MapBoxGL.UserLocation
+            visible={!isHardMode && !props.usePositionAsCenter}
           />
-        </MapBoxGL.ShapeSource>
-        {props.usePositionAsCenter && (
-          <MockUserLocation
-            position={[
-              props.position.coords.longitude,
-              props.position.coords.latitude,
-            ]}
-          />
-        )}
-        <MapBoxGL.UserLocation
-          visible={!isHardMode && !props.usePositionAsCenter}
-        />
-      </MapBoxGL.MapView>
+        </MapBoxGL.MapView>
+      ) : (
+        <View backgroundColor="black" flex />
+      )}
 
       <TimeLeft finishedAt={new Date(props.room.finishedAt)} />
       <Score
@@ -237,6 +247,18 @@ const MapScreen: FC<IMapScreenProps> = props => {
           penalty > 0 && props.room.status !== 'FINISHED' ? penalty : undefined
         }
         score={props.player.score}
+      />
+
+      <Button
+        onPress={onPressLock}
+        style={{
+          position: 'absolute',
+          bottom: getSpacing(1),
+          right: getSpacing(1),
+        }}
+        backgroundColor="white"
+        color={Colors.violet30}
+        label={isLocked ? 'Unlock' : 'Lock'}
       />
     </View>
   );
