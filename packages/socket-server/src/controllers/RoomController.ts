@@ -290,6 +290,7 @@ export class RoomController {
 
       io.emit(`player:${player._id}:${room._id}:onEvent`, {
         message,
+        vibrate: "long",
       });
     });
 
