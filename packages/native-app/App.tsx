@@ -1,8 +1,8 @@
-import MapboxGL from '@rnmapbox/maps';
 import {DefaultTheme, NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
+import MapboxGL from '@rnmapbox/maps';
 import React, {FC, useEffect, useRef, useState} from 'react';
-import {SafeAreaView} from 'react-native';
+import {SafeAreaView, StatusBar} from 'react-native';
 import {SERVER_URL} from 'react-native-dotenv';
 import {Colors, LoaderScreen, View} from 'react-native-ui-lib';
 import {satisfies} from 'semver';
@@ -10,6 +10,7 @@ import {io, Socket} from 'socket.io-client';
 //@ts-ignore
 import packageJson from './package.json';
 import ConnectionWarning from './src/components/ConnectionWarning';
+import useStoredState from './src/hooks/useAsyncStorage';
 import EnterTextScreen from './src/screens/EnterTextScreen/EnterTextScreen';
 import IndexScreen from './src/screens/Index/IndexScreen';
 import MyGamesScreen from './src/screens/MyGamesScreen/MyGamesScreen';
@@ -17,12 +18,11 @@ import ReplayScreen from './src/screens/ReplayScreen/ReplayScreen';
 import RoomScreen from './src/screens/Room/RoomScreen';
 import ScanQRScreen from './src/screens/ScanQR/ScanQRScreen';
 import ShowQRScreen from './src/screens/ShowQR/ShowQRScreen';
+import TutorialScreen from './src/screens/TutorialScreen/TutorialScreen';
 import UpdateScreen from './src/screens/UpdateScreen';
+import WelcomePrompt from './src/screens/WelcomePrompt/WelcomePrompt';
 import {SocketContext} from './src/socket/context';
 import {requestLocationPermission} from './src/utils/location';
-import TutorialScreen from './src/screens/TutorialScreen/TutorialScreen';
-import WelcomePrompt from './src/screens/WelcomePrompt/WelcomePrompt';
-import useStoredState from './src/hooks/useAsyncStorage';
 // import {Colors} from 'react-native-ui-lib/typings';
 const clientVersion = packageJson.version;
 
@@ -87,7 +87,8 @@ const App: FC = () => {
       <UpdateScreen version={clientVersion} latestVersion={serverVersion} />
     );
   return (
-    <View flex backgroundColor={Colors.grey80}>
+    <View flex backgroundColor={Colors.black}>
+      <StatusBar barStyle="light-content" />
       <SocketContext.Provider value={socket}>
         <SafeAreaView style={{flex: 1}}>
           {connectionStatus !== 'CONNECTED' && <ConnectionWarning />}
