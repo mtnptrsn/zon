@@ -116,7 +116,8 @@ const GameScreen: FC<IGameScreenProps> = props => {
   }, [tutorialHydrated]);
 
   useEffect(() => {
-    Vibration.vibrate(vibrationDurations.long);
+    if (props.room.status === 'PLAYING')
+      Vibration.vibrate(vibrationDurations.long);
   }, []);
 
   useEffect(() => {

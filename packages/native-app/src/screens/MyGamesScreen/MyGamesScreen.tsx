@@ -79,6 +79,10 @@ const MyGamesScreen: FC = () => {
     );
   }, []);
 
+  const navigateToRoom = (room: any) => {
+    navigation.navigate('Room', {roomId: room._id});
+  };
+
   const createGame = (room: any) => {
     if (!name)
       return Alert.alert('Empty field', 'You must enter a name to continue.');
@@ -99,7 +103,11 @@ const MyGamesScreen: FC = () => {
     Alert.alert(
       '',
       'What do you want to do?',
-      [{text: 'Cancel'}, {text: 'Challenge', onPress: () => createGame(room)}],
+      [
+        {text: 'Cancel'},
+        {text: 'Challenge', onPress: () => createGame(room)},
+        {text: 'View', onPress: () => navigateToRoom(room)},
+      ],
       {cancelable: true},
     );
   };
