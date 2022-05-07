@@ -139,7 +139,7 @@ const IndexScreen: FC = () => {
         <Button label="Join Game" marginB-6 onPress={onPressJoinGame} />
         <Button label="My Games" outline onPress={onPressMyGames} />
         <Button
-          label="How To Play"
+          label="Watch Tutorial"
           outline
           marginT-6
           onPress={navigateToTutorial}

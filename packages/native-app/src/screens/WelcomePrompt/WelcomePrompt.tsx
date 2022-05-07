@@ -26,10 +26,10 @@ const Walkthrough: FC<IWalkthroughProps> = props => {
           <Button
             onPress={props.onPressTutorial}
             marginT-6
-            label="How To Play"
+            label="Watch Tutorial"
           />
           <View marginB-6 />
-          <Button outline label="Play Now" onPress={props.onPressClose} />
+          <Button outline label="Skip Tutorial" onPress={props.onPressClose} />
         </View>
       </View>
     </SafeAreaView>
