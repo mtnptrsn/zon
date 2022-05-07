@@ -64,7 +64,6 @@
     "@babel/core": "^7.12.9",
     "@babel/runtime": "^7.12.5",
     "@react-native-community/eslint-config": "^2.0.0",
-    "@types/": "react-native-google-signin/google-signin",
     "@types/jest": "^26.0.20",
     "@types/ms": "^0.7.31",
     "@types/ramda": "^0.27.40",
