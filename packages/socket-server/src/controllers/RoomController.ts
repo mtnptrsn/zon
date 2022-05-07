@@ -63,6 +63,11 @@ export namespace RoomController {
   }
 }
 
+const firstWord = (str: string) => {
+  if (str.includes(" ")) return str.split(" ")[0];
+  return str;
+};
+
 const checkPointCollected = (
   point: any,
   player: any,
@@ -396,8 +401,10 @@ export class RoomController {
           const isCurrentPlayer = _player._id === player._id;
           const isPreviousOwner = _player._id === previousOwner?._id;
 
-          const previous = isPreviousOwner ? "you" : previousOwner?.name;
-          const current = isCurrentPlayer ? "You" : player.name;
+          const previous = isPreviousOwner
+            ? "you"
+            : firstWord(previousOwner?.name || "");
+          const current = isCurrentPlayer ? "You" : firstWord(player.name);
 
           const hasHave = isCurrentPlayer ? "have" : "has";
 
