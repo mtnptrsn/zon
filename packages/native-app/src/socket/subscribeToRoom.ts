@@ -1,8 +1,7 @@
 import {useContext, useEffect, useState} from 'react';
-import {getUniqueId} from 'react-native-device-info';
 import {SocketContext} from './context';
 
-const subscribeToRoom = (roomId: string) => {
+const subscribeToRoom = (roomId: string, userId: string) => {
   const socket = useContext(SocketContext);
   const [room, setRoom] = useState<null | any>(null);
 
@@ -12,7 +11,7 @@ const subscribeToRoom = (roomId: string) => {
     socket!.on(`room:${roomId}:onUpdate`, setRoom);
 
     return () => {
-      socket!.emit('room:leave', {roomId, userId: getUniqueId()});
+      socket!.emit('room:leave', {roomId, userId});
       socket!.off('connect', setRoom);
     };
   }, []);

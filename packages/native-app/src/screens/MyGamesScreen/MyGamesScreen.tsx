@@ -3,11 +3,11 @@ import {useNavigation} from '@react-navigation/native';
 import {format} from 'date-fns';
 import React, {FC, useContext, useEffect, useState} from 'react';
 import {Alert, ScrollView} from 'react-native';
-import DeviceInfo, {getUniqueId} from 'react-native-device-info';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {Colors, Text, View} from 'react-native-ui-lib';
 import {RoomController} from 'socket-server/src/controllers/RoomController';
 import useStoredState from '../../hooks/useAsyncStorage';
+import {useUser} from '../../hooks/useUser';
 import {SocketContext} from '../../socket/context';
 import LoadingScreen from '../Room/screens/LoadingScreen';
 
@@ -67,15 +67,17 @@ const Room: FC<{room: any}> = props => {
 
 const MyGamesScreen: FC = () => {
   const socket = useContext(SocketContext)!;
-  const playerId = getUniqueId();
+  const user = useUser();
   const [name] = useStoredState('name', '');
   const navigation = useNavigation();
 
   const [rooms, setRooms] = useState<null | any[]>(null);
 
   useEffect(() => {
-    socket.emit('rooms:get', {playerId, status: 'FINISHED'}, (rooms: any) =>
-      setRooms(rooms),
+    socket.emit(
+      'rooms:get',
+      {playerId: user.uid, status: 'FINISHED'},
+      (rooms: any) => setRooms(rooms),
     );
   }, []);
 
@@ -89,7 +91,7 @@ const MyGamesScreen: FC = () => {
     socket!.emit(
       'room:create',
       {
-        player: {id: playerId, name},
+        player: {id: user.uid, name},
         challengeRoomId: room.shortId,
       } as RoomController.ICreate,
       (room: any) => {

@@ -1,5 +1,4 @@
 import {useContext, useEffect, useState} from 'react';
-import {getUniqueId} from 'react-native-device-info';
 import {SocketContext} from './context';
 
 const subscribeToEvents = (

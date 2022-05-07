@@ -2,7 +2,6 @@ import {GeolocationResponse} from '@react-native-community/geolocation';
 import {StackActions, useNavigation} from '@react-navigation/core';
 import React, {FC, useContext, useEffect, useState} from 'react';
 import {Alert} from 'react-native';
-import {getUniqueId} from 'react-native-device-info';
 import {
   Button,
   Checkbox,
@@ -13,6 +12,7 @@ import {
   View,
 } from 'react-native-ui-lib';
 import useStoredState from '../../../hooks/useAsyncStorage';
+import {useUser} from '../../../hooks/useUser';
 import {SocketContext} from '../../../socket/context';
 
 interface ILobbyScreenProps {
@@ -21,6 +21,7 @@ interface ILobbyScreenProps {
 }
 
 const LobbyScreen: FC<ILobbyScreenProps> = props => {
+  const user = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [hardmode, setHardMode] = useState(
     props.room.challengeRoom?.flags?.HARDMODE || false,
@@ -28,7 +29,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
   const [tutorial, setTutorial] = useStoredState('tutorial', false);
   const navigation = useNavigation();
   const socket = useContext(SocketContext);
-  const userId = getUniqueId();
+  const userId = user.uid;
   const roomHost = props.room.players.find((player: any) => player.isHost);
   const isHost = userId === roomHost._id;
   const player = props.room.players.find(
@@ -98,8 +99,6 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
       }) || [];
 
     return [...props.room.players, ...ghosts].map((player: any) => {
-      const isCurrentPlayer = player._id === getUniqueId();
-
       const key = `${player._id}-${player.isGhost ? '_ghost' : ''}`;
 
       return (

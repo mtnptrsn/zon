@@ -1,11 +1,8 @@
+import {add} from 'date-fns';
 import differenceInMilliseconds from 'date-fns/differenceInMilliseconds';
 import {getDistance} from 'geolib';
 import React, {FC} from 'react';
-import {getUniqueId} from 'react-native-device-info';
-import {IPoint} from '../../types';
-import {View, Text, Button, Colors} from 'react-native-ui-lib';
-import {add} from 'date-fns';
-import TinyColor from 'tinycolor2';
+import {Button, Text, View} from 'react-native-ui-lib';
 
 interface IStatsScreenProps {
   room: any;

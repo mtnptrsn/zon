@@ -22,6 +22,7 @@ target 'orient' do
   pod 'Permission-LocationAccuracy', :path => "#{permissions_path}/LocationAccuracy"
   pod 'Permission-LocationAlways', :path => "#{permissions_path}/LocationAlways"
   pod 'Permission-LocationWhenInUse', :path => "#{permissions_path}/LocationWhenInUse"
+  pod 'GoogleSignIn', '~> 6.1.0'
 
   pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
 

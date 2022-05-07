@@ -10,6 +10,7 @@ import {useKeepAwake} from 'expo-keep-awake';
 import {getInitialPosition, usePosition} from '../../hooks/usePosition';
 import {LoaderScreen} from 'react-native-ui-lib';
 import {PRESS_TO_MOVE} from 'react-native-dotenv';
+import {useUser} from '../../hooks/useUser';
 
 interface IRoomScreenRouteParams {
   roomId: string;
@@ -19,7 +20,8 @@ const RoomScreen: FC = () => {
   useKeepAwake();
   const route = useRoute();
   const params = route.params! as IRoomScreenRouteParams;
-  const room = subscribeToRoom(params.roomId);
+  const user = useUser();
+  const room = subscribeToRoom(params.roomId, user.uid);
   const navigation = useNavigation();
   const position = usePosition({enableHighAccuracy: true, distanceFilter: 5});
   const [mockPosition, setMockPosition] = useState(getInitialPosition());

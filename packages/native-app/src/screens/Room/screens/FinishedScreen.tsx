@@ -1,15 +1,13 @@
 import {GeolocationResponse} from '@react-native-community/geolocation';
 import {StackActions, useNavigation} from '@react-navigation/core';
+import {differenceInMilliseconds} from 'date-fns';
 import {getDistance} from 'geolib';
 import React, {FC, useEffect} from 'react';
 import {StyleSheet, Vibration, View} from 'react-native';
-import {getUniqueId} from 'react-native-device-info';
-import {Text} from 'react-native-elements';
-import {Button} from 'react-native-elements';
+import {Button, Text} from 'react-native-elements';
+import {useUser} from '../../../hooks/useUser';
 import {getSpacing} from '../../../theme/utils';
 import {vibrationDurations} from '../../../utils/vibration';
-import {IPoint} from '../types';
-import {differenceInMilliseconds} from 'date-fns';
 
 const getDistanceTravelled = (coordinates: [number, number][]) => {
   return coordinates.slice(1).reduce(
@@ -79,6 +77,7 @@ const styles = StyleSheet.create({
 });
 
 const FinishedScreen: FC<ILobbyScreenProps> = props => {
+  const user = useUser();
   const navigation = useNavigation();
   const duration = differenceInMilliseconds(
     new Date(props.room.finishedAt),
@@ -103,7 +102,7 @@ const FinishedScreen: FC<ILobbyScreenProps> = props => {
         const playerPositions = props.room.playerPositions.filter(
           (pp: any) => pp.playerId === player._id,
         );
-        const isCurrentPlayer = player._id === getUniqueId();
+        const isCurrentPlayer = player._id === user.uid;
         const distance = getDistanceTravelled(
           playerPositions.map((pp: any) => pp.location.coordinates),
         );

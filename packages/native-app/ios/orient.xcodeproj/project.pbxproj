@@ -11,6 +11,7 @@
 		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
+		2237D62C282694D4008FA937 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2237D62B282694D4008FA937 /* GoogleService-Info.plist */; };
 		227F19A728196F93004B4FB7 /* Mapbox in Frameworks */ = {isa = PBXBuildFile; productRef = 1E3420329C24536B66A23CA2 /* Mapbox */; };
 		227F19A828196F93004B4FB7 /* Mapbox in Frameworks */ = {isa = PBXBuildFile; productRef = 23E6BFBE163CF9EE7E080023 /* Mapbox */; };
 		2C001B9C0B0A37045653AEB1 /* libPods-orient.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BF8DE19B0C10D62BD8F4C282 /* libPods-orient.a */; };
@@ -39,6 +40,7 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = orient/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = orient/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = orient/main.m; sourceTree = "<group>"; };
+		2237D62B282694D4008FA937 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		349D3D978CACA77B3F1BE7CA /* Pods-orient-orientTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-orient-orientTests.debug.xcconfig"; path = "Target Support Files/Pods-orient-orientTests/Pods-orient-orientTests.debug.xcconfig"; sourceTree = "<group>"; };
 		48F8769EF8F196C6F0640641 /* Pods-orient.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-orient.debug.xcconfig"; path = "Target Support Files/Pods-orient/Pods-orient.debug.xcconfig"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = orient/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -131,6 +133,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				2237D62B282694D4008FA937 /* GoogleService-Info.plist */,
 				13B07FAE1A68108700A75B9A /* orient */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* orientTests */,
@@ -256,6 +259,7 @@
 			files = (
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				2237D62C282694D4008FA937 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useIsFocused, useNavigation} from '@react-navigation/core';
-import React, {FC, useContext, useEffect} from 'react';
+import React, {FC, useContext, useEffect, useReducer} from 'react';
 import {Alert, Dimensions, KeyboardAvoidingView, Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import {Button, Text, TextField, View} from 'react-native-ui-lib';
@@ -13,6 +13,8 @@ import useStoredState from '../../hooks/useAsyncStorage';
 import {SocketContext} from '../../socket/context';
 import {IEnterTextScreenParams} from '../EnterTextScreen/EnterTextScreen';
 import * as Speech from 'expo-speech';
+import auth from '@react-native-firebase/auth';
+import {useUser} from '../../hooks/useUser';
 
 const findOngoingRoom = async (
   socket: Socket<DefaultEventsMap, DefaultEventsMap>,
@@ -31,7 +33,8 @@ const findOngoingRoom = async (
 const IndexScreen: FC = () => {
   const socket = useContext(SocketContext);
   const navigation = useNavigation();
-  const [name, setName] = useStoredState('name', '');
+  // const [name, setName] = useStoredState('name', '');
+  const user = useUser();
   const isFocused = useIsFocused();
 
   useEffect(() => {
@@ -61,7 +64,7 @@ const IndexScreen: FC = () => {
   const joinRoom = (roomId: string) => {
     socket!.emit(
       'room:join',
-      {roomId, player: {id: DeviceInfo.getUniqueId(), name}},
+      {roomId, player: {id: user!.uid, name: user!.displayName}},
       (room: any) => {
         if (!room)
           return Alert.alert(
@@ -76,9 +79,6 @@ const IndexScreen: FC = () => {
   };
 
   const onPressJoinGame = () => {
-    if (!name)
-      return Alert.alert('Empty field', 'You must enter a name to continue.');
-
     Alert.alert('Join game', 'How do you want to join the game?', [
       {
         text: 'Cancel',
@@ -110,13 +110,11 @@ const IndexScreen: FC = () => {
   };
 
   const createRoom = (challengeRoomId?: string) => {
-    if (!name)
-      return Alert.alert('Empty field', 'You must enter a name to continue.');
     // if (ENV === 'production') analytics().logEvent('create_room');
     socket!.emit(
       'room:create',
       {
-        player: {id: DeviceInfo.getUniqueId(), name},
+        player: {id: user!.uid, name: user!.displayName},
         challengeRoomId,
       } as RoomController.ICreate,
       (room: any) => {
@@ -126,36 +124,32 @@ const IndexScreen: FC = () => {
     );
   };
 
-  const navigateToTutorial = () => {
-    navigation.navigate('Tutorial');
-  };
+  const navigateToTutorial = () => navigation.navigate('Tutorial');
 
   const content = (
     <View flex>
       <View center flex>
-        <Text text20 center>
+        <Text black text20 center>
           Zon
         </Text>
         <Text grey30>Version {packageJson.version}</Text>
       </View>
       <View padding-12>
-        <View marginH-12>
-          <TextField
-            placeholder="Your name"
-            value={name}
-            onChangeText={setName}
-            title="Name"
-          />
-        </View>
         <Button label="Create Game" marginB-6 onPress={() => createRoom()} />
         <Button label="Join Game" marginB-6 onPress={onPressJoinGame} />
+        <Button label="My Games" outline onPress={onPressMyGames} />
         <Button
           label="How To Play"
           outline
-          marginB-6
+          marginT-6
           onPress={navigateToTutorial}
         />
-        <Button label="My Games" outline onPress={onPressMyGames} />
+        <Button
+          marginT-6
+          label="Log Out"
+          outline
+          onPress={() => auth().signOut()}
+        />
       </View>
     </View>
   );

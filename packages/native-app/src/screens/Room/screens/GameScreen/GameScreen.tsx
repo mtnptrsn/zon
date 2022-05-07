@@ -3,7 +3,6 @@ import {StackActions, useNavigation} from '@react-navigation/native';
 import {speak} from 'expo-speech';
 import React, {FC, useContext, useEffect, useState} from 'react';
 import {Alert, Vibration} from 'react-native';
-import {getUniqueId} from 'react-native-device-info';
 import Sound from 'react-native-sound';
 import {TabBar, View} from 'react-native-ui-lib';
 import Notification from '../../../../components/Notification/Notification';
@@ -11,6 +10,7 @@ import NotificationInfo from '../../../../components/Notification/NotificationIn
 import NotificationScore from '../../../../components/Notification/NotificationScore';
 import useStoredState from '../../../../hooks/useAsyncStorage';
 import {useEventQueue} from '../../../../hooks/useEventQueue';
+import {useUser} from '../../../../hooks/useUser';
 import {SocketContext} from '../../../../socket/context';
 import subscribeToEvents from '../../../../socket/subscribeToEvents';
 import {getSpacing} from '../../../../theme/utils';
@@ -50,8 +50,9 @@ const GameScreen: FC<IGameScreenProps> = props => {
   const navigation = useNavigation();
   const [activeScreen, setActiveScreen] = useState(0);
   const socket = useContext(SocketContext);
+  const user = useUser();
   const player = props.room.players.find(
-    (player: any) => player._id === getUniqueId(),
+    (player: any) => player._id === user.uid,
   );
 
   const notify = (event: any) => {
@@ -129,7 +130,7 @@ const GameScreen: FC<IGameScreenProps> = props => {
       'user:updatePosition',
       {
         roomId: props.room._id,
-        playerId: getUniqueId(),
+        playerId: user.uid,
         coordinate: [longitude, latitude],
       },
       () => {},
