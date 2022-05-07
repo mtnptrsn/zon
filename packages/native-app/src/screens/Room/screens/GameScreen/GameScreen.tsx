@@ -17,6 +17,7 @@ import {getSpacing} from '../../../../theme/utils';
 import {vibrationDurations} from '../../../../utils/vibration';
 import MapScreen from './MapScreen';
 import StatsScreen from './StatsScreen';
+import {useUpdateEffect} from 'react-use';
 
 const speakP = (message: string) => {
   return new Promise(resolve => {
@@ -48,7 +49,9 @@ const GameScreen: FC<IGameScreenProps> = props => {
   const [tutorialNotifications, setTutorialNotifications] = useState(0);
   const [tutorial, _, tutorialHydrated] = useStoredState('tutorial', false);
   const navigation = useNavigation();
-  const [activeScreen, setActiveScreen] = useState(0);
+  const [activeScreen, setActiveScreen] = useState(
+    props.room.status === 'PLAYING' ? 0 : 1,
+  );
   const socket = useContext(SocketContext);
   const user = useUser();
   const player = props.room.players.find(
@@ -136,6 +139,10 @@ const GameScreen: FC<IGameScreenProps> = props => {
       () => {},
     );
   }, [props.position]);
+
+  useUpdateEffect(() => {
+    if (props.room.status === 'FINISHED') setActiveScreen(1);
+  }, [props.room.status]);
 
   const renderNotification = () => {
     if (!event) return null;

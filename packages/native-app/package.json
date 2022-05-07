@@ -55,6 +55,7 @@
     "react-native-ui-lib": "^5.23.3",
     "react-native-unimodules": "^0.13.3",
     "react-native-vector-icons": "^8.1.0",
+    "react-use": "^17.3.2",
     "semver": "^7.3.5",
     "socket.io-client": "^4.0.1",
     "tinycolor2": "^1.4.2"

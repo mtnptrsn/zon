@@ -16,7 +16,7 @@ const Walkthrough: FC<IWalkthroughProps> = props => {
     <SafeAreaView style={{flex: 1}}>
       <View flex padding-12 center backgroundColor={Colors.white}>
         <Text center text40L primary>
-          Welcome to Zon
+          Tutorial
         </Text>
         <Text text70L grey30 marginT-6 marginH-24>
           If you haven't played before, consider having a look at the tutorial.
