@@ -7,6 +7,7 @@ import {
   Checkbox,
   KeyboardAwareScrollView,
   LoaderScreen,
+  Picker,
   Slider,
   Text,
   View,
@@ -14,6 +15,7 @@ import {
 import useStoredState from '../../../hooks/useAsyncStorage';
 import {useUser} from '../../../hooks/useUser';
 import {SocketContext} from '../../../socket/context';
+import {metersToYards} from '../../../utils/units';
 
 interface ILobbyScreenProps {
   room: any;
@@ -26,7 +28,10 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
   const [hardmode, setHardMode] = useState(
     props.room.challengeRoom?.flags?.HARDMODE || false,
   );
-  const [tutorial, setTutorial] = useStoredState('tutorial', false);
+  const [measurementSystem, setMeasurementSystem] = useStoredState(
+    'measurementSystem',
+    'metric',
+  );
   const navigation = useNavigation();
   const socket = useContext(SocketContext);
   const userId = user.uid;
@@ -43,6 +48,11 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
     props.position.coords.latitude !== 0 &&
     props.position.coords.longitude !== 0;
 
+  const mapSizeHelperText =
+    measurementSystem === 'metric'
+      ? `${settings.radius} meters in radius`
+      : `${Math.round(metersToYards(settings.radius))} yards in radius`;
+
   useEffect(() => {
     if (hasAccuratePositon) {
       socket!.emit('user:updatePosition:lobby', {
@@ -55,6 +65,15 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
       });
     }
   }, [props.position.coords]);
+
+  const onChangeMeasurementSystem = ({
+    value,
+  }: {
+    value: string;
+    label: string;
+  }) => {
+    setMeasurementSystem(value);
+  };
 
   const onPressInvite = () => {
     navigation.navigate('ShowQR', {data: props.room.shortId, title: 'Invite'});
@@ -181,7 +200,7 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
                   setSettings(settings => ({...settings, radius: value}));
                 }}
               />
-              <Text grey30>{settings.radius} meters in radius</Text>
+              <Text grey30>{mapSizeHelperText}</Text>
 
               <View marginT-16 />
 
@@ -196,6 +215,16 @@ const LobbyScreen: FC<ILobbyScreenProps> = props => {
               </Text>
             </View>
           )}
+
+          <Text text80 marginT-12>
+            Units of Measure
+          </Text>
+          <Picker
+            onChange={onChangeMeasurementSystem}
+            value={measurementSystem}>
+            <Picker.Item value={'metric'} label="Metric"></Picker.Item>
+            <Picker.Item value={'imperial'} label="Imperial"></Picker.Item>
+          </Picker>
 
           {/* <View marginT-12 /> */}
 

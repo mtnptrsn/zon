@@ -38,9 +38,21 @@ const Player: FC<{player: any}> = props => {
 const Room: FC<{room: any}> = props => {
   return (
     <View>
-      <Text>
-        {format(new Date(props.room.createdAt), 'dd MMM yyyy - HH:mm')}
-      </Text>
+      <View row centerV>
+        {props.room.status === 'PLAYING' && (
+          <View
+            marginV-6
+            marginR-8
+            backgroundColor={Colors.green20}
+            padding-6
+            style={{borderRadius: 99, alignSelf: 'flex-start'}}>
+            <Text white>ONGOING</Text>
+          </View>
+        )}
+        <Text>
+          {format(new Date(props.room.createdAt), 'dd MMM yyyy - HH:mm')}
+        </Text>
+      </View>
 
       <View row marginT-6>
         <View flexG>
@@ -74,10 +86,8 @@ const MyGamesScreen: FC = () => {
   const [rooms, setRooms] = useState<null | any[]>(null);
 
   useEffect(() => {
-    socket.emit(
-      'rooms:get',
-      {playerId: user.uid, status: 'FINISHED'},
-      (rooms: any) => setRooms(rooms),
+    socket.emit('rooms:get', {playerId: user.uid}, (rooms: any) =>
+      setRooms(rooms),
     );
   }, []);
 
@@ -108,7 +118,7 @@ const MyGamesScreen: FC = () => {
       [
         {text: 'Cancel'},
         {text: 'Challenge', onPress: () => createGame(room)},
-        {text: 'View', onPress: () => navigateToRoom(room)},
+        {text: 'Go To', onPress: () => navigateToRoom(room)},
       ],
       {cancelable: true},
     );

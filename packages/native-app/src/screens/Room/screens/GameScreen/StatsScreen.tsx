@@ -3,6 +3,9 @@ import differenceInMilliseconds from 'date-fns/differenceInMilliseconds';
 import {getDistance} from 'geolib';
 import React, {FC} from 'react';
 import {Button, Text, View} from 'react-native-ui-lib';
+import useStoredState from '../../../../hooks/useAsyncStorage';
+import {round} from '../../../../utils/round';
+import {metersToMiles} from '../../../../utils/units';
 
 interface IStatsScreenProps {
   room: any;
@@ -11,6 +14,16 @@ interface IStatsScreenProps {
   onPressEndGame: () => void;
   onPressReplay: () => void;
 }
+
+const getDistanceText = (
+  distance: number,
+  measurementSystem: 'imperial' | 'metric',
+) => {
+  if (measurementSystem === 'imperial')
+    return `${round(metersToMiles(distance), 2)} miles`;
+
+  return `${round(distance / 1000, 2)} km`;
+};
 
 const getDistanceTravelled = (coordinates: [number, number][]) => {
   return coordinates.slice(1).reduce(
@@ -35,15 +48,30 @@ const getDistanceTravelled = (coordinates: [number, number][]) => {
 const addLeadingZero = (string: string) =>
   string.length === 1 ? `0${string}` : string;
 
-const getPace = (duration: number, distance: number) => {
+const getPace = (
+  duration: number,
+  distance: number,
+  measurementSystem: 'imperial' | 'metric',
+) => {
   if (!distance || !duration) return `0:00`;
-  const minutes = duration / 60 / 1000 / (distance / 1000);
+
+  const convertedDistance =
+    measurementSystem === 'imperial'
+      ? metersToMiles(distance)
+      : distance / 1000;
+
+  const minutes = duration / 60 / 1000 / convertedDistance;
   return `${Math.floor(minutes)}:${addLeadingZero(
     String(Math.round((minutes % 1) * 60)),
-  )}`;
+  )} ${measurementSystem === 'imperial' ? 'min/miles' : 'min/km'}`;
 };
 
 const StatsScreen: FC<IStatsScreenProps> = props => {
+  const [measurementSystem] = useStoredState<'metric' | 'imperial'>(
+    'measurementSystem',
+    'metric',
+  );
+
   const duration = differenceInMilliseconds(
     new Date(props.room.finishedAt),
     new Date(props.room.startedAt),
@@ -104,7 +132,7 @@ const StatsScreen: FC<IStatsScreenProps> = props => {
         const distance = getDistanceTravelled(
           playerPositions.map((pp: any) => pp.location.coordinates),
         );
-        const pace = getPace(duration, distance);
+        const pace = getPace(duration, distance, measurementSystem);
         const key = `${player._id}${player.isGhost ? '_ghost' : ''}`;
 
         return (
@@ -135,9 +163,9 @@ const StatsScreen: FC<IStatsScreenProps> = props => {
               {props.room.status === 'FINISHED' && (
                 <>
                   <Text grey30>
-                    Distance: {Math.round((distance / 1000) * 100) / 100} km
+                    Distance: {getDistanceText(distance, measurementSystem)}
                   </Text>
-                  <Text grey30>Pace: {pace} min/km</Text>
+                  <Text grey30>Pace: {pace}</Text>
                 </>
               )}
             </View>

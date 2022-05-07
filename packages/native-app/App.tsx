@@ -1,5 +1,5 @@
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
-import {DefaultTheme, NavigationContainer} from '@react-navigation/native';
+import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import MapboxGL from '@rnmapbox/maps';
 import React, {FC, useEffect, useRef, useState} from 'react';
@@ -27,16 +27,7 @@ import UpdateScreen from './src/screens/UpdateScreen';
 import WelcomePrompt from './src/screens/WelcomePrompt/WelcomePrompt';
 import {SocketContext} from './src/socket/context';
 import {requestLocationPermission} from './src/utils/location';
-// import {Colors} from 'react-native-ui-lib/typings';
 const clientVersion = packageJson.version;
-
-const navigationTheme = {
-  ...DefaultTheme,
-  colors: {
-    ...DefaultTheme.colors,
-    background: Colors.white,
-  },
-};
 
 // firebase.initializeApp(firebaseConfig);
 GoogleSignin.configure({
@@ -105,9 +96,7 @@ const App: FC = () => {
         <SocketContext.Provider value={socket}>
           <SafeAreaView style={{flex: 1}}>
             {connectionStatus !== 'CONNECTED' && <ConnectionWarning />}
-            <NavigationContainer
-              theme={navigationTheme}
-              ref={navigationRef as any}>
+            <NavigationContainer ref={navigationRef as any}>
               <Stack.Navigator
                 screenOptions={{
                   gestureEnabled: false,

@@ -16,6 +16,9 @@ const AuthScreen: FC = () => {
 
   return (
     <View flex backgroundColor="white" center>
+      <Text text50 marginB-12>
+        Welcome to Zon
+      </Text>
       <Text marginB-6 text70>
         Please log in to continue
       </Text>

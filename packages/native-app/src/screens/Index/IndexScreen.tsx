@@ -110,7 +110,6 @@ const IndexScreen: FC = () => {
   };
 
   const createRoom = (challengeRoomId?: string) => {
-    // if (ENV === 'production') analytics().logEvent('create_room');
     socket!.emit(
       'room:create',
       {

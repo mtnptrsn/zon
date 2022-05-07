@@ -199,10 +199,12 @@ export class RoomController {
           _id: data.playerId,
         },
       },
-      status: data.status,
+      status: {
+        $in: ["PLAYING", "FINISHED"],
+      },
     })
       .sort({ createdAt: -1 })
-      .limit(10);
+      .limit(30);
 
     callback?.(rooms);
   };
