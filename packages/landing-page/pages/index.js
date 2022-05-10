@@ -29,7 +29,7 @@ export default function Index() {
           </div>
 
           <iframe
-            className={cn("flex-1", "w-[100%]", "max-w-[1500px]")}
+            className={cn("flex-1", "aspect-video", "max-w-[100%]")}
             src="https://www.youtube.com/embed/YSiYewXvlzU"
             title="YouTube video player"
             frameborder="0"
